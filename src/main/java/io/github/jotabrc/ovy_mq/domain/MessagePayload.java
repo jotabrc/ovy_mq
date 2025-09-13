@@ -13,8 +13,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("Message")
-public class Message implements Serializable {
+@RedisHash("MessagePayload")
+public class MessagePayload implements Serializable {
 
     @Id
     private Long id;

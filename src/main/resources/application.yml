@@ -1,2 +1,10 @@
 spring:
   application.name: OVY_Mq
+  config:
+    import: classpath:credential.yml
+  server:
+    port: 8080
+
+broker:
+  endpoints:
+    - /default
