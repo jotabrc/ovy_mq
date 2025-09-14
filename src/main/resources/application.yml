@@ -8,6 +8,11 @@ spring:
     host: localhost
     port: 6379
 
-broker:
-  endpoints:
-    - /default
+ovymq:
+  task:
+    active:
+      consumer: false
+      topic: true
+    delay:
+      topic: 5000
+      consumer: 5000

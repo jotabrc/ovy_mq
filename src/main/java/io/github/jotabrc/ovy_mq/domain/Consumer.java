@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Builder
 @Getter
-public class Client {
+public class Consumer {
 
     private String id;
     private String listeningTopic;
@@ -17,15 +17,15 @@ public class Client {
 
     public void updateStatus() {
         this.lastUsed = OffsetDateTime.now();
-        this.isAvailable = false;
+        this.isAvailable = !this.isAvailable;
     }
 
     @Override
     public boolean equals(Object o) {
         if (Objects.isNull(o) || !Objects.equals(getClass(), o.getClass())) return false;
 
-        Client client = (Client) o;
-        return id.equals(client.id);
+        Consumer consumer = (Consumer) o;
+        return id.equals(consumer.id);
     }
 
     @Override

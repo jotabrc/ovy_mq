@@ -1,10 +1,15 @@
 package io.github.jotabrc.ovy_mq.service;
 
-import io.github.jotabrc.ovy_mq.domain.Client;
+import io.github.jotabrc.ovy_mq.domain.Consumer;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
+
+import java.util.List;
 
 public interface QueueProcessor {
 
     void save(MessagePayload messagePayload);
-    void send(Client client);
+    void send(Consumer consumer);
+    void send(Consumer consumer, MessagePayload messagePayload);
+    List<MessagePayload> getMessagesByTopic(String topic);
+    List<MessagePayload> getMessagesByTopic(String topic, int quantity);
 }

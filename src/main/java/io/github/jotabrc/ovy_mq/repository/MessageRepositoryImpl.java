@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -37,7 +40,24 @@ public class MessageRepositoryImpl implements MessageRepository {
             return new ObjectMapper().convertValue(json, MessagePayload.class);
         } catch (IllegalArgumentException e) {
             if (nonNull(json)) redisTemplate.opsForList().rightPush(topic, json);
-            throw new JsonToMessageException("Error while converting json to message from topic %s".formatted(topic));
+            throw new JsonToMessageException(topic);
         }
+    }
+
+    @Override
+    public List<MessagePayload> removeFromQueueAndReturnList(String topic, int quantity) {
+        List<String> jsonList = redisTemplate.opsForList().leftPop(topic, quantity);
+        if (nonNull(jsonList) && !jsonList.isEmpty()) {
+            try {
+                return jsonList.stream()
+                        .map(json -> new ObjectMapper().convertValue(json, MessagePayload.class))
+                        .toList();
+            } catch (Exception e) {
+                if (!jsonList.isEmpty()) jsonList.forEach(json -> redisTemplate.opsForList().rightPush(topic, json));
+                throw new JsonToMessageException(topic);
+            }
+        }
+
+        return Collections.emptyList();
     }
 }
