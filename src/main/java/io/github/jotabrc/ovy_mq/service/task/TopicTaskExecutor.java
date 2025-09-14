@@ -14,7 +14,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Component
 @ConditionalOnProperty(
-        name = "{ovymq.task.active.topic",
+        name = "{ovymq.task.topic.active",
         havingValue = "true",
         matchIfMissing = false
 )
@@ -24,7 +24,7 @@ public class TopicTaskExecutor {
     private final ConsumerRegistry consumerRegistry;
     private QueueProcessor queueProcessor;
 
-    @Scheduled(fixedDelayString = "${ovymq.task.delay.topic}")
+    @Scheduled(fixedDelayString = "${ovymq.task.topic.delay}")
     public void execute() {
         topicRegistry.getTopicList().forEach(topic -> {
             Integer quantity = consumerRegistry.getAvailableConsumersForTopic(topic);

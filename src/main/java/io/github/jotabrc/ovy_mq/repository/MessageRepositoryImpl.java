@@ -27,10 +27,14 @@ public class MessageRepositoryImpl implements MessageRepository {
             String json = new ObjectMapper().writeValueAsString(message);
             redisTemplate.opsForList().rightPush(message.createTopicKey(), json);
         } catch (JsonProcessingException e) {
-            log.info("Error while converting message to json: {}", message.getId());
-            log.info("Using auxiliary method of conversion to save message in queue: {}", message.getId());
+            savingErrorPrintLog(message);
             redisTemplate.opsForList().rightPush(message.createTopicKey(), message.toJSON());
         }
+    }
+
+    private void savingErrorPrintLog(MessagePayload message) {
+        log.info("Error while converting message to json: {}", message.getId());
+        log.info("Using auxiliary method of conversion to save message in queue: {}", message.getId());
     }
 
     @Override
@@ -49,15 +53,26 @@ public class MessageRepositoryImpl implements MessageRepository {
         List<String> jsonList = redisTemplate.opsForList().leftPop(topic, quantity);
         if (nonNull(jsonList) && !jsonList.isEmpty()) {
             try {
-                return jsonList.stream()
-                        .map(json -> new ObjectMapper().convertValue(json, MessagePayload.class))
-                        .toList();
+                return createMessageFromJson(jsonList);
             } catch (Exception e) {
-                if (!jsonList.isEmpty()) jsonList.forEach(json -> redisTemplate.opsForList().rightPush(topic, json));
+                returnMessagesToQueueInCaseOfFailure(topic, jsonList);
                 throw new JsonToMessageException(topic);
             }
         }
-
         return Collections.emptyList();
+    }
+
+    private List<MessagePayload> createMessageFromJson(List<String> jsonList) {
+        return jsonList.stream().map(json -> new ObjectMapper().convertValue(json, MessagePayload.class))
+                .toList();
+    }
+
+    private void returnMessagesToQueueInCaseOfFailure(String topic, List<String> jsonList) {
+        if (!jsonList.isEmpty()) jsonList.forEach(json -> redisTemplate.opsForList().rightPush(topic, json));
+    }
+
+    @Override
+    public void removeFromProcessingQueue(String topic) {
+        redisTemplate.opsForList().getFirst(topic);
     }
 }

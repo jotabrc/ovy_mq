@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Component
 @ConditionalOnProperty(
-        name = "ovymq.task.active.consumer",
+        name = "ovymq.task.consumer.active",
         havingValue = "true",
         matchIfMissing = false
 )
@@ -19,7 +19,7 @@ public class ConsumerTaskExecutor {
     private final ConsumerRegistry consumerRegistry;
     private QueueProcessor queueProcessor;
 
-    @Scheduled(fixedDelayString = "${ovymq.task.delay.consumer}")
+    @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
         consumerRegistry.getAvailableConsumers().forEach(consumer ->
                 queueProcessor.getMessagesByTopic(consumer.getListeningTopic()).forEach(message ->

@@ -37,21 +37,43 @@ public class QueueProcessorImpl implements QueueProcessor {
 
     @Async
     @Override
+    public void send(String clientId) {
+        Consumer consumer = consumerRegistry.getConsumerByClientId(clientId);
+        send(consumer);
+    }
+
+    @Async
+    @Override
     public void send(Consumer consumer) {
         MessagePayload message = messageRepository.removeFromQueueAndReturn(TopicUtil.createTopicKeyForAwaitProcessingQueue(consumer.getListeningTopic()));
-        sendMessageToConsumer(message, consumer);
-        message.updateMessageStatusTo(MessageStatus.PROCESSING);
-        messageRepository.saveToQueue(message);
-        updateClientRegistry(consumer);
+        send(consumer, message);
     }
 
     @Async
     @Override
     public void send(Consumer consumer, MessagePayload message) {
-        sendMessageToConsumer(message, consumer);
-        message.updateMessageStatusTo(MessageStatus.PROCESSING);
-        messageRepository.saveToQueue(message);
-        updateClientRegistry(consumer);
+        if (sendMessageToConsumer(message, consumer)) {
+            message.updateMessageStatusTo(MessageStatus.PROCESSING);
+            messageRepository.saveToQueue(message);
+            updateClientRegistry(consumer);
+        } else {
+            messageRepository.saveToQueue(message);
+        }
+    }
+
+    private synchronized boolean sendMessageToConsumer(MessagePayload message, Consumer consumer) {
+        if (consumer.getIsAvailable()) {
+            messagingTemplate.convertAndSendToUser(consumer.getId(),
+                    createDestination(consumer.getListeningTopic()),
+                    message.getPayload(),
+                    securityHandler.createAuthorizationHeader());
+            return true;
+        }
+        return false;
+    }
+
+    private String createDestination(String topic) {
+        return BrokerMapping.SEND_TO_CONSUMER + "/" + topic;
     }
 
     private void updateClientRegistry(Consumer consumer) {
@@ -71,14 +93,9 @@ public class QueueProcessorImpl implements QueueProcessor {
         return messageRepository.removeFromQueueAndReturnList(TopicUtil.createTopicKeyForAwaitProcessingQueue(topic), quantity);
     }
 
-    private void sendMessageToConsumer(MessagePayload message, Consumer consumer) {
-        messagingTemplate.convertAndSendToUser(consumer.getId(),
-                createDestination(consumer.getListeningTopic()),
-                message.getPayload(),
-                securityHandler.createAuthorizationHeader());
-    }
-
-    private String createDestination(String topic) {
-        return BrokerMapping.SEND_TO_CONSUMER + "/" + topic;
+    @Async
+    @Override
+    public void remove(MessagePayload message) {
+        messageRepository.removeFromProcessingQueue(message.createTopicKey());
     }
 }

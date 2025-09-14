@@ -68,6 +68,16 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     }
 
     @Override
+    public Consumer getConsumerByClientId(String clientId) {
+        for (var set : clients.values()) {
+            for (var consumer : set) {
+                if (Objects.equals(clientId, consumer.getId())) return consumer;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public synchronized Consumer obtainLeastRecentlyUsedConsumerAvailable(String topic) {
         Consumer consumer = clients.get(topic).getFirst();
         if (nonNull(consumer) && consumer.getIsAvailable()) {
@@ -81,9 +91,9 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     public List<Consumer> getOneAvailableConsumerPerTopic() {
         List<Consumer> availableConsumers = new ArrayList<>();
         for (var set : clients.values()) {
-            for (var client : set) {
-                if (client.getIsAvailable()) {
-                    availableConsumers.add(client);
+            for (var consumer : set) {
+                if (consumer.getIsAvailable()) {
+                    availableConsumers.add(consumer);
                     break;
                 }
             }

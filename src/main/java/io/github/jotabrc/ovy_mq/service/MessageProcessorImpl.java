@@ -26,4 +26,9 @@ public class MessageProcessorImpl implements MessageProcessor {
         message.updateMessageStatusTo(MessageStatus.AWAITING_PROCESSING);
         message.updateMessageMetadata(UUID.randomUUID().toString(), OffsetDateTime.now());
     }
+
+    @Override
+    public void removeFromProcessingQueue(MessagePayload message) {
+        queueProcessor.remove(message);
+    }
 }
