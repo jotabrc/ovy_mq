@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 @AllArgsConstructor
 @Service
 public class QueueProcessorImpl implements QueueProcessor {
@@ -28,7 +30,13 @@ public class QueueProcessorImpl implements QueueProcessor {
     @Async
     @Override
     public void save(MessagePayload message) {
-        messageRepository.saveToQueue(message);
+
+        Consumer consumer = consumerRegistry.findLeastRecentlyUsedConsumerAvailableForTopic(message.getTopic());
+        if (isNull(consumer)) {
+            messageRepository.saveToQueue(message);
+        } else {
+            send(consumer, message);
+        }
 
         if (taskConfig.useTopicRegistry()) {
             topicRegistry.save(message.createTopicKey());
@@ -38,7 +46,7 @@ public class QueueProcessorImpl implements QueueProcessor {
     @Async
     @Override
     public void send(String clientId) {
-        Consumer consumer = consumerRegistry.getConsumerByClientId(clientId);
+        Consumer consumer = consumerRegistry.findConsumerByClientId(clientId);
         send(consumer);
     }
 

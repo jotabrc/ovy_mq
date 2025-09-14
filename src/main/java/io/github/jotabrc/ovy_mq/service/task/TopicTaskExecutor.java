@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+import static java.util.Objects.nonNull;
+
 @AllArgsConstructor
 @Component
 @ConditionalOnProperty(
@@ -27,11 +29,13 @@ public class TopicTaskExecutor {
     @Scheduled(fixedDelayString = "${ovymq.task.topic.delay}")
     public void execute() {
         topicRegistry.getTopicList().forEach(topic -> {
-            Integer quantity = consumerRegistry.getAvailableConsumersForTopic(topic);
+            Integer quantity = consumerRegistry.isThereAnyAvailableConsumerForTopic(topic);
             if (!Objects.equals(0, quantity)) {
                 queueProcessor.getMessagesByTopic(topic, quantity).forEach(message -> {
-                    Consumer consumer = consumerRegistry.obtainLeastRecentlyUsedConsumerAvailable(topic);
-                    queueProcessor.send(consumer, message);
+                    Consumer consumer = consumerRegistry.findLeastRecentlyUsedConsumerAvailableForTopic(topic);
+                    if (nonNull(consumer)) {
+                        queueProcessor.send(consumer, message);
+                    }
                 });
             }
         });

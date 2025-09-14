@@ -25,7 +25,7 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
 
     @Async
     @Override
-    public void updateClientList(Consumer consumer) {
+    public synchronized void updateClientList(Consumer consumer) {
         updateClientListOperation(consumer);
     }
 
@@ -46,8 +46,9 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
                 .thenComparing(Consumer::getLastUsed);
     }
 
+    @Async
     @Override
-    public void remove(String clientId) {
+    public synchronized void remove(String clientId) {
         AtomicBoolean isRemoved = new AtomicBoolean(false);
         if (nonNull(clientId) && !Objects.equals(DefaultClientKey.CLIENT_ID_NOT_FOUND.getValue(), clientId)) {
             findClientForRemoval(clientId, isRemoved);
@@ -68,7 +69,7 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     }
 
     @Override
-    public Consumer getConsumerByClientId(String clientId) {
+    public Consumer findConsumerByClientId(String clientId) {
         for (var set : clients.values()) {
             for (var consumer : set) {
                 if (Objects.equals(clientId, consumer.getId())) return consumer;
@@ -78,17 +79,18 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     }
 
     @Override
-    public synchronized Consumer obtainLeastRecentlyUsedConsumerAvailable(String topic) {
+    public Consumer findLeastRecentlyUsedConsumerAvailableForTopic(String topic) {
         Consumer consumer = clients.get(topic).getFirst();
         if (nonNull(consumer) && consumer.getIsAvailable()) {
             consumer.updateStatus();
             updateClientListOperation(consumer);
+            return consumer;
         }
-        return consumer;
+        return null;
     }
 
     @Override
-    public List<Consumer> getOneAvailableConsumerPerTopic() {
+    public List<Consumer> findOneAvailableConsumersPerTopic() {
         List<Consumer> availableConsumers = new ArrayList<>();
         for (var set : clients.values()) {
             for (var consumer : set) {
@@ -102,7 +104,7 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     }
 
     @Override
-    public List<Consumer> getAvailableConsumers() {
+    public List<Consumer> findAllAvailableConsumers() {
         return clients.values()
                 .stream().flatMap(set -> set.stream()
                         .filter(Consumer::getIsAvailable)
@@ -110,7 +112,7 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     }
 
     @Override
-    public Integer getAvailableConsumersForTopic(String topic) {
+    public Integer isThereAnyAvailableConsumerForTopic(String topic) {
         return clients.get(topic).size();
     }
 }

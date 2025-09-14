@@ -8,9 +8,9 @@ public interface ConsumerRegistry {
 
     void updateClientList(Consumer consumer);
     void remove(String clientId);
-    Consumer getConsumerByClientId(String clientId);
-    Consumer obtainLeastRecentlyUsedConsumerAvailable(String topic);
-    List<Consumer> getOneAvailableConsumerPerTopic();
-    List<Consumer> getAvailableConsumers();
-    Integer getAvailableConsumersForTopic(String topic);
+    Consumer findConsumerByClientId(String clientId);
+    Consumer findLeastRecentlyUsedConsumerAvailableForTopic(String topic);
+    List<Consumer> findOneAvailableConsumersPerTopic();
+    List<Consumer> findAllAvailableConsumers();
+    Integer isThereAnyAvailableConsumerForTopic(String topic);
 }
