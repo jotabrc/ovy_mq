@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.security;
+package io.github.jotabrc.ovy_mq.config;
 
 import lombok.Getter;
 import lombok.Setter;

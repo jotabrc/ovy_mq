@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.controller;
+package io.github.jotabrc.ovy_mq.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @Component
 @ConfigurationProperties(prefix = "broker")
-public class EndPointsConfig {
+public class EndpointConfig {
 
     private List<String> endpoints;
 }

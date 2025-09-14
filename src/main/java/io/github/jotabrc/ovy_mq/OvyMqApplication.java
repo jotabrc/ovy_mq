@@ -2,8 +2,10 @@ package io.github.jotabrc.ovy_mq;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
+@EnableAsync
 public class OvyMqApplication {
 
 	public static void main(String[] args) {

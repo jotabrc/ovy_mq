@@ -1,5 +1,7 @@
 package io.github.jotabrc.ovy_mq.security;
 
+import io.github.jotabrc.ovy_mq.config.CredentialConfig;
+import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -10,14 +12,15 @@ import java.util.Objects;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+@AllArgsConstructor
 @Component
 public class SecurityHandler {
 
     private static final BCryptPasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
     private final CredentialConfig credential;
 
-    public SecurityHandler(CredentialConfig credential) {
-        this.credential = credential;
+    public static void main(String[] args) {
+        System.out.println(bcryptEncoder.encode("1234"));
     }
 
     String[] retrieveCredentials(String basic) {
@@ -41,15 +44,11 @@ public class SecurityHandler {
         return bcryptEncoder.matches(password, credential.getBcrypt());
     }
 
-    public static void main(String[] args) {
-        System.out.println(bcryptEncoder.encode("1234"));
-    }
-
     public Map<String, Object> createAuthorizationHeader() {
-        return Map.of("Authorization", createCredential() + ":server");
+        return Map.of("Authorization", createBasic() + ":server");
     }
 
-    private String createCredential() {
+    private String createBasic() {
         return Base64.getEncoder().encodeToString(("Basic " + credential.getBcrypt()).getBytes());
     }
 }

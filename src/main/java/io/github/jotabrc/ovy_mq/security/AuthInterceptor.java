@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq.security;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -13,14 +14,11 @@ import java.util.UUID;
 
 import static java.util.Objects.nonNull;
 
+@AllArgsConstructor
 @Component
 public class AuthInterceptor implements HandshakeInterceptor {
 
     private final SecurityHandler securityHandler;
-
-    public AuthInterceptor(SecurityHandler securityHandler) {
-        this.securityHandler = securityHandler;
-    }
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request,
@@ -34,13 +32,17 @@ public class AuthInterceptor implements HandshakeInterceptor {
             if (securityHandler.hasCredentials(credentials)) {
                 boolean credentialIsValid = securityHandler.validate(credentials[0]);
                 if (credentialIsValid) {
-                    attributes.put("clientId", credentials[1] + ":" + UUID.randomUUID());
+                    attributes.put("id", createClientId(credentials[0]));
                     return true;
                 }
             }
         }
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
         return false;
+    }
+
+    private String createClientId(String clientName) {
+        return clientName + ":" + UUID.randomUUID();
     }
 
     @Override
