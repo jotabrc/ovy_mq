@@ -22,7 +22,7 @@ public class ConsumerTaskExecutor {
     @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
         consumerRegistry.findAllAvailableConsumers().forEach(consumer ->
-                queueProcessor.getMessagesByTopic(consumer.getListeningTopic()).forEach(message ->
+                queueProcessor.getMessageByTopic(consumer.getListeningTopic()).forEach(message ->
                         queueProcessor.send(consumer, message))
         );
     }

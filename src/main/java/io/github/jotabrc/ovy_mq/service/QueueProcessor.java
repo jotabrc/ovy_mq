@@ -11,7 +11,7 @@ public interface QueueProcessor {
     void send(Consumer consumer);
     void send(String clientId);
     void send(Consumer consumer, MessagePayload messagePayload);
-    List<MessagePayload> getMessagesByTopic(String topic);
-    List<MessagePayload> getMessagesByTopic(String topic, int quantity);
+    List<MessagePayload> getMessageByTopic(String topic);
+    List<MessagePayload> getMessageByTopic(String topic, int quantity);
     void remove(MessagePayload message);
 }

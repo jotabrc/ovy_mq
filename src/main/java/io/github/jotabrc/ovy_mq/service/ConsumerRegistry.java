@@ -10,7 +10,7 @@ public interface ConsumerRegistry {
     void remove(String clientId);
     Consumer findConsumerByClientId(String clientId);
     Consumer findLeastRecentlyUsedConsumerAvailableForTopic(String topic);
-    List<Consumer> findOneAvailableConsumersPerTopic();
+    List<Consumer> findOneAvailableConsumerPerTopic();
     List<Consumer> findAllAvailableConsumers();
     Integer isThereAnyAvailableConsumerForTopic(String topic);
 }

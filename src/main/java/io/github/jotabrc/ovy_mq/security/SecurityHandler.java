@@ -2,7 +2,6 @@ package io.github.jotabrc.ovy_mq.security;
 
 import io.github.jotabrc.ovy_mq.config.CredentialConfig;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -13,17 +12,15 @@ import java.util.Objects;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-@AllArgsConstructor
 @Component
 public class SecurityHandler {
 
     private final CredentialConfig credential;
-
     private static final BCryptPasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
     private String basic;
 
-    public static void main(String[] args) {
-        System.out.println(bcryptEncoder.encode("1234"));
+    public SecurityHandler(CredentialConfig credential) {
+        this.credential = credential;
     }
 
     @PostConstruct
@@ -58,5 +55,9 @@ public class SecurityHandler {
 
     private String getBasic() {
         return this.basic;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(bcryptEncoder.encode("1234"));
     }
 }

@@ -3,7 +3,7 @@ spring:
   config:
     import: classpath:credential.yml
   server:
-    port: 8080
+    port: 9090
   redis:
     host: localhost
     port: 6379

@@ -24,6 +24,7 @@ public class MessagePayload implements Serializable {
     private String topic;
     private MessageStatus messageStatus;
     private OffsetDateTime createdDate;
+    private boolean success;
 
     public void updateMessageMetadata(String id, OffsetDateTime createdDate) {
         this.id = id;
@@ -45,6 +46,7 @@ public class MessagePayload implements Serializable {
                 .add("\"topic\":\"" + topic + "\"")
                 .add("\"messageStatus\":" + messageStatus)
                 .add("\"createdDate\":" + createdDate)
+                .add("\"success\":" + success)
                 .toString();
     }
 }

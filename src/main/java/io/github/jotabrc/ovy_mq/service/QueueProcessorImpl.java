@@ -92,12 +92,12 @@ public class QueueProcessorImpl implements QueueProcessor {
     }
 
     @Override
-    public List<MessagePayload> getMessagesByTopic(String topic) {
-        return getMessagesByTopic(topic, 1);
+    public List<MessagePayload> getMessageByTopic(String topic) {
+        return getMessageByTopic(topic, 1);
     }
 
     @Override
-    public List<MessagePayload> getMessagesByTopic(String topic, int quantity) {
+    public List<MessagePayload> getMessageByTopic(String topic, int quantity) {
         return messageRepository.removeFromQueueAndReturnList(TopicUtil.createTopicKeyForAwaitProcessingQueue(topic), quantity);
     }
 

@@ -90,7 +90,7 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     }
 
     @Override
-    public List<Consumer> findOneAvailableConsumersPerTopic() {
+    public List<Consumer> findOneAvailableConsumerPerTopic() {
         List<Consumer> availableConsumers = new ArrayList<>();
         for (var set : clients.values()) {
             for (var consumer : set) {
