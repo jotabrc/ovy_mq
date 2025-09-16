@@ -6,6 +6,7 @@ import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
 import io.github.jotabrc.ovy_mq.service.ConsumerRegistry;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 import static java.util.Objects.nonNull;
 
+@Slf4j
 @Getter
 @Component
 @AllArgsConstructor
@@ -46,6 +48,7 @@ public class ClientListener {
 
             if (isAttributesAvailable(attributes)) {
                 String clientId = getClientId(attributes);
+                log.info("Disconnecting client {}", clientId);
                 consumerRegistry.remove(clientId);
             }
         }

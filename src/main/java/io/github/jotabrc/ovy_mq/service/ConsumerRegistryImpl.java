@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.service;
 
-import io.github.jotabrc.ovy_mq.domain.Consumer;
+import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -21,29 +21,29 @@ import static java.util.Objects.nonNull;
 @Component
 public class ConsumerRegistryImpl implements ConsumerRegistry {
 
-    private final ConcurrentHashMap<String, ConcurrentSkipListSet<Consumer>> clients = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ConcurrentSkipListSet<Client>> clients = new ConcurrentHashMap<>();
 
     @Async
     @Override
-    public synchronized void updateClientList(Consumer consumer) {
-        updateClientListOperation(consumer);
+    public synchronized void updateClientList(Client client) {
+        updateClientListOperation(client);
     }
 
-    private void updateClientListOperation(Consumer consumer) {
-        if (nonNull(consumer) && nonNull(consumer.getId()) && isNull(clients.get(consumer.getId()))) {
-            clients.compute(consumer.getListeningTopic(), (clientId, set) -> {
+    private void updateClientListOperation(Client client) {
+        if (nonNull(client) && nonNull(client.getId()) && isNull(clients.get(client.getId()))) {
+            clients.compute(client.getListeningTopic(), (clientId, set) -> {
                 if (isNull(set)) set = new ConcurrentSkipListSet<>(getComparator());
-                else set.remove(consumer);
+                else set.remove(client);
 
-                set.add(consumer);
+                set.add(client);
                 return set;
             });
         }
     }
 
-    private Comparator<Consumer> getComparator() {
-        return Comparator.comparing(Consumer::getIsAvailable).reversed()
-                .thenComparing(Consumer::getLastUsed);
+    private Comparator<Client> getComparator() {
+        return Comparator.comparing(Client::getIsAvailable).reversed()
+                .thenComparing(Client::getLastUsed);
     }
 
     @Async
@@ -64,12 +64,12 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
                 );
     }
 
-    private void removeClient(String clientId, ConcurrentSkipListSet<Consumer> set, AtomicBoolean isRemoved) {
+    private void removeClient(String clientId, ConcurrentSkipListSet<Client> set, AtomicBoolean isRemoved) {
         isRemoved.set(set.removeIf(client -> Objects.equals(clientId, client.getId())));
     }
 
     @Override
-    public Consumer findConsumerByClientId(String clientId) {
+    public Client findConsumerByClientId(String clientId) {
         for (var set : clients.values()) {
             for (var consumer : set) {
                 if (Objects.equals(clientId, consumer.getId())) return consumer;
@@ -79,35 +79,35 @@ public class ConsumerRegistryImpl implements ConsumerRegistry {
     }
 
     @Override
-    public Consumer findLeastRecentlyUsedConsumerAvailableForTopic(String topic) {
-        Consumer consumer = clients.get(topic).getFirst();
-        if (nonNull(consumer) && consumer.getIsAvailable()) {
-            consumer.updateStatus();
-            updateClientListOperation(consumer);
-            return consumer;
+    public Client findLeastRecentlyUsedConsumerAvailableForTopic(String topic) {
+        Client client = clients.get(topic).getFirst();
+        if (nonNull(client) && client.getIsAvailable()) {
+            client.updateStatus();
+            updateClientListOperation(client);
+            return client;
         }
         return null;
     }
 
     @Override
-    public List<Consumer> findOneAvailableConsumerPerTopic() {
-        List<Consumer> availableConsumers = new ArrayList<>();
+    public List<Client> findOneAvailableConsumerPerTopic() {
+        List<Client> availableClients = new ArrayList<>();
         for (var set : clients.values()) {
             for (var consumer : set) {
                 if (consumer.getIsAvailable()) {
-                    availableConsumers.add(consumer);
+                    availableClients.add(consumer);
                     break;
                 }
             }
         }
-        return availableConsumers;
+        return availableClients;
     }
 
     @Override
-    public List<Consumer> findAllAvailableConsumers() {
+    public List<Client> findAllAvailableConsumers() {
         return clients.values()
                 .stream().flatMap(set -> set.stream()
-                        .filter(Consumer::getIsAvailable)
+                        .filter(Client::getIsAvailable)
                 ).toList();
     }
 

@@ -34,11 +34,11 @@ public class SecurityHandler {
     }
 
     private String getString(String basic) {
-        return new String(getDecodedBasic(basic)).replace("Basic ", "");
+        return new String(getDecodedBasic(basic));
     }
 
     private byte[] getDecodedBasic(String basic) {
-        return Base64.getDecoder().decode(basic);
+        return Base64.getDecoder().decode(basic.replace("Basic ", ""));
     }
 
     boolean hasCredentials(String[] credentials) {

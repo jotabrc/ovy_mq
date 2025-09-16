@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.service.task;
 
-import io.github.jotabrc.ovy_mq.domain.Consumer;
+import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.service.ConsumerRegistry;
 import io.github.jotabrc.ovy_mq.service.QueueProcessor;
 import io.github.jotabrc.ovy_mq.service.TopicRegistry;
@@ -32,9 +32,9 @@ public class TopicTaskExecutor {
             Integer quantity = consumerRegistry.isThereAnyAvailableConsumerForTopic(topic);
             if (!Objects.equals(0, quantity)) {
                 queueProcessor.getMessageByTopic(topic, quantity).forEach(message -> {
-                    Consumer consumer = consumerRegistry.findLeastRecentlyUsedConsumerAvailableForTopic(topic);
-                    if (nonNull(consumer)) {
-                        queueProcessor.send(consumer, message);
+                    Client client = consumerRegistry.findLeastRecentlyUsedConsumerAvailableForTopic(topic);
+                    if (nonNull(client)) {
+                        queueProcessor.send(client, message);
                     }
                 });
             }

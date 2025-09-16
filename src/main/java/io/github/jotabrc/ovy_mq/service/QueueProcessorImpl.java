@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq.service;
 
-import io.github.jotabrc.ovy_mq.TopicUtil;
+import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import io.github.jotabrc.ovy_mq.config.TaskConfig;
-import io.github.jotabrc.ovy_mq.domain.Consumer;
+import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
@@ -31,11 +31,11 @@ public class QueueProcessorImpl implements QueueProcessor {
     @Override
     public void save(MessagePayload message) {
 
-        Consumer consumer = consumerRegistry.findLeastRecentlyUsedConsumerAvailableForTopic(message.getTopic());
-        if (isNull(consumer)) {
+        Client client = consumerRegistry.findLeastRecentlyUsedConsumerAvailableForTopic(message.getTopic());
+        if (isNull(client)) {
             messageRepository.saveToQueue(message);
         } else {
-            send(consumer, message);
+            send(client, message);
         }
 
         if (taskConfig.useTopicRegistry()) {
@@ -46,33 +46,33 @@ public class QueueProcessorImpl implements QueueProcessor {
     @Async
     @Override
     public void send(String clientId) {
-        Consumer consumer = consumerRegistry.findConsumerByClientId(clientId);
-        send(consumer);
+        Client client = consumerRegistry.findConsumerByClientId(clientId);
+        send(client);
     }
 
     @Async
     @Override
-    public void send(Consumer consumer) {
-        MessagePayload message = messageRepository.removeFromQueueAndReturn(TopicUtil.createTopicKeyForAwaitProcessingQueue(consumer.getListeningTopic()));
-        send(consumer, message);
+    public void send(Client client) {
+        MessagePayload message = messageRepository.removeFromQueueAndReturn(TopicUtil.createTopicKeyForAwaitProcessingQueue(client.getListeningTopic()));
+        send(client, message);
     }
 
     @Async
     @Override
-    public void send(Consumer consumer, MessagePayload message) {
-        if (sendMessageToConsumer(message, consumer)) {
+    public void send(Client client, MessagePayload message) {
+        if (sendMessageToConsumer(message, client)) {
             message.updateMessageStatusTo(MessageStatus.PROCESSING);
             messageRepository.saveToQueue(message);
-            updateClientRegistry(consumer);
+            updateClientRegistry(client);
         } else {
             messageRepository.saveToQueue(message);
         }
     }
 
-    private synchronized boolean sendMessageToConsumer(MessagePayload message, Consumer consumer) {
-        if (consumer.getIsAvailable()) {
-            messagingTemplate.convertAndSendToUser(consumer.getId(),
-                    createDestination(consumer.getListeningTopic()),
+    private synchronized boolean sendMessageToConsumer(MessagePayload message, Client client) {
+        if (client.getIsAvailable()) {
+            messagingTemplate.convertAndSendToUser(client.getId(),
+                    createDestination(client.getListeningTopic()),
                     message.getPayload(),
                     securityHandler.createAuthorizationHeader());
             return true;
@@ -84,10 +84,10 @@ public class QueueProcessorImpl implements QueueProcessor {
         return BrokerMapping.SEND_TO_CONSUMER + "/" + topic;
     }
 
-    private void updateClientRegistry(Consumer consumer) {
+    private void updateClientRegistry(Client client) {
         if (taskConfig.useRegistry()) {
-            consumer.updateStatus();
-            consumerRegistry.updateClientList(consumer);
+            client.updateStatus();
+            consumerRegistry.updateClientList(client);
         }
     }
 

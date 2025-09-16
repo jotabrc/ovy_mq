@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq;
+package io.github.jotabrc.ovy_mq.util;
 
 import io.github.jotabrc.ovy_mq.domain.MessageStatus;
 

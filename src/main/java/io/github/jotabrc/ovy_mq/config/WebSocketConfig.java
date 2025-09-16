@@ -24,8 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint(BrokerMapping.REGISTER.getRoute())
                 .setHandshakeHandler(new CustomHandshakeHandler())
                 .addInterceptors(authInterceptor)
-                .setAllowedOrigins("*")
-                .withSockJS();
+                .setAllowedOrigins("*");
     }
 
     @Override

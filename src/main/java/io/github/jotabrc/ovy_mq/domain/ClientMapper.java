@@ -6,8 +6,8 @@ public class ClientMapper {
 
     private ClientMapper() {}
 
-    public static Consumer of(String clientId, String topic) {
-        return Consumer.builder()
+    public static Client of(String clientId, String topic) {
+        return Client.builder()
                 .id(clientId)
                 .listeningTopic(topic)
                 .isAvailable(true)

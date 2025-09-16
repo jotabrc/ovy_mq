@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Builder
 @Getter
-public class Consumer {
+public class Client {
 
     private String id;
     private String listeningTopic;
@@ -24,8 +24,8 @@ public class Consumer {
     public boolean equals(Object o) {
         if (Objects.isNull(o) || !Objects.equals(getClass(), o.getClass())) return false;
 
-        Consumer consumer = (Consumer) o;
-        return id.equals(consumer.id);
+        Client client = (Client) o;
+        return id.equals(client.id);
     }
 
     @Override

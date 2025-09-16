@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.domain;
 
-import io.github.jotabrc.ovy_mq.TopicUtil;
+import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
