@@ -1,0 +1,11 @@
+logging:
+  level:
+    root: INFO
+    io.github.jotabrc.ovy_mq: TRACE
+  pattern:
+    console: "%date [%thread] [%-5level] %logger{40} - %message%n"
+
+spring:
+  application.name: OVY_Mq_client
+  config:
+    import: classpath:credential.yml
