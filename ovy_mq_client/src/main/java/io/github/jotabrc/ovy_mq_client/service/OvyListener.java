@@ -11,4 +11,6 @@ import java.lang.annotation.*;
 public @interface ConsumerListener {
     String value() default "";
     Class<?> payloadType();
+    String consumers() default "1";
+    ListenerState initialState() default ListenerState.STANDBY;
 }
