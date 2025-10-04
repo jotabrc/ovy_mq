@@ -9,8 +9,6 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.StringJoiner;
 
 @Getter
 @NoArgsConstructor
@@ -20,11 +18,12 @@ public class MessagePayload implements Serializable {
 
     @Id
     private String id;
-    private byte[] payload;
+    private Object payload;
     private String topic;
     private MessageStatus messageStatus;
     private OffsetDateTime createdDate;
     private boolean success;
+    private String clientId;
 
     public void updateMessageMetadata(String id, OffsetDateTime createdDate) {
         this.id = id;
@@ -37,16 +36,5 @@ public class MessagePayload implements Serializable {
 
     public String createTopicKey() {
         return TopicUtil.createTopicKey(this.topic, this.messageStatus);
-    }
-
-    public String toJSON() {
-        return new StringJoiner(", ", "{", "}")
-                .add("\"id\":\"" + id + "\"")
-                .add("\"payload\":" + Arrays.toString(payload))
-                .add("\"topic\":\"" + topic + "\"")
-                .add("\"messageStatus\":" + messageStatus)
-                .add("\"createdDate\":" + createdDate)
-                .add("\"success\":" + success)
-                .toString();
     }
 }

@@ -19,8 +19,6 @@ import static java.util.Objects.nonNull;
 @Component
 public class AuthInterceptor implements HandshakeInterceptor {
 
-    private final SecurityHandler securityHandler;
-
     @Override
     public boolean beforeHandshake(ServerHttpRequest request,
                                    ServerHttpResponse response,
@@ -52,6 +50,7 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                ServerHttpResponse response,
                                WebSocketHandler wsHandler,
                                Exception exception) {
+        Object clientIdAttribute = request.getAttributes().get(DefaultClientKey.CLIENT_ID.getValue());
 
     }
 }

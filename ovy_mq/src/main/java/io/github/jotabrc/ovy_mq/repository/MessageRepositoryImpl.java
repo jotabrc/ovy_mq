@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.handler.JsonToMessageException;
+import io.github.jotabrc.ovy_mq.handler.MessageToJsonException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,14 +28,12 @@ public class MessageRepositoryImpl implements MessageRepository {
             String json = new ObjectMapper().writeValueAsString(message);
             redisTemplate.opsForList().rightPush(message.createTopicKey(), json);
         } catch (JsonProcessingException e) {
-            savingErrorPrintLog(message);
-            redisTemplate.opsForList().rightPush(message.createTopicKey(), message.toJSON());
+            throw new MessageToJsonException("Error while converting message to json: %s".formatted(message.getId()));
         }
     }
 
     private void savingErrorPrintLog(MessagePayload message) {
         log.info("Error while converting message to json: {}", message.getId());
-        log.info("Using auxiliary method of conversion to save message in queue: {}", message.getId());
     }
 
     @Override

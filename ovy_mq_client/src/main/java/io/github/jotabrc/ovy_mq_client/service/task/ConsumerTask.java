@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.task;
 
-import io.github.jotabrc.ovy_mq_client.service.ConsumerListener;
-import io.github.jotabrc.ovy_mq_client.service.ServerSession;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.OvyListener;
+import io.github.jotabrc.ovy_mq_client.service.domain.server.ServerSession;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -29,10 +29,10 @@ public class ConsumerTask implements ApplicationContextAware {
 
     @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
-        Map<String, Object> beans = context.getBeansWithAnnotation(ConsumerListener.class);
+        Map<String, Object> beans = context.getBeansWithAnnotation(OvyListener.class);
         beans.forEach((k, v) -> Arrays.stream(v.getClass().getDeclaredMethods()).forEach(method -> {
-            ConsumerListener annotation = method.getAnnotation(ConsumerListener.class);
-            String topic = annotation.value();
+            OvyListener annotation = method.getAnnotation(OvyListener.class);
+            String topic = annotation.topic();
             serverSession.requestMessage(topic);
         }));
     }

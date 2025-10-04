@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.service;
+package io.github.jotabrc.ovy_mq_client.service.domain.client;
 
 import org.springframework.scheduling.annotation.Async;
 
@@ -8,9 +8,8 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ConsumerListener {
-    String value() default "";
-    Class<?> payloadType();
+public @interface OvyListener {
+    String topic() default "";
     String consumers() default "1";
     ListenerState initialState() default ListenerState.STANDBY;
 }

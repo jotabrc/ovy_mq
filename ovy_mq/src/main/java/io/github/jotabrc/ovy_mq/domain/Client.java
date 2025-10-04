@@ -3,6 +3,7 @@ package io.github.jotabrc.ovy_mq.domain;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.lang.reflect.Method;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -14,6 +15,10 @@ public class Client {
     private String listeningTopic;
     private Boolean isAvailable;
     private OffsetDateTime lastUsed;
+    private ClientType type;
+    private Long replicas;
+    private Long replicasInUse;
+    private Method method;
 
     public void updateStatus() {
         this.lastUsed = OffsetDateTime.now();
