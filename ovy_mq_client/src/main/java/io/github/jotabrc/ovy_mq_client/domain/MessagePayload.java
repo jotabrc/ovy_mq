@@ -20,6 +20,5 @@ public class MessagePayload implements Serializable {
     private MessageStatus messageStatus;
     private OffsetDateTime createdDate;
     private boolean success;
-    private String clientId;
 
 }

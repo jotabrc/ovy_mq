@@ -1,5 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.domain.client;
 
+import io.github.jotabrc.ovy_mq_client.domain.*;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.ClientHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -30,7 +32,9 @@ public class ClientSession extends StompSessionHandlerAdapter {
         String destination = headers.getDestination();
         if (nonNull(destination) && destination.startsWith("/topic/")) {
             String topic = destination.substring(7);
-            ClientExecutor.CLIENT_MESSAGE.getHandler().execute(topic, payload);
+            Client client = ClientFactory.createConsumer(topic, this);
+            Action action = ActionFactory.create(client, (MessagePayload) payload, Command.EXECUTE_CLIENT_MESSAGE_HANDLER_HANDLE_MESSAGE);
+            ClientHandler.CLIENT_MESSAGE.getHandler().execute(action);
         }
     }
 

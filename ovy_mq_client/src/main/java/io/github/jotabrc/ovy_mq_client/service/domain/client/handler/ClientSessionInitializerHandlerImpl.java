@@ -1,7 +1,13 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client;
+package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
 
 import io.github.jotabrc.ovy_mq_client.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.domain.Action;
+import io.github.jotabrc.ovy_mq_client.domain.ActionFactory;
+import io.github.jotabrc.ovy_mq_client.domain.Client;
+import io.github.jotabrc.ovy_mq_client.domain.Command;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.ClientSession;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.SessionFactory;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientSessionInitializerHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,31 +35,32 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
     private final CredentialConfig credentialConfig;
 
     @Override
-    public <T> void execute(T t) {
-        initializeSession((String) t);
+    public void execute(Action action) {
+        initializeSession(action.getClient());
     }
 
     @Override
-    public void initializeSession(String topic) {
+    public void initializeSession(Client client) {
         log.info("Executing session initialization...");
         WebSocketStompClient stompClient = createDefaultClient();
         AtomicLong counter = new AtomicLong(0L);
         while (true) {
-            if (connect(topic, stompClient, counter)) return;
+            if (connect(client, stompClient, counter)) return;
         }
     }
 
-    private boolean connect(String topic, WebSocketStompClient stompClient, AtomicLong counter) {
-        WebSocketHttpHeaders headers = createHeaders(topic);
+    private boolean connect(Client client, WebSocketStompClient stompClient, AtomicLong counter) {
+        WebSocketHttpHeaders headers = createHeaders(client.getTopic());
         ClientSession clientSession = SessionFactory.create();
 
         try {
-            StompSession session = connectToServerAndInitializeSubscription(topic, stompClient, headers, clientSession);
-            saveSession(topic, clientSession);
-            log.info("Session initialized {} for topic {}", session.getSessionId(), topic);
+            StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSession);
+            client.setClientSession(clientSession);
+            saveSession(client);
+            log.info("Session initialized {} for topic {}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {
-            log.info("Server not available, retry subscription ({}) for topic {}...", counter.getAndIncrement(), topic);
+            log.info("Server not available, retry subscription ({}) for topic {}...", counter.getAndIncrement(), client.getTopic());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
@@ -86,7 +93,8 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
         return session;
     }
 
-    private void saveSession(String topic, ClientSession session) {
-        ClientExecutor.CLIENT_SESSION.getHandler().execute(topic, session);
+    private void saveSession(Client client) {
+        Action action = ActionFactory.create(client, null, Command.EXECUTE_CLIENT_SESSION_HANDLER_PUT_IF_ABSENT);
+        ClientHandler.CLIENT_SESSION.getHandler().execute(action);
     }
 }

@@ -1,6 +1,8 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client;
+package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
 
-import io.github.jotabrc.ovy_mq_client.service.domain.client.interfaces.ClientSessionHandler;
+import io.github.jotabrc.ovy_mq_client.domain.Action;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.ClientSession;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientSessionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,11 +20,10 @@ public class ClientSessionHandlerImpl implements ClientSessionHandler {
     private Map<String, ClientSession> sessions = new HashMap<>();
 
     @Override
-    public <T, R> void execute(T t, R r) {
-        if (t instanceof String topic && r instanceof ClientSession clientSession) {
-            putIfAbsent(topic, clientSession);
-        } else if (t instanceof String topic) {
-            requestMessage(topic, r);
+    public void execute(Action action) {
+        switch (action.getCommand()) {
+            case EXECUTE_CLIENT_SESSION_HANDLER_PUT_IF_ABSENT -> putIfAbsent(action.getClient().getTopic(), action.getClient().getClientSession());
+            case EXECUTE_CLIENT_SESSION_HANDLER_REQUEST_MESSAGE -> requestMessage(action.getClient().getTopic(), action.getMessagePayload());
         }
     }
 

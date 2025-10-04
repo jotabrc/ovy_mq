@@ -1,7 +1,8 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client;
+package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
 
+import io.github.jotabrc.ovy_mq_client.domain.Action;
 import io.github.jotabrc.ovy_mq_client.handler.MessageProcessingFailureException;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.interfaces.ClientMethodHandler;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientMethodHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,11 +21,10 @@ public class ClientMethodHandlerImpl implements ClientMethodHandler {
     private Map<String, Method> clientMethods = new HashMap<>();
 
     @Override
-    public <T, R> void execute(T t, R r) {
-        if (t instanceof String && r instanceof Method) {
-            putIfAbsent((String) t, (Method) r);
-        } else if (t instanceof String topic) {
-            invoke(topic, r);
+    public void execute(Action action) {
+        switch (action.getCommand()) {
+            case EXECUTE_CLIENT_METHOD_HANDLER_PUT_IF_ABSENT -> putIfAbsent(action.getClient().getTopic(), action.getClient().getMethod());
+            case EXECUTE_CLIENT_METHOD_HANDLER_INVOKE -> invoke(action.getClient().getTopic(), action.getClient().getMethod());
         }
     }
 
@@ -37,9 +37,9 @@ public class ClientMethodHandlerImpl implements ClientMethodHandler {
     }
 
     @Override
-    public void invoke(String topic, Object object) {
+    public void invoke(String topic, Method method) {
         try {
-            clientMethods.get(topic).invoke(object);
+            clientMethods.get(topic).invoke(method);
         } catch (Exception e) {
             throw new MessageProcessingFailureException(topic, e.getMessage());
         }
