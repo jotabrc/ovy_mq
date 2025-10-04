@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.handler.JsonToMessageException;
 import io.github.jotabrc.ovy_mq.handler.MessageToJsonException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +16,11 @@ import java.util.List;
 
 import static java.util.Objects.nonNull;
 
+@Profile("redis")
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
-public class MessageRepositoryImpl implements MessageRepository {
+public class RedisRepository implements MessageRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 

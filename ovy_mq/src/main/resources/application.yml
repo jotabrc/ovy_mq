@@ -1,6 +1,8 @@
 server:
   port: 9090
 spring:
+  profiles:
+    active: dev
   application.name: OVY_Mq
   config:
     import: classpath:credential.yml
