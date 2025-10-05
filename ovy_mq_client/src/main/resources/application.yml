@@ -5,6 +5,12 @@ logging:
   pattern:
     console: "%date [%thread] [%-5level] %logger{40} - %message%n"
 
+ovymq:
+  task:
+    consumer:
+      active: true
+      delay: 5000
+
 spring:
   application.name: OVY_Mq_client
   config:

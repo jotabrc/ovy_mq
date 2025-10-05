@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Component
 @ConditionalOnProperty(
-        name = "ovymq.task.consumer.active",
+        name = "ovymq.task.consumer.auto",
         havingValue = "true",
         matchIfMissing = false
 )

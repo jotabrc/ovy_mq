@@ -48,6 +48,11 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.19.2</version> <!-- use a versão compatível com sua versão do jackson -->
+        </dependency>
 	</dependencies>
 
 	<build>

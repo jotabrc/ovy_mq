@@ -22,13 +22,13 @@ public class MessageController {
         messageProcessor.process(message);
     }
 
-    @MessageMapping("/request/message")
-    public void requestMessage(String topic, Principal principal) {
+    @MessageMapping("/message")
+    public void requestMessage(@Payload MessagePayload message, Principal principal) {
         queueProcessor.send(principal.getName());
     }
 
     @MessageMapping("/notify-and-request")
-    public void requestMessage(MessagePayload message, Principal principal) {
+    public void notifyAndRequestMessage(@Payload MessagePayload message, Principal principal) {
         queueProcessor.send(principal.getName());
         messageProcessor.removeFromProcessingQueue(message);
     }

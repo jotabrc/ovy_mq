@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
+import static io.github.jotabrc.ovy_mq_client.domain.Command.*;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -20,17 +21,12 @@ import static java.util.Objects.nonNull;
 public class ClientListenerHandlerImpl implements ClientListenerHandler, CommandLineRunner {
 
     @Override
-    public void execute() {
-        initializeSessionHandler();
-    }
-
-    @Override
     public void run(String... args) throws Exception {
-        initializeSessionHandler();
+        initialize();
     }
 
     @Override
-    public void initializeSessionHandler() {
+    public void initialize() {
         log.info("Initializing session handler...");
         String[] beanNames = ApplicationContextHolder.get().getBeanDefinitionNames();
         log.info("Looking up methods for listeners...");
@@ -44,12 +40,9 @@ public class ClientListenerHandlerImpl implements ClientListenerHandler, Command
                     log.info("Found listener for topic {} in class {} on method {}", listener.topic(), beanClass.getSimpleName(), method.getName());
                     String topic = listener.topic();
 
-                    Client client = ClientFactory.createConsumer(topic, null, method);
-                    Action action = ActionFactory.create(client, null, Command.EXECUTE_CLIENT_SESSION_INITIALIZER);
-                    ClientHandler.CLIENT_INITIALIZE_SESSION.getHandler().execute(action);
-
-                    action.setCommand(Command.EXECUTE_CLIENT_METHOD_HANDLER_PUT_IF_ABSENT);
-                    ClientHandler.CLIENT_METHOD.getHandler().execute(action);
+                    Client client = ClientFactory.createConsumer(topic, method);
+                    ActionFactory.of(client).execute(INITIALIZE_SESSION);
+                    ActionFactory.of(client).execute(SAVE_CLIENT_IN_REGISTRY);
                 }
             }
         }

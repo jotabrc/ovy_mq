@@ -8,8 +8,8 @@ import lombok.Getter;
 public enum BrokerMapping {
 
     REGISTER("/registry"),
-    SEND_TO_CONSUMER("/topic"),
-    RECEIVE_FROM_CONSUMER("/queue");
+    SEND_TO_CONSUMER("/queue"),
+    RECEIVE_FROM_CONSUMER("/request");
 
     private final String route;
 }

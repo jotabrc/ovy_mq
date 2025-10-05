@@ -6,7 +6,11 @@ public class TopicUtil {
 
     private TopicUtil() {}
 
-    public static String createTopicKeyForAwaitProcessingQueue(String topic) {
+    public static String createTopicKeyForAwaitProcessing(String topic) {
+        return topic + ":" + MessageStatus.AWAITING_PROCESSING;
+    }
+
+    public static String createTopicKeyForProcessing(String topic) {
         return topic + ":" + MessageStatus.AWAITING_PROCESSING;
     }
 

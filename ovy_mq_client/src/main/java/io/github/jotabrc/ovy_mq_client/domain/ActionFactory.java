@@ -4,11 +4,21 @@ public class ActionFactory {
 
     private ActionFactory() {}
 
-    public static Action create(Client client, MessagePayload messagePayload, Command command) {
+    public static Action of(Client client, MessagePayload messagePayload) {
         return Action.builder()
                 .client(client)
                 .messagePayload(messagePayload)
-                .command(command)
+                .build();
+    }
+
+    public static Action of(Client client) {
+        return Action.builder()
+                .client(client)
+                .build();
+    }
+
+    public static Action and() {
+        return Action.builder()
                 .build();
     }
 }

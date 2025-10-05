@@ -1,10 +1,11 @@
 package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.jotabrc.ovy_mq_client.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_client.domain.Action;
-import io.github.jotabrc.ovy_mq_client.domain.ActionFactory;
 import io.github.jotabrc.ovy_mq_client.domain.Client;
-import io.github.jotabrc.ovy_mq_client.domain.Command;
+import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.ClientSession;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.SessionFactory;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientSessionInitializerHandler;
@@ -22,9 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static java.util.Objects.nonNull;
 
 @Getter
 @Slf4j
@@ -33,11 +34,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ClientSessionInitializerHandlerImpl implements ClientSessionInitializerHandler {
 
     private final CredentialConfig credentialConfig;
-
-    @Override
-    public void execute(Action action) {
-        initializeSession(action.getClient());
-    }
 
     @Override
     public void initializeSession(Client client) {
@@ -56,7 +52,6 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
         try {
             StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSession);
             client.setClientSession(clientSession);
-            saveSession(client);
             log.info("Session initialized {} for topic {}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {
@@ -73,7 +68,14 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
     private WebSocketStompClient createDefaultClient() {
         StandardWebSocketClient webSocketClient = new StandardWebSocketClient();
         WebSocketStompClient stompClient = new WebSocketStompClient(webSocketClient);
-        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setObjectMapper(mapper);
+
+        stompClient.setMessageConverter(converter);
         return stompClient;
     }
 
@@ -85,16 +87,16 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
         return headers;
     }
 
-    private StompSession connectToServerAndInitializeSubscription(String topic, WebSocketStompClient stompClient, WebSocketHttpHeaders headers, ClientSession clientSession) throws InterruptedException, ExecutionException, TimeoutException {
+    private StompSession connectToServerAndInitializeSubscription(String topic, WebSocketStompClient stompClient, WebSocketHttpHeaders headers, ClientSession clientSession) throws ExecutionException, InterruptedException {
         stompClient.connectAsync("ws://localhost:9090/registry", headers, clientSession);
-        StompSession session = clientSession.getFuture().get(5, TimeUnit.SECONDS);
-        session.subscribe("/topic/" + topic, clientSession);
-        clientSession.setSession(session);
-        return session;
-    }
-
-    private void saveSession(Client client) {
-        Action action = ActionFactory.create(client, null, Command.EXECUTE_CLIENT_SESSION_HANDLER_PUT_IF_ABSENT);
-        ClientHandler.CLIENT_SESSION.getHandler().execute(action);
+        return clientSession.getFuture().whenComplete((returnedSession, exception) -> {
+//            returnedSession.subscribe("/queue/" + topic, clientSession);
+            if (nonNull(returnedSession) && returnedSession.isConnected()) {
+                returnedSession.subscribe("/user/queue/" + topic, clientSession);
+                clientSession.setSession(returnedSession);
+            } else {
+                throw new ServerSubscribeException("Server not ready...");
+            }
+        }).get();
     }
 }

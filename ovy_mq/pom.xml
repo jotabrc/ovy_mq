@@ -89,6 +89,11 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.19.2</version> <!-- use a versão compatível com sua versão do jackson -->
+        </dependency>
 	</dependencies>
 
 	<build>

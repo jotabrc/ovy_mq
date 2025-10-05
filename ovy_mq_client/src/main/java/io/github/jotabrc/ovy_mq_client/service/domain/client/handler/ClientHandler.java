@@ -8,11 +8,10 @@ public enum ClientHandler {
 
     @Autowired
 
-    CLIENT_LISTENER(ClientListenerHandler.class),
-    CLIENT_INITIALIZE_SESSION(ClientSessionInitializerHandler.class),
-    CLIENT_SESSION(ClientSessionHandler.class),
-    CLIENT_MESSAGE(ClientMessageHandler.class),
-    CLIENT_METHOD(ClientMethodHandler.class);
+    LISTENER_INITIALIZER(ClientListenerHandler.class),
+    SESSION_INITIALIZER(ClientSessionInitializerHandler.class),
+    CLIENT_HANDLER(ClientRegistryHandler.class),
+    CLIENT_MESSAGE(ClientMessageHandler.class);
 
     private final Class<? extends AbstractHandler> handler;
 

@@ -19,7 +19,7 @@ import static java.util.Objects.nonNull;
 @AllArgsConstructor
 @Component
 @ConditionalOnProperty(
-        name = "ovymq.task.topic.active",
+        name = "ovymq.task.topic.auto",
         havingValue = "true",
         matchIfMissing = false
 )

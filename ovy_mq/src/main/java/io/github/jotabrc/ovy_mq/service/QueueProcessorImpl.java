@@ -1,21 +1,26 @@
 package io.github.jotabrc.ovy_mq.service;
 
-import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import io.github.jotabrc.ovy_mq.config.TaskConfig;
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.SecurityHandler;
+import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeTypeUtils;
 
 import java.util.List;
+import java.util.Map;
 
-import static java.util.Objects.isNull;
-
+@Slf4j
 @AllArgsConstructor
 @Service
 public class QueueProcessorImpl implements QueueProcessor {
@@ -31,21 +36,17 @@ public class QueueProcessorImpl implements QueueProcessor {
     @Override
     public void save(MessagePayload message) {
 
-        Client client = consumerRegistry.findLeastRecentlyUsedConsumerAvailableForTopic(message.getTopic());
-        if (isNull(client)) {
-            messageRepository.saveToQueue(message);
-        } else {
-            send(client, message);
-        }
+        messageRepository.saveToQueue(message);
 
         if (taskConfig.useTopicRegistry()) {
-            topicRegistry.save(message.createTopicKey());
+            topicRegistry.save(message.getTopicKey());
         }
     }
 
     @Async
     @Override
     public void send(String clientId) {
+        log.info("Sending message for client: {}", clientId);
         Client client = consumerRegistry.findConsumerByClientId(clientId);
         send(client);
     }
@@ -53,7 +54,7 @@ public class QueueProcessorImpl implements QueueProcessor {
     @Async
     @Override
     public void send(Client client) {
-        MessagePayload message = messageRepository.removeFromQueueAndReturn(TopicUtil.createTopicKeyForAwaitProcessingQueue(client.getListeningTopic()));
+        MessagePayload message = messageRepository.removeFromQueueAndReturn(TopicUtil.createTopicKeyForAwaitProcessing(client.getListeningTopic()));
         send(client, message);
     }
 
@@ -71,22 +72,32 @@ public class QueueProcessorImpl implements QueueProcessor {
 
     private synchronized boolean sendMessageToConsumer(MessagePayload message, Client client) {
         if (client.getIsAvailable()) {
+            log.info("Sending client={}, topic={}, payload={}", client.getId(), createDestination(client.getListeningTopic()), message);
             messagingTemplate.convertAndSendToUser(client.getId(),
                     createDestination(client.getListeningTopic()),
-                    message.getPayload(),
-                    securityHandler.createAuthorizationHeader());
+                    message,
+                    createHeaders());
             return true;
         }
         return false;
     }
 
     private String createDestination(String topic) {
-        return BrokerMapping.SEND_TO_CONSUMER + "/" + topic;
+        return BrokerMapping.SEND_TO_CONSUMER.getRoute() + "/" + topic;
+    }
+
+    private MessageHeaders createHeaders() {
+        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
+        accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
+        accessor.setLeaveMutable(true);
+        Map<String, Object> securityHeader = securityHandler.createAuthorizationHeader();
+        accessor.setNativeHeader("Authorization", securityHeader.get("Authorization").toString());
+        return accessor.getMessageHeaders();
     }
 
     private void updateClientRegistry(Client client) {
         if (taskConfig.useRegistry()) {
-            client.updateStatus();
+//            client.updateStatus();
             consumerRegistry.updateClientList(client);
         }
     }
@@ -98,12 +109,12 @@ public class QueueProcessorImpl implements QueueProcessor {
 
     @Override
     public List<MessagePayload> getMessageByTopic(String topic, int quantity) {
-        return messageRepository.removeFromQueueAndReturnList(TopicUtil.createTopicKeyForAwaitProcessingQueue(topic), quantity);
+        return messageRepository.removeFromQueueAndReturnList(TopicUtil.createTopicKeyForAwaitProcessing(topic), quantity);
     }
 
     @Async
     @Override
     public void remove(MessagePayload message) {
-        messageRepository.removeFromProcessingQueue(message.createTopicKey());
+        messageRepository.removeFromProcessingQueue(message.getTopicKey());
     }
 }

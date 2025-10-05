@@ -13,6 +13,15 @@ public class ClientFactory {
                 .topic(topic)
                 .method(method)
                 .clientSession(clientSession)
+                .isAvailable(true)
+                .build();
+    }
+
+    public static Client createConsumer(String topic, Method method) {
+        return Client.builder()
+                .topic(topic)
+                .method(method)
+                .isAvailable(true)
                 .build();
     }
 
@@ -20,6 +29,14 @@ public class ClientFactory {
         return Client.builder()
                 .topic(topic)
                 .clientSession(clientSession)
+                .isAvailable(true)
+                .build();
+    }
+
+    public static Client createConsumer(String topic) {
+        return Client.builder()
+                .topic(topic)
+                .isAvailable(true)
                 .build();
     }
 }

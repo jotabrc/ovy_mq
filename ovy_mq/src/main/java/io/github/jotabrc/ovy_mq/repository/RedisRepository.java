@@ -28,7 +28,7 @@ public class RedisRepository implements MessageRepository {
     public void saveToQueue(MessagePayload message) {
         try {
             String json = new ObjectMapper().writeValueAsString(message);
-            redisTemplate.opsForList().rightPush(message.createTopicKey(), json);
+            redisTemplate.opsForList().rightPush(message.getTopicKey(), json);
         } catch (JsonProcessingException e) {
             throw new MessageToJsonException("Error while converting message to json: %s".formatted(message.getId()));
         }
