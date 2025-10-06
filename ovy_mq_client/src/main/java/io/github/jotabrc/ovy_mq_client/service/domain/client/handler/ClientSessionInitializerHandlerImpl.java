@@ -90,8 +90,9 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
     private StompSession connectToServerAndInitializeSubscription(String topic, WebSocketStompClient stompClient, WebSocketHttpHeaders headers, ClientSession clientSession) throws ExecutionException, InterruptedException {
         stompClient.connectAsync("ws://localhost:9090/registry", headers, clientSession);
         return clientSession.getFuture().whenComplete((returnedSession, exception) -> {
-//            returnedSession.subscribe("/queue/" + topic, clientSession);
             if (nonNull(returnedSession) && returnedSession.isConnected()) {
+                returnedSession.subscribe("/queue/" + topic, clientSession);
+                returnedSession.subscribe("/config/", clientSession);
                 returnedSession.subscribe("/user/queue/" + topic, clientSession);
                 clientSession.setSession(returnedSession);
             } else {

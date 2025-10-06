@@ -1,15 +1,14 @@
 package io.github.jotabrc.ovy_mq.service;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public class BrokerMapping {
 
-@Getter
-@AllArgsConstructor
-public enum BrokerMapping {
+    private BrokerMapping() {}
 
-    REGISTER("/registry"),
-    SEND_TO_CONSUMER("/queue"),
-    RECEIVE_FROM_CONSUMER("/request");
-
-    private final String route;
+    public static final String DEFAULT_PREFIX = "/request";
+    public static final String SAVE_MESSAGE_RECEIVED = "/save";
+    public static final String CLIENT_REGISTRATION = "/registry";
+    public static final String SEND_MESSAGE_TO_CONSUMER = "/queue";
+    public static final String SEND_CONFIG_TO_CONSUMER = "/send-config";
+    public static final String RECEIVE_CONFIG_FROM_CONSUMER = "/receive-config";
+    public static final String RECEIVE_MESSAGE_REQUEST_FROM_CONSUMER = "/message";
 }

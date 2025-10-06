@@ -1,8 +1,9 @@
 package io.github.jotabrc.ovy_mq.controller;
 
+import io.github.jotabrc.ovy_mq.domain.ConfigPayload;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.service.MessageProcessor;
-import io.github.jotabrc.ovy_mq.service.QueueProcessor;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.QueueHandler;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -10,26 +11,27 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
+import static io.github.jotabrc.ovy_mq.service.BrokerMapping.*;
+
 @AllArgsConstructor
 @Controller
 public class MessageController {
 
-    private final MessageProcessor messageProcessor;
-    private final QueueProcessor queueProcessor;
+    private final MessageHandler messageHandler;
+    private final QueueHandler queueHandler;
 
-    @MessageMapping("/save")
+    @MessageMapping(SAVE_MESSAGE_RECEIVED)
     public void saveMessage(@Payload MessagePayload message) {
-        messageProcessor.process(message);
+        messageHandler.process(message);
     }
 
-    @MessageMapping("/message")
+    @MessageMapping(RECEIVE_MESSAGE_REQUEST_FROM_CONSUMER)
     public void requestMessage(@Payload MessagePayload message, Principal principal) {
-        queueProcessor.send(principal.getName());
+        queueHandler.send(principal.getName());
     }
 
-    @MessageMapping("/notify-and-request")
-    public void notifyAndRequestMessage(@Payload MessagePayload message, Principal principal) {
-        queueProcessor.send(principal.getName());
-        messageProcessor.removeFromProcessingQueue(message);
+    @MessageMapping(RECEIVE_CONFIG_FROM_CONSUMER)
+    public void replyConfiguration(@Payload ConfigPayload configPayload, Principal principal) {
+
     }
 }

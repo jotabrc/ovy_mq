@@ -1,6 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.*;
+import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
+import io.github.jotabrc.ovy_mq_client.domain.factory.HandlerActionFactory;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.OvyListener;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientListenerHandler;
 import io.github.jotabrc.ovy_mq_client.util.ApplicationContextHolder;
@@ -12,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
-import static io.github.jotabrc.ovy_mq_client.domain.Command.*;
+import static io.github.jotabrc.ovy_mq_client.service.domain.client.handler.ClientCommand.*;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -41,8 +43,8 @@ public class ClientListenerHandlerImpl implements ClientListenerHandler, Command
                     String topic = listener.topic();
 
                     Client client = ClientFactory.createConsumer(topic, method);
-                    ActionFactory.of(client).execute(INITIALIZE_SESSION);
-                    ActionFactory.of(client).execute(SAVE_CLIENT_IN_REGISTRY);
+                    HandlerActionFactory.of(client).execute(INITIALIZE_SESSION);
+                    HandlerActionFactory.of(client).execute(SAVE_CLIENT_IN_REGISTRY);
                 }
             }
         }

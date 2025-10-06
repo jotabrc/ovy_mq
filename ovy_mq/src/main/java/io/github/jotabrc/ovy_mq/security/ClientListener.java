@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.security;
 import io.github.jotabrc.ovy_mq.config.TaskConfig;
 import io.github.jotabrc.ovy_mq.domain.ClientMapper;
 import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
-import io.github.jotabrc.ovy_mq.service.ConsumerRegistry;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import static java.util.Objects.nonNull;
 public class ClientListener {
 
     private final TaskConfig taskConfig;
-    private final ConsumerRegistry consumerRegistry;
+    private final ClientRegistryHandler clientRegistryHandler;
 
     @EventListener
     public void clientConnectionEventHandler(SessionConnectEvent event) {
@@ -35,7 +35,7 @@ public class ClientListener {
             if (isAttributesAvailable(attributes)) {
                 String clientId = getClientId(attributes);
                 String topic = getTopic(attributes);
-                consumerRegistry.updateClientList(ClientMapper.of(clientId, topic));
+                clientRegistryHandler.updateClientList(ClientMapper.of(clientId, topic));
             }
         }
     }
@@ -49,7 +49,7 @@ public class ClientListener {
             if (isAttributesAvailable(attributes)) {
                 String clientId = getClientId(attributes);
                 log.info("Disconnecting client {}", clientId);
-                consumerRegistry.remove(clientId);
+                clientRegistryHandler.remove(clientId);
             }
         }
     }

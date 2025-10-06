@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.service;
+package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.config.TaskConfig;
 import io.github.jotabrc.ovy_mq.domain.Client;
@@ -6,6 +6,9 @@ import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.SecurityHandler;
+import io.github.jotabrc.ovy_mq.service.BrokerMapping;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.TopicRegistryHandler;
 import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,14 +26,14 @@ import java.util.Map;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class QueueProcessorImpl implements QueueProcessor {
+public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.interfaces.QueueHandler {
 
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final SecurityHandler securityHandler;
     private final TaskConfig taskConfig;
-    private final TopicRegistry topicRegistry;
-    private final ConsumerRegistry consumerRegistry;
+    private final TopicRegistryHandler topicRegistryHandler;
+    private final ClientRegistryHandler clientRegistryHandler;
 
     @Async
     @Override
@@ -39,7 +42,7 @@ public class QueueProcessorImpl implements QueueProcessor {
         messageRepository.saveToQueue(message);
 
         if (taskConfig.useTopicRegistry()) {
-            topicRegistry.save(message.getTopicKey());
+            topicRegistryHandler.save(message.getTopicKey());
         }
     }
 
@@ -47,7 +50,7 @@ public class QueueProcessorImpl implements QueueProcessor {
     @Override
     public void send(String clientId) {
         log.info("Sending message for client: {}", clientId);
-        Client client = consumerRegistry.findConsumerByClientId(clientId);
+        Client client = clientRegistryHandler.findConsumerByClientId(clientId);
         send(client);
     }
 
@@ -83,7 +86,7 @@ public class QueueProcessorImpl implements QueueProcessor {
     }
 
     private String createDestination(String topic) {
-        return BrokerMapping.SEND_TO_CONSUMER.getRoute() + "/" + topic;
+        return BrokerMapping.SEND_MESSAGE_TO_CONSUMER + "/" + topic;
     }
 
     private MessageHeaders createHeaders() {
@@ -98,7 +101,7 @@ public class QueueProcessorImpl implements QueueProcessor {
     private void updateClientRegistry(Client client) {
         if (taskConfig.useRegistry()) {
 //            client.updateStatus();
-            consumerRegistry.updateClientList(client);
+            clientRegistryHandler.updateClientList(client);
         }
     }
 

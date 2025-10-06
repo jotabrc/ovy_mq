@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.service.task;
 
-import io.github.jotabrc.ovy_mq.service.ConsumerRegistry;
-import io.github.jotabrc.ovy_mq.service.QueueProcessor;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.QueueHandler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,17 +18,17 @@ import org.springframework.stereotype.Component;
 )
 public class ConsumerTaskExecutor {
 
-    private final ConsumerRegistry consumerRegistry;
-    private QueueProcessor queueProcessor;
+    private final ClientRegistryHandler clientRegistryHandler;
+    private QueueHandler queueHandler;
 
     @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
         log.info("Executing task for consumers, initializing...");
-        consumerRegistry.findAllAvailableConsumers().forEach(client -> {
+        clientRegistryHandler.findAllAvailableConsumers().forEach(client -> {
                     log.info("Searching message for client {} listening for topic {}", client.getId(), client.getListeningTopic());
-                    queueProcessor.getMessageByTopic(client.getListeningTopic()).forEach(message -> {
+                    queueHandler.getMessageByTopic(client.getListeningTopic()).forEach(message -> {
                                 log.info("Found message {} in topic {} for client {}", message.getId(), message.getTopic(), client.getId());
-                                queueProcessor.send(client, message);
+                                queueHandler.send(client, message);
                             }
                     );
                 }

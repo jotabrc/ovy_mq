@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Aspect
 @Component
-public class ConsumerInterceptor {
+public class ListenerInterceptor {
 
     private final ServerSession serverSession;
 

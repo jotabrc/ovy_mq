@@ -1,5 +1,6 @@
-package io.github.jotabrc.ovy_mq.service;
+package io.github.jotabrc.ovy_mq.service.handler;
 
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.TopicRegistryHandler;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,7 @@ import static java.util.Objects.isNull;
 @Getter
 @AllArgsConstructor
 @Component
-public class TopicRegistryImpl implements TopicRegistry {
+public class TopicRegistryHandlerHandlerImpl implements TopicRegistryHandler {
 
     private Set<String> topics;
 

@@ -1,5 +1,6 @@
-package io.github.jotabrc.ovy_mq_client.domain;
+package io.github.jotabrc.ovy_mq_client.domain.factory;
 
+import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.ClientSession;
 
 import java.lang.reflect.Method;

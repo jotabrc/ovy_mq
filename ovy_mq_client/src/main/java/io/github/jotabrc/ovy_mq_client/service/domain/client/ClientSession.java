@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.domain.client;
 
-import io.github.jotabrc.ovy_mq_client.domain.ActionFactory;
-import io.github.jotabrc.ovy_mq_client.domain.ClientFactory;
+import io.github.jotabrc.ovy_mq_client.domain.factory.HandlerActionFactory;
+import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
-import static io.github.jotabrc.ovy_mq_client.domain.Command.PROCESS_RECEIVED_MESSAGE;
+import static io.github.jotabrc.ovy_mq_client.service.domain.client.handler.ClientCommand.PROCESS_RECEIVED_MESSAGE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -39,7 +39,7 @@ public class ClientSession extends StompSessionHandlerAdapter {
         String destination = headers.getDestination();
         if (nonNull(destination) && destination.startsWith("/user/queue/")) {
             String topic = destination.substring("/user/queue/".length());
-            ActionFactory.of(ClientFactory.createConsumer(topic, this), (MessagePayload) payload).execute(PROCESS_RECEIVED_MESSAGE);
+            HandlerActionFactory.of(ClientFactory.createConsumer(topic, this), (MessagePayload) payload).execute(PROCESS_RECEIVED_MESSAGE);
         }
     }
 

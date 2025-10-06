@@ -1,11 +1,11 @@
-package io.github.jotabrc.ovy_mq.service;
+package io.github.jotabrc.ovy_mq.service.handler.interfaces;
 
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 
 import java.util.List;
 
-public interface QueueProcessor {
+public interface QueueHandler extends AbstractHandler {
 
     void save(MessagePayload messagePayload);
     void send(Client client);

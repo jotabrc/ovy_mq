@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.jotabrc.ovy_mq.security.AuthInterceptor;
 import io.github.jotabrc.ovy_mq.security.CustomHandshakeHandler;
-import io.github.jotabrc.ovy_mq.service.BrokerMapping;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
@@ -15,6 +14,8 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import java.util.List;
+
+import static io.github.jotabrc.ovy_mq.service.BrokerMapping.*;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -28,7 +29,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint(BrokerMapping.REGISTER.getRoute())
+        registry.addEndpoint(CLIENT_REGISTRATION)
                 .setHandshakeHandler(new CustomHandshakeHandler())
                 .addInterceptors(authInterceptor)
                 .setAllowedOrigins("*");
@@ -36,8 +37,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker(BrokerMapping.SEND_TO_CONSUMER.getRoute()); // stompClient.subscribe("/topic/requested_topic", msg -> {...});
-        registry.setApplicationDestinationPrefixes(BrokerMapping.RECEIVE_FROM_CONSUMER.getRoute()); // stompClient.send("/queue/controller_mapping", {}, "Mensagem para o servidor");
+        registry.enableSimpleBroker(SEND_MESSAGE_TO_CONSUMER,
+                SEND_CONFIG_TO_CONSUMER);
+        registry.setApplicationDestinationPrefixes(DEFAULT_PREFIX);
         registry.setUserDestinationPrefix("/user");
     }
 

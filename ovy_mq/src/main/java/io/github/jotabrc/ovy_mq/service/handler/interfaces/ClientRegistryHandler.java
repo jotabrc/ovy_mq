@@ -1,10 +1,10 @@
-package io.github.jotabrc.ovy_mq.service;
+package io.github.jotabrc.ovy_mq.service.handler.interfaces;
 
 import io.github.jotabrc.ovy_mq.domain.Client;
 
 import java.util.List;
 
-public interface ConsumerRegistry {
+public interface ClientRegistryHandler extends AbstractHandler {
 
     void updateClientList(Client client);
     void remove(String clientId);

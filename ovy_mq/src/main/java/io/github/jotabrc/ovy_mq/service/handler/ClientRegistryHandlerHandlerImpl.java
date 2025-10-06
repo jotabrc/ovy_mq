@@ -1,7 +1,8 @@
-package io.github.jotabrc.ovy_mq.service;
+package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
 @Component
-public class ConsumerRegistryImpl implements ConsumerRegistry {
+public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
 
     private final ConcurrentHashMap<String, ConcurrentSkipListSet<Client>> clients = new ConcurrentHashMap<>();
 
