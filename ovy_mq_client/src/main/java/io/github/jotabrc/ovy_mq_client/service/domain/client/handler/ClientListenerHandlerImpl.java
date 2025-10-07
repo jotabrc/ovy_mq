@@ -1,10 +1,11 @@
 package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
 
-import io.github.jotabrc.ovy_mq_client.domain.*;
+import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
-import io.github.jotabrc.ovy_mq_client.domain.factory.HandlerActionFactory;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.OvyListener;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientListenerHandler;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientRegistryHandler;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientSessionInitializerHandler;
 import io.github.jotabrc.ovy_mq_client.util.ApplicationContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,13 +15,15 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
-import static io.github.jotabrc.ovy_mq_client.service.domain.client.handler.ClientCommand.*;
 import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class ClientListenerHandlerImpl implements ClientListenerHandler, CommandLineRunner {
+
+    private final ClientSessionInitializerHandler clientSessionInitializerHandler;
+    private final ClientRegistryHandler clientRegistryHandler;
 
     @Override
     public void run(String... args) throws Exception {
@@ -43,8 +46,8 @@ public class ClientListenerHandlerImpl implements ClientListenerHandler, Command
                     String topic = listener.topic();
 
                     Client client = ClientFactory.createConsumer(topic, method);
-                    HandlerActionFactory.of(client).execute(INITIALIZE_SESSION);
-                    HandlerActionFactory.of(client).execute(SAVE_CLIENT_IN_REGISTRY);
+                    clientSessionInitializerHandler.initializeSession(client);
+                    clientRegistryHandler.save(client);
                 }
             }
         }

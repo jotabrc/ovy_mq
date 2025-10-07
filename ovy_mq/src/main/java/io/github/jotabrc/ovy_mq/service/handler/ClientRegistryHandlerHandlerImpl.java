@@ -70,7 +70,7 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
     }
 
     @Override
-    public Client findConsumerByClientId(String clientId) {
+    public Client findClientById(String clientId) {
         for (var set : clients.values()) {
             for (var consumer : set) {
                 if (Objects.equals(clientId, consumer.getId())) return consumer;
@@ -80,7 +80,7 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
     }
 
     @Override
-    public Client findLeastRecentlyUsedConsumerAvailableForTopic(String topic) {
+    public Client findLeastRecentlyUsedClientByTopic(String topic) {
         Client client = clients.get(topic).getFirst();
         if (nonNull(client) && client.getIsAvailable()) {
             client.updateStatus();
@@ -91,7 +91,7 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
     }
 
     @Override
-    public List<Client> findOneAvailableConsumerPerTopic() {
+    public List<Client> findOneAvailableClientPerTopic() {
         List<Client> availableClients = new ArrayList<>();
         for (var set : clients.values()) {
             for (var consumer : set) {
@@ -105,7 +105,7 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
     }
 
     @Override
-    public List<Client> findAllAvailableConsumers() {
+    public List<Client> findAllAvailableClients() {
         return clients.values()
                 .stream().flatMap(set -> set.stream()
                         .filter(Client::getIsAvailable)
@@ -113,7 +113,7 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
     }
 
     @Override
-    public Integer isThereAnyAvailableConsumerForTopic(String topic) {
+    public Integer isThereAnyAvailableClientForTopic(String topic) {
         return clients.get(topic).size();
     }
 }

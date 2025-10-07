@@ -7,11 +7,11 @@ import io.github.jotabrc.ovy_mq_client.config.CredentialConfig;
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.ClientSession;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.SessionFactory;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientSessionInitializerHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Component;
@@ -33,6 +33,7 @@ import static java.util.Objects.nonNull;
 @Component
 public class ClientSessionInitializerHandlerImpl implements ClientSessionInitializerHandler {
 
+    private final ObjectProvider<ClientSession> clientSessionProvider;
     private final CredentialConfig credentialConfig;
 
     @Override
@@ -47,7 +48,7 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
 
     private boolean connect(Client client, WebSocketStompClient stompClient, AtomicLong counter) {
         WebSocketHttpHeaders headers = createHeaders(client.getTopic());
-        ClientSession clientSession = SessionFactory.create();
+        ClientSession clientSession = clientSessionProvider.getObject();
 
         try {
             StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSession);

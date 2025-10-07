@@ -24,7 +24,7 @@ public class ConsumerTaskExecutor {
     @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
         log.info("Executing task for consumers, initializing...");
-        clientRegistryHandler.findAllAvailableConsumers().forEach(client -> {
+        clientRegistryHandler.findAllAvailableClients().forEach(client -> {
                     log.info("Searching message for client {} listening for topic {}", client.getId(), client.getListeningTopic());
                     queueHandler.getMessageByTopic(client.getListeningTopic()).forEach(message -> {
                                 log.info("Found message {} in topic {} for client {}", message.getId(), message.getTopic(), client.getId());

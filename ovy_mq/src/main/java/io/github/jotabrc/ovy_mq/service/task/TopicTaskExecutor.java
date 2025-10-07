@@ -35,12 +35,12 @@ public class TopicTaskExecutor {
         Set<String> topics = topicRegistryHandler.getTopicList();
         if (!topics.isEmpty()) {
             topicRegistryHandler.getTopicList().forEach(topic -> {
-                Integer quantity = clientRegistryHandler.isThereAnyAvailableConsumerForTopic(topic);
+                Integer quantity = clientRegistryHandler.isThereAnyAvailableClientForTopic(topic);
                 log.info("TopicTaskExecutor: found {} consumers available for topic {}", quantity, topic);
                 if (!Objects.equals(0, quantity)) {
                     queueHandler.getMessageByTopic(topic, quantity).forEach(message -> {
                         log.info("Searching consumer for message {} in topic {}", message.getId(), message.getTopic());
-                        Client client = clientRegistryHandler.findLeastRecentlyUsedConsumerAvailableForTopic(topic);
+                        Client client = clientRegistryHandler.findLeastRecentlyUsedClientByTopic(topic);
                         if (nonNull(client)) {
                             log.info("Consumer {} found for message {} in topic {}", client.getId(), message.getId(), message.getTopic());
                             queueHandler.send(client, message);

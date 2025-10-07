@@ -1,30 +1,34 @@
 package io.github.jotabrc.ovy_mq_client.service.domain.client;
 
-import io.github.jotabrc.ovy_mq_client.domain.factory.HandlerActionFactory;
-import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientMessageHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
-import static io.github.jotabrc.ovy_mq_client.service.domain.client.handler.ClientCommand.PROCESS_RECEIVED_MESSAGE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Slf4j
 @Getter
 @RequiredArgsConstructor
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ClientSession extends StompSessionHandlerAdapter {
 
-    private StompSession session;
+    private final ClientMessageHandler clientMessageHandler;
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
 
+    private StompSession session;
 
     @Override
     public Type getPayloadType(StompHeaders headers) {
@@ -34,12 +38,12 @@ public class ClientSession extends StompSessionHandlerAdapter {
     }
 
     @Override
-    public void handleFrame(StompHeaders headers, Object payload) {
-        log.info("Handling frame {}", payload);
+    public void handleFrame(StompHeaders headers, Object messagePayload) {
+        log.info("Handling frame {}", messagePayload);
         String destination = headers.getDestination();
         if (nonNull(destination) && destination.startsWith("/user/queue/")) {
             String topic = destination.substring("/user/queue/".length());
-            HandlerActionFactory.of(ClientFactory.createConsumer(topic, this), (MessagePayload) payload).execute(PROCESS_RECEIVED_MESSAGE);
+            clientMessageHandler.handleMessage(topic, (MessagePayload)  messagePayload);
         }
     }
 

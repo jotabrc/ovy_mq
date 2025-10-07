@@ -50,7 +50,7 @@ public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.in
     @Override
     public void send(String clientId) {
         log.info("Sending message for client: {}", clientId);
-        Client client = clientRegistryHandler.findConsumerByClientId(clientId);
+        Client client = clientRegistryHandler.findClientById(clientId);
         send(client);
     }
 
