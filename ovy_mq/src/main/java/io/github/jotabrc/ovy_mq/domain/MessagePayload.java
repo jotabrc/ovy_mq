@@ -22,7 +22,7 @@ public class MessagePayload implements Serializable {
 
     private String id;
     private Object payload;
-    private String listeningTopic;
+    private String topic;
     private MessageStatus messageStatus;
     private OffsetDateTime createdDate;
     private boolean success;
@@ -39,19 +39,19 @@ public class MessagePayload implements Serializable {
     }
 
     @JsonIgnore
-    public String getListeningTopic() {
+    public String getTopic() {
         return (success)
-                ? TopicUtil.createTopicKeyForProcessing(this.listeningTopic)
-                : TopicUtil.createTopicKey(this.listeningTopic, this.messageStatus);
+                ? TopicUtil.createTopicKeyForProcessing(this.topic)
+                : TopicUtil.createTopicKey(this.topic, this.messageStatus);
     }
 
     @JsonIgnore
     public boolean hasTopic() {
-        return nonNull(this.listeningTopic);
+        return nonNull(this.topic);
     }
 
     @JsonIgnore
     public boolean isProcessable() {
-        return nonNull(this.payload) && nonNull(this.listeningTopic);
+        return nonNull(this.payload) && nonNull(this.topic);
     }
 }

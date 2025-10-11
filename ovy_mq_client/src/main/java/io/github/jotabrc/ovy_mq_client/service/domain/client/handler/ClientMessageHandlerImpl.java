@@ -21,16 +21,18 @@ public class ClientMessageHandlerImpl implements ClientMessageHandler {
     @Async
     @Override
     public void handleMessage(String clientId, String topic, MessagePayload messagePayload) {
-        log.info("Invoking consumer for listeningTopic: {}", topic);
+        log.info("Invoking consumer for topic: {}", topic);
         Client client = clientRegistryHandler.getByClientIdOrThrow(clientId);
         try {
+            client.setIsAvailable(false);
             Object proxy = applicationContext.getBean(client.getMethod().getDeclaringClass());
-            client.getMethod().invoke(proxy, messagePayload);
+            client.getMethod().invoke(proxy, messagePayload.getPayload());
             messagePayload.cleanDataAndUpdateSuccessValue(true);
-            log.info("Consumer received the message for listeningTopic: {}", topic);
+            log.info("Consumer received the message for topic: {}", topic);
         } catch (Exception e) {
             log.info("Error processing payload {}", messagePayload.getId());
         } finally {
+            client.setIsAvailable(true);
             client.confirmProcessing(messagePayload);
             client.requestMessage();
         }

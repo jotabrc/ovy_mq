@@ -20,7 +20,7 @@ public class Test implements CommandLineRunner {
         while (counter.getAndIncrement() < 100) {
             System.out.println("message " + counter);
             messageHandler.processAndSave(MessagePayload.builder()
-                    .listeningTopic("teste")
+                    .topic("teste")
                     .payload("String value")
                     .build());
         }

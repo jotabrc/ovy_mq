@@ -43,8 +43,7 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
     }
 
     private Comparator<Client> getComparator() {
-        return Comparator.comparing(Client::getIsAvailable).reversed()
-                .thenComparing(Client::getLastUsed);
+        return Comparator.comparing(Client::getIsAvailable).reversed();
     }
 
     @Async

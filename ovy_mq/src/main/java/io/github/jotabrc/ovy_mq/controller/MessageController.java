@@ -5,6 +5,7 @@ import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageHandler;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.QueueHandler;
 import lombok.AllArgsConstructor;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
@@ -32,9 +33,10 @@ public class MessageController {
     }
 
     @MessageMapping(RECEIVE_MESSAGE_PROCESSING_SUCCESS_CONFIRMATION)
-    public void confirmProcessing(@Payload MessagePayload messagePayload, Principal principal) {
-        if (nonNull(messagePayload) && messagePayload.hasTopic()) {
-            messageHandler.removeFromProcessingQueue(messagePayload.getListeningTopic(), messagePayload.getId());
+    public void confirmProcessing(@Payload MessagePayload messagePayload, Principal principal, @Header("Listening-Topic") String topic) {
+        if (nonNull(messagePayload) && nonNull(topic)) {
+            messagePayload.setTopic(topic);
+            messageHandler.removeFromProcessingQueue(messagePayload.getTopic(), messagePayload.getId());
             if (!messagePayload.isSuccess() && messagePayload.isProcessable()) {
                 messageHandler.processAndSave(messagePayload);
             }

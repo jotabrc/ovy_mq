@@ -1,7 +1,5 @@
 package io.github.jotabrc.ovy_mq.domain;
 
-import java.time.OffsetDateTime;
-
 public class ClientMapper {
 
     private ClientMapper() {}
@@ -11,7 +9,6 @@ public class ClientMapper {
                 .id(clientId)
                 .topic(topic)
                 .isAvailable(true)
-                .lastUsed(OffsetDateTime.now())
                 .build();
     }
 }

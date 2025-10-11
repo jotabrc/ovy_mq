@@ -19,7 +19,7 @@ public class MessagePayload implements Serializable {
 
     private String id;
     private Object payload;
-    private String listeningTopic;
+    private String topic;
     private MessageStatus messageStatus;
     private OffsetDateTime createdDate;
     private boolean success;

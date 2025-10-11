@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.domain.client;
 
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientMessageHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -39,12 +40,14 @@ public class ClientSession extends StompSessionHandlerAdapter {
     }
 
     @Override
-    public void handleFrame(StompHeaders headers, Object messagePayload) {
-        log.info("Handling frame {}", messagePayload);
+    public void handleFrame(StompHeaders headers, Object object) {
+        log.info("Handling frame {}", object);
         String destination = headers.getDestination();
         if (nonNull(destination) && destination.startsWith("/user/queue/")) {
             String topic = destination.substring("/user/queue/".length());
-            clientMessageHandler.handleMessage(clientId, topic, (MessagePayload)  messagePayload);
+            MessagePayload messagePayload = ObjectMapperFactory.get().convertValue(object, MessagePayload.class);
+            messagePayload.setTopic(topic);
+            clientMessageHandler.handleMessage(clientId, topic, messagePayload);
         }
     }
 

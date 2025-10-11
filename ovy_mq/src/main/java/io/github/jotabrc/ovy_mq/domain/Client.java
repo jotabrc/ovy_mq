@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.lang.reflect.Method;
-import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Builder
@@ -15,16 +14,7 @@ public class Client {
     private String id;
     private String topic;
     private Boolean isAvailable;
-    private OffsetDateTime lastUsed;
-    private ClientType type;
-    private Long replicas;
-    private Long replicasInUse;
     private Method method;
-
-    public void updateStatus() {
-        this.lastUsed = OffsetDateTime.now();
-        this.isAvailable = !this.isAvailable;
-    }
 
     public String getTopicForAwaitingProcessingQueue() {
         return TopicUtil.createTopicKey(this.topic, MessageStatus.AWAITING_PROCESSING);

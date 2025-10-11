@@ -31,7 +31,7 @@ public class ClientRegistryHandlerImpl implements ClientRegistryHandler {
                 if (!queue.contains(client)) queue.offer(client);
                 return queue;
             });
-            log.info("Client {} saved in registry for listeningTopic {}", client.getId(), client.getTopic());
+            log.info("Client {} saved in registry for topic {}", client.getId(), client.getTopic());
         } else {
             log.error("Client cannot be saved in registry");
         }

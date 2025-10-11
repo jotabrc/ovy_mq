@@ -43,7 +43,7 @@ public class QueueHandlerImpl implements io.github.jotabrc.ovy_mq.service.handle
         messageRepository.saveToQueue(message);
 
         if (taskConfig.useTopicRegistry()) {
-            topicRegistryHandler.save(message.getListeningTopic());
+            topicRegistryHandler.save(message.getTopic());
         }
     }
 
@@ -51,7 +51,7 @@ public class QueueHandlerImpl implements io.github.jotabrc.ovy_mq.service.handle
     @Override
     public void send(String clientId) {
         Client client = clientRegistryHandler.findClientById(clientId);
-        send(client);
+        if (nonNull(client)) send(client);
     }
 
     @Async
@@ -74,9 +74,8 @@ public class QueueHandlerImpl implements io.github.jotabrc.ovy_mq.service.handle
 
     private synchronized boolean sendMessageToConsumer(MessagePayload message, Client client) {
         if (client.getIsAvailable() && nonNull(message)) {
-            log.info("Sending message for client: {}", client.getId());
-            log.info("Sending client={}, listeningTopic={}, payload={}", client.getId(), createDestination(client.getTopic()), message);
-            message.setListeningTopic(client.getTopic());
+            log.info("Sending message={} for client={}, topic={} created at {}", message.getId(), client.getId(), createDestination(client.getTopic()), message.getCreatedDate());
+            message.setTopic(client.getTopic());
             messagingTemplate.convertAndSendToUser(client.getId(),
                     createDestination(client.getTopic()),
                     message,
