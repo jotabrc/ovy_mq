@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq.domain;
 
+import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,7 +13,7 @@ import java.util.Objects;
 public class Client {
 
     private String id;
-    private String listeningTopic;
+    private String topic;
     private Boolean isAvailable;
     private OffsetDateTime lastUsed;
     private ClientType type;
@@ -23,6 +24,10 @@ public class Client {
     public void updateStatus() {
         this.lastUsed = OffsetDateTime.now();
         this.isAvailable = !this.isAvailable;
+    }
+
+    public String getTopicForAwaitingProcessingQueue() {
+        return TopicUtil.createTopicKey(this.topic, MessageStatus.AWAITING_PROCESSING);
     }
 
     @Override

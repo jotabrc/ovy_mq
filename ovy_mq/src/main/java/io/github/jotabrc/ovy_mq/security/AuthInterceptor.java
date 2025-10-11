@@ -35,13 +35,13 @@ public class AuthInterceptor implements HandshakeInterceptor {
                 attributes.put(DefaultClientKey.CLIENT_ID.getValue(), clientId);
                 attributes.put(DefaultClientKey.CLIENT_LISTENING_TOPIC.getValue(), topic);
                 log.info("Registry for client {} was successful", clientId);
-                log.info("Client {} is listening to topic {}", clientId, topic);
+                log.info("Client {} is listening to listeningTopic {}", clientId, topic);
                 return true;
             }
         }
 
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        log.info("Cannot finalize registration, missing fields: client id {}, topic {}", clientIdAttribute, topicAttribute);
+        log.info("Cannot finalize registration, missing fields: client id {}, listeningTopic {}", clientIdAttribute, topicAttribute);
         return false;
     }
 

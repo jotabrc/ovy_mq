@@ -11,7 +11,7 @@ public class TopicUtil {
     }
 
     public static String createTopicKeyForProcessing(String topic) {
-        return topic + ":" + MessageStatus.AWAITING_PROCESSING;
+        return topic + ":" + MessageStatus.PROCESSING;
     }
 
     public static String createTopicKey(String topic, MessageStatus messageStatus) {

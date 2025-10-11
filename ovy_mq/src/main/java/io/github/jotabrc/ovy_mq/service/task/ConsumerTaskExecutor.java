@@ -25,9 +25,9 @@ public class ConsumerTaskExecutor {
     public void execute() {
         log.info("Executing task for consumers, initializing...");
         clientRegistryHandler.findAllAvailableClients().forEach(client -> {
-                    log.info("Searching message for client {} listening for topic {}", client.getId(), client.getListeningTopic());
-                    queueHandler.getMessageByTopic(client.getListeningTopic()).forEach(message -> {
-                                log.info("Found message {} in topic {} for client {}", message.getId(), message.getTopic(), client.getId());
+                    log.info("Searching message for client {} listening for listeningTopic {}", client.getId(), client.getTopic());
+                    queueHandler.getMessageByTopic(client.getTopicForAwaitingProcessingQueue()).forEach(message -> {
+                                log.info("Found message {} in listeningTopic {} for client {}", message.getId(), message.getListeningTopic(), client.getId());
                                 queueHandler.send(client, message);
                             }
                     );

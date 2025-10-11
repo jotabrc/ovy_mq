@@ -9,5 +9,5 @@ public interface MessageRepository {
     void saveToQueue(MessagePayload message);
     MessagePayload removeFromQueueAndReturn(String topic);
     List<MessagePayload> removeFromQueueAndReturnList(String topic, int quantity);
-    void removeFromProcessingQueue(String topic);
+    void removeFromProcessingQueue(String topic, String messageId);
 }

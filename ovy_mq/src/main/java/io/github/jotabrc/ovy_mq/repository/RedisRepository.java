@@ -28,7 +28,7 @@ public class RedisRepository implements MessageRepository {
     public void saveToQueue(MessagePayload message) {
         try {
             String json = new ObjectMapper().writeValueAsString(message);
-            redisTemplate.opsForList().rightPush(message.getTopicKey(), json);
+            redisTemplate.opsForList().rightPush(message.getListeningTopic(), json);
         } catch (JsonProcessingException e) {
             throw new MessageToJsonException("Error while converting message to json: %s".formatted(message.getId()));
         }
@@ -73,7 +73,7 @@ public class RedisRepository implements MessageRepository {
     }
 
     @Override
-    public void removeFromProcessingQueue(String topic) {
+    public void removeFromProcessingQueue(String topic, String messageId) {
         redisTemplate.opsForList().getFirst(topic);
     }
 }

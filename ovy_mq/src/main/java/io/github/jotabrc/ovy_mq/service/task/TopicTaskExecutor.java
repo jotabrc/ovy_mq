@@ -19,7 +19,7 @@ import static java.util.Objects.nonNull;
 @AllArgsConstructor
 @Component
 @ConditionalOnProperty(
-        name = "ovymq.task.topic.auto",
+        name = "ovymq.task.listeningTopic.auto",
         havingValue = "true",
         matchIfMissing = false
 )
@@ -29,23 +29,23 @@ public class TopicTaskExecutor {
     private final ClientRegistryHandler clientRegistryHandler;
     private QueueHandler queueHandler;
 
-    @Scheduled(fixedDelayString = "${ovymq.task.topic.delay}")
+    @Scheduled(fixedDelayString = "${ovymq.task.listeningTopic.delay}")
     public void execute() {
         log.info("Executing task for topics, initialization...");
         Set<String> topics = topicRegistryHandler.getTopicList();
         if (!topics.isEmpty()) {
             topicRegistryHandler.getTopicList().forEach(topic -> {
                 Integer quantity = clientRegistryHandler.isThereAnyAvailableClientForTopic(topic);
-                log.info("TopicTaskExecutor: found {} consumers available for topic {}", quantity, topic);
+                log.info("TopicTaskExecutor: found {} consumers available for listeningTopic {}", quantity, topic);
                 if (!Objects.equals(0, quantity)) {
                     queueHandler.getMessageByTopic(topic, quantity).forEach(message -> {
-                        log.info("Searching consumer for message {} in topic {}", message.getId(), message.getTopic());
+                        log.info("Searching consumer for message {} in listeningTopic {}", message.getId(), message.getListeningTopic());
                         Client client = clientRegistryHandler.findLeastRecentlyUsedClientByTopic(topic);
                         if (nonNull(client)) {
-                            log.info("Consumer {} found for message {} in topic {}", client.getId(), message.getId(), message.getTopic());
+                            log.info("Consumer {} found for message {} in listeningTopic {}", client.getId(), message.getId(), message.getListeningTopic());
                             queueHandler.send(client, message);
                         } else
-                            log.info("No consumer found for message {} in topic {}", message.getId(), message.getTopic());
+                            log.info("No consumer found for message {} in listeningTopic {}", message.getId(), message.getListeningTopic());
                     });
                 }
             });

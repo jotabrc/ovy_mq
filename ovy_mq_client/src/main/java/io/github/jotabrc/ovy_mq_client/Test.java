@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class Test {
 
-    @OvyListener(topic = "teste")
+    @OvyListener(topic = "teste", replicas = 5)
     public void listener(Object object) {
         return;
     }

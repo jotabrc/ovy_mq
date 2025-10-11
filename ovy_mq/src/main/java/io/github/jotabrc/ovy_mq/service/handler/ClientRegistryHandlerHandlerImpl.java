@@ -32,7 +32,7 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
 
     private void updateClientListOperation(Client client) {
         if (nonNull(client) && nonNull(client.getId()) && isNull(clients.get(client.getId()))) {
-            clients.compute(client.getListeningTopic(), (clientId, set) -> {
+            clients.compute(client.getTopic(), (clientId, set) -> {
                 if (isNull(set)) set = new ConcurrentSkipListSet<>(getComparator());
                 else set.remove(client);
 
@@ -83,8 +83,6 @@ public class ClientRegistryHandlerHandlerImpl implements ClientRegistryHandler {
     public Client findLeastRecentlyUsedClientByTopic(String topic) {
         Client client = clients.get(topic).getFirst();
         if (nonNull(client) && client.getIsAvailable()) {
-            client.updateStatus();
-            updateClientListOperation(client);
             return client;
         }
         return null;

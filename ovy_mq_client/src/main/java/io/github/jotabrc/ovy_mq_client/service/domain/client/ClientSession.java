@@ -29,6 +29,7 @@ public class ClientSession extends StompSessionHandlerAdapter {
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
 
     private StompSession session;
+    private String clientId;
 
     @Override
     public Type getPayloadType(StompHeaders headers) {
@@ -43,13 +44,13 @@ public class ClientSession extends StompSessionHandlerAdapter {
         String destination = headers.getDestination();
         if (nonNull(destination) && destination.startsWith("/user/queue/")) {
             String topic = destination.substring("/user/queue/".length());
-            clientMessageHandler.handleMessage(topic, (MessagePayload)  messagePayload);
+            clientMessageHandler.handleMessage(clientId, topic, (MessagePayload)  messagePayload);
         }
     }
 
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-        this.session = session;
+        setSession(session);
         future.complete(session);
     }
 
@@ -61,6 +62,12 @@ public class ClientSession extends StompSessionHandlerAdapter {
     public void setSession(StompSession session) {
         if (isNull(this.session)) {
             this.session = session;
+        }
+    }
+
+    public void setClientId(String clientId) {
+        if (isNull(this.clientId)) {
+            this.clientId = clientId;
         }
     }
 }

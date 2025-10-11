@@ -4,5 +4,5 @@ import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
 
 public interface ClientMessageHandler extends AbstractHandler {
 
-    void handleMessage(String topic, MessagePayload object);
+    void handleMessage(String clientId, String topic, MessagePayload object);
 }

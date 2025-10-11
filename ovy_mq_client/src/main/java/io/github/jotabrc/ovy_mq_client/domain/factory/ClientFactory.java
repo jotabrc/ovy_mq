@@ -4,6 +4,7 @@ import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.service.domain.client.ClientSession;
 
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 public class ClientFactory {
 
@@ -20,6 +21,7 @@ public class ClientFactory {
 
     public static Client createConsumer(String topic, Method method) {
         return Client.builder()
+                .id(UUID.randomUUID().toString())
                 .topic(topic)
                 .method(method)
                 .isAvailable(true)

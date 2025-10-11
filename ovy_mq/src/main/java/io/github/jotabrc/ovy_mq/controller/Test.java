@@ -19,8 +19,8 @@ public class Test implements CommandLineRunner {
         AtomicInteger counter = new AtomicInteger(0);
         while (counter.getAndIncrement() < 100) {
             System.out.println("message " + counter);
-            messageHandler.process(MessagePayload.builder()
-                    .topic("teste")
+            messageHandler.processAndSave(MessagePayload.builder()
+                    .listeningTopic("teste")
                     .payload("String value")
                     .build());
         }

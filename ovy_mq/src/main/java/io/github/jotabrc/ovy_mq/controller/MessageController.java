@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import java.security.Principal;
 
 import static io.github.jotabrc.ovy_mq.service.BrokerMapping.*;
+import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
 @Controller
@@ -22,12 +23,22 @@ public class MessageController {
 
     @MessageMapping(SAVE_MESSAGE_RECEIVED)
     public void saveMessage(@Payload MessagePayload message) {
-        messageHandler.process(message);
+        messageHandler.processAndSave(message);
     }
 
     @MessageMapping(RECEIVE_MESSAGE_REQUEST_FROM_CONSUMER)
-    public void requestMessage(@Payload MessagePayload message, Principal principal) {
+    public void requestMessage(@Payload MessagePayload messagePayload, Principal principal) {
         queueHandler.send(principal.getName());
+    }
+
+    @MessageMapping(RECEIVE_MESSAGE_PROCESSING_SUCCESS_CONFIRMATION)
+    public void confirmProcessing(@Payload MessagePayload messagePayload, Principal principal) {
+        if (nonNull(messagePayload) && messagePayload.hasTopic()) {
+            messageHandler.removeFromProcessingQueue(messagePayload.getListeningTopic(), messagePayload.getId());
+            if (!messagePayload.isSuccess() && messagePayload.isProcessable()) {
+                messageHandler.processAndSave(messagePayload);
+            }
+        }
     }
 
     @MessageMapping(RECEIVE_CONFIG_FROM_CONSUMER)

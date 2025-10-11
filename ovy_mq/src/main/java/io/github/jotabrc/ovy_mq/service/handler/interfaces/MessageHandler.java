@@ -4,6 +4,6 @@ import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 
 public interface MessageHandler extends AbstractHandler {
 
-    void process(MessagePayload message);
-    void removeFromProcessingQueue(MessagePayload message);
+    void processAndSave(MessagePayload message);
+    void removeFromProcessingQueue(String topic, String messageId);
 }

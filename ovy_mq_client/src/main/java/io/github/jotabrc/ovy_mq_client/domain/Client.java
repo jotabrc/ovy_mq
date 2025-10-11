@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.lang.reflect.Method;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 @Setter
 @Builder
@@ -22,4 +23,25 @@ public class Client {
     private Long replicasInUse;
     private Method method;
     private ClientSession clientSession;
+
+    public void requestMessage() {
+        this.clientSession.getSession().send("/request/message", new MessagePayload());
+    }
+    public void confirmProcessing(MessagePayload messagePayload) {
+        this.clientSession.getSession().send("/request/message/confirm", messagePayload);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (Objects.isNull(o) || !Objects.equals(getClass(), o.getClass())) return false;
+
+        Client client = (Client) o;
+        return id.equals(client.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id) * 31;
+    }
 }

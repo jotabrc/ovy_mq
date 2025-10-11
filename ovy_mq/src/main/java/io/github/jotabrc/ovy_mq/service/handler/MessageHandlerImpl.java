@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+
 @AllArgsConstructor
 @Service
 public class MessageHandlerImpl implements MessageHandler {
@@ -19,18 +21,18 @@ public class MessageHandlerImpl implements MessageHandler {
 
     @Async
     @Override
-    public void process(MessagePayload message) {
+    public void processAndSave(MessagePayload message) {
         updateMessageMetadata(message);
         queueHandler.save(message);
     }
 
     private void updateMessageMetadata(MessagePayload message) {
         message.updateMessageStatusTo(MessageStatus.AWAITING_PROCESSING);
-        message.updateMessageMetadata(UUID.randomUUID().toString(), OffsetDateTime.now());
+        if (isNull(message.getId())) message.updateMessageMetadata(UUID.randomUUID().toString(), OffsetDateTime.now());
     }
 
     @Override
-    public void removeFromProcessingQueue(MessagePayload message) {
-        queueHandler.remove(message);
+    public void removeFromProcessingQueue(String topic, String messageId) {
+        queueHandler.remove(topic, messageId);
     }
 }

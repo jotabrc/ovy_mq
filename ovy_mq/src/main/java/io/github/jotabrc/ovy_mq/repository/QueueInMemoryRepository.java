@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -25,15 +22,16 @@ public class QueueInMemoryRepository implements MessageRepository{
 
     @Override
     public void saveToQueue(MessagePayload message) {
-        messages.compute(message.getTopicKey(), (key, queue) -> {
+        messages.compute(message.getListeningTopic(), (key, queue) -> {
             if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
+            log.info("Saving message {} for listeningTopic {}", message.getId(), key);
             queue.offer(message);
             return queue;
         });
     }
 
     @Override
-    public MessagePayload removeFromQueueAndReturn(String topic) {
+    public synchronized MessagePayload removeFromQueueAndReturn(String topic) {
         return messages.get(topic).poll();
     }
 
@@ -49,7 +47,13 @@ public class QueueInMemoryRepository implements MessageRepository{
     }
 
     @Override
-    public void removeFromProcessingQueue(String topic) {
-        messages.get(topic).poll();
+    public synchronized void removeFromProcessingQueue(String topic, String messageId) {
+        for (MessagePayload message : messages.get(topic)) {
+            if (Objects.equals(messageId, message.getId())) {
+                log.info("Deleting permanently the message {} from listeningTopic {}", messageId, topic);
+                messages.get(topic).remove(message);
+                break;
+            }
+        }
     }
 }

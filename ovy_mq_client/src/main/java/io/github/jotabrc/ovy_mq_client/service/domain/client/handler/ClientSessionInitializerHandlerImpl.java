@@ -38,7 +38,7 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
 
     @Override
     public void initializeSession(Client client) {
-        log.info("Executing session initialization...");
+        log.info("Initializing session for client {}", client.getId());
         WebSocketStompClient stompClient = createDefaultClient();
         AtomicLong counter = new AtomicLong(0L);
         while (true) {
@@ -53,10 +53,11 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
         try {
             StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSession);
             client.setClientSession(clientSession);
-            log.info("Session initialized {} for topic {}", session.getSessionId(), client.getTopic());
+            clientSession.setClientId(client.getId());
+            log.info("Session initialized {} for listeningTopic {}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {
-            log.info("Server not available, retry subscription ({}) for topic {}...", counter.getAndIncrement(), client.getTopic());
+            log.info("Server is unavailable, retrying connection. Retry number {} for client {} on listeningTopic {}", counter.getAndIncrement(), client.getId(), client.getTopic());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {

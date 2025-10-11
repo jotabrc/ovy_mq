@@ -13,5 +13,5 @@ public interface QueueHandler extends AbstractHandler {
     void send(Client client, MessagePayload messagePayload);
     List<MessagePayload> getMessageByTopic(String topic);
     List<MessagePayload> getMessageByTopic(String topic, int quantity);
-    void remove(MessagePayload message);
+    void remove(String topic, String messageId);
 }

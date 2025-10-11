@@ -32,25 +32,28 @@ public class ClientListenerHandlerImpl implements ClientListenerHandler, Command
 
     @Override
     public void initialize() {
-        log.info("Initializing session handler...");
+        log.info("Listener handler initialized");
         String[] beanNames = ApplicationContextHolder.get().getBeanDefinitionNames();
-        log.info("Looking up methods for listeners...");
+        log.info("Searching for clients");
         for (String beanName : beanNames) {
             Object bean = ApplicationContextHolder.get().getBean(beanName);
             Class<?> beanClass = bean.getClass();
 
             for (Method method : beanClass.getMethods()) {
                 OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
-                if (nonNull(listener)) {
-                    log.info("Found listener for topic {} in class {} on method {}", listener.topic(), beanClass.getSimpleName(), method.getName());
-                    String topic = listener.topic();
 
-                    Client client = ClientFactory.createConsumer(topic, method);
-                    clientSessionInitializerHandler.initializeSession(client);
-                    clientRegistryHandler.save(client);
+                if (nonNull(listener)) {
+                    log.info("Found listener for listeningTopic {} in class {} on method {}", listener.topic(), beanClass.getSimpleName(), method.getName());
+                    String topic = listener.topic();
+                    log.info("Listener for listeningTopic {} has {} replica(s)", topic, listener.replicas());
+                    for (int i = 0; i < listener.replicas(); i++) {
+                        Client client = ClientFactory.createConsumer(topic, method);
+                        log.info("Creating client {}/{} for listeningTopic {}", i + 1, listener.replicas(), listener.topic());
+                        clientSessionInitializerHandler.initializeSession(client);
+                        clientRegistryHandler.save(client);
+                    }
                 }
             }
         }
-        log.info("Session initialization completed");
     }
 }

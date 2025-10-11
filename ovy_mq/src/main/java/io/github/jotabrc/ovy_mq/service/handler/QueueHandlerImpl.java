@@ -9,7 +9,6 @@ import io.github.jotabrc.ovy_mq.security.SecurityHandler;
 import io.github.jotabrc.ovy_mq.service.BrokerMapping;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.TopicRegistryHandler;
-import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.MessageHeaders;
@@ -23,10 +22,12 @@ import org.springframework.util.MimeTypeUtils;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.nonNull;
+
 @Slf4j
 @AllArgsConstructor
 @Service
-public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.interfaces.QueueHandler {
+public class QueueHandlerImpl implements io.github.jotabrc.ovy_mq.service.handler.interfaces.QueueHandler {
 
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
@@ -42,14 +43,13 @@ public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.in
         messageRepository.saveToQueue(message);
 
         if (taskConfig.useTopicRegistry()) {
-            topicRegistryHandler.save(message.getTopicKey());
+            topicRegistryHandler.save(message.getListeningTopic());
         }
     }
 
     @Async
     @Override
     public void send(String clientId) {
-        log.info("Sending message for client: {}", clientId);
         Client client = clientRegistryHandler.findClientById(clientId);
         send(client);
     }
@@ -57,7 +57,7 @@ public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.in
     @Async
     @Override
     public void send(Client client) {
-        MessagePayload message = messageRepository.removeFromQueueAndReturn(TopicUtil.createTopicKeyForAwaitProcessing(client.getListeningTopic()));
+        MessagePayload message = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
         send(client, message);
     }
 
@@ -65,21 +65,23 @@ public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.in
     @Override
     public void send(Client client, MessagePayload message) {
         if (sendMessageToConsumer(message, client)) {
-            message.updateMessageStatusTo(MessageStatus.PROCESSING);
             messageRepository.saveToQueue(message);
             updateClientRegistry(client);
-        } else {
+        } else if (nonNull(message)) {
             messageRepository.saveToQueue(message);
         }
     }
 
     private synchronized boolean sendMessageToConsumer(MessagePayload message, Client client) {
-        if (client.getIsAvailable()) {
-            log.info("Sending client={}, topic={}, payload={}", client.getId(), createDestination(client.getListeningTopic()), message);
+        if (client.getIsAvailable() && nonNull(message)) {
+            log.info("Sending message for client: {}", client.getId());
+            log.info("Sending client={}, listeningTopic={}, payload={}", client.getId(), createDestination(client.getTopic()), message);
+            message.setListeningTopic(client.getTopic());
             messagingTemplate.convertAndSendToUser(client.getId(),
-                    createDestination(client.getListeningTopic()),
+                    createDestination(client.getTopic()),
                     message,
                     createHeaders());
+            message.updateMessageStatusTo(MessageStatus.PROCESSING);
             return true;
         }
         return false;
@@ -100,7 +102,6 @@ public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.in
 
     private void updateClientRegistry(Client client) {
         if (taskConfig.useRegistry()) {
-//            client.updateStatus();
             clientRegistryHandler.updateClientList(client);
         }
     }
@@ -112,12 +113,12 @@ public class QueueHandler implements io.github.jotabrc.ovy_mq.service.handler.in
 
     @Override
     public List<MessagePayload> getMessageByTopic(String topic, int quantity) {
-        return messageRepository.removeFromQueueAndReturnList(TopicUtil.createTopicKeyForAwaitProcessing(topic), quantity);
+        return messageRepository.removeFromQueueAndReturnList(topic, quantity);
     }
 
     @Async
     @Override
-    public void remove(MessagePayload message) {
-        messageRepository.removeFromProcessingQueue(message.getTopicKey());
+    public void remove(String topic, String messageId) {
+        messageRepository.removeFromProcessingQueue(topic, messageId);
     }
 }

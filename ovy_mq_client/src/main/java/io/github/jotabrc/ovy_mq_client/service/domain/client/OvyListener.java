@@ -10,6 +10,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface OvyListener {
     String topic() default "";
-    String consumers() default "1";
+    int replicas() default 1;
     ListenerState initialState() default ListenerState.STANDBY;
 }
