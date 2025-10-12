@@ -6,13 +6,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
 @Setter
 @Builder
 @Getter
-public class Client {
+public class Client implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String id;
     private String topic;
@@ -21,8 +26,9 @@ public class Client {
     private ClientSession clientSession;
 
     public void requestMessage() {
-        this.clientSession.getSession().send(StompHeaderFactory.get(this.topic, "/request/message"), new MessagePayload());
+        this.clientSession.getSession().send(StompHeaderFactory.get(this.topic, "/request/message"), this.topic);
     }
+
     public void confirmProcessing(MessagePayload messagePayload) {
         this.clientSession.getSession().send(StompHeaderFactory.get(this.topic, "/request/message/confirm"), messagePayload);
     }

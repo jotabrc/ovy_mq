@@ -20,6 +20,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Deprecated
 public class RedisRepository implements MessageRepository {
 
     private final RedisTemplate<String, String> redisTemplate;

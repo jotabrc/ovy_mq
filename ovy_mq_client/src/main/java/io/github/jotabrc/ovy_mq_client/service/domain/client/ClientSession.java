@@ -46,7 +46,7 @@ public class ClientSession extends StompSessionHandlerAdapter {
             String topic = destination.substring("/user/queue/".length());
             MessagePayload messagePayload = ObjectMapperFactory.get().convertValue(object, MessagePayload.class);
             messagePayload.setTopic(topic);
-            clientMessageHandler.handleMessage(clientId, topic, messagePayload);
+            clientMessageHandler.handleMessage(this.clientId, topic, messagePayload);
         }
     }
 

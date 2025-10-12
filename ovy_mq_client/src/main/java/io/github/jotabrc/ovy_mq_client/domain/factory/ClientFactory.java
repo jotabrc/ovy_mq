@@ -10,7 +10,7 @@ public class ClientFactory {
 
     private ClientFactory() {}
 
-    public static Client createConsumer(String topic, ClientSession clientSession, Method method) {
+    public static Client of(String topic, ClientSession clientSession, Method method) {
         return Client.builder()
                 .topic(topic)
                 .method(method)
@@ -19,7 +19,7 @@ public class ClientFactory {
                 .build();
     }
 
-    public static Client createConsumer(String topic, Method method) {
+    public static Client of(String topic, Method method) {
         return Client.builder()
                 .id(UUID.randomUUID().toString())
                 .topic(topic)
@@ -28,7 +28,7 @@ public class ClientFactory {
                 .build();
     }
 
-    public static Client createConsumer(String topic, ClientSession clientSession) {
+    public static Client of(String topic, ClientSession clientSession) {
         return Client.builder()
                 .topic(topic)
                 .clientSession(clientSession)
@@ -36,7 +36,7 @@ public class ClientFactory {
                 .build();
     }
 
-    public static Client createConsumer(String topic) {
+    public static Client of(String topic) {
         return Client.builder()
                 .topic(topic)
                 .isAvailable(true)

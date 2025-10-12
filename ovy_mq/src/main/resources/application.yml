@@ -13,11 +13,11 @@ spring:
 ovymq:
   task:
     consumer:
-      active: true
+      active: false
       auto: false
       delay: 5000
     topic:
-      active: true
+      active: false
       auto: false
       delay: 5000
     reprocessing:

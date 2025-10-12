@@ -26,7 +26,7 @@ public class ClientListenerHandlerImpl implements ClientListenerHandler, Command
     private final ClientRegistryHandler clientRegistryHandler;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         initialize();
     }
 
@@ -47,7 +47,7 @@ public class ClientListenerHandlerImpl implements ClientListenerHandler, Command
                     String topic = listener.topic();
                     log.info("Listener for topic={} has {} replica(s)", topic, listener.replicas());
                     for (int i = 0; i < listener.replicas(); i++) {
-                        Client client = ClientFactory.createConsumer(topic, method);
+                        Client client = ClientFactory.of(topic, method);
                         log.info("Creating client {}/{} for topic={}", i + 1, listener.replicas(), listener.topic());
                         clientSessionInitializerHandler.initializeSession(client);
                         clientRegistryHandler.save(client);

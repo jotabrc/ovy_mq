@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq.controller;
 
+import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.domain.ConfigPayload;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageRemoveHandler;
@@ -30,8 +31,8 @@ public class MessageController {
     }
 
     @MessageMapping(MESSAGE_REQUEST)
-    public void requestMessage(@Payload(required = false) MessagePayload messagePayload, Principal principal) {
-        messageRequestHandler.handle(principal.getName());
+    public void requestMessage(String topic, Principal principal) {
+        messageRequestHandler.handle(ClientFactory.of(principal.getName(), topic));
     }
 
     @MessageMapping(MESSAGE_PROCESSED)

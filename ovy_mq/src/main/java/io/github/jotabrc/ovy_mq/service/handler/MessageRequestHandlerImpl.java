@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.config.BrokerMapping;
 import io.github.jotabrc.ovy_mq.domain.Client;
-import io.github.jotabrc.ovy_mq.domain.ClientMapper;
+import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
@@ -34,16 +34,15 @@ public class MessageRequestHandlerImpl implements MessageRequestHandler {
     private final SimpMessagingTemplate messagingTemplate;
     private final SecurityHandler securityHandler;
 
-    @Override
     public void handle(String clientId) {
-        Client client = registrySelect.handle(ClientMapper.of(clientId));
-        log.info("Handling request for message for client={}", clientId);
-        if (nonNull(client)) handle(client);
+        handle(ClientFactory.of(clientId));
     }
 
-    private void handle(Client client) {
+    @Override
+    public void handle(Client client) {
+        log.info("Handling request for message for client={}", client.getId());
         MessagePayload messagePayload = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
-        if (nonNull(messagePayload) && client.getIsAvailable()) handle(client, messagePayload);
+        if (nonNull(messagePayload) && nonNull(client.getId())) handle(client, messagePayload);
     }
 
     private void handle(Client client, MessagePayload messagePayload) {
@@ -53,7 +52,6 @@ public class MessageRequestHandlerImpl implements MessageRequestHandler {
         } catch (Exception e) {
             messageRepository.saveToQueue(messagePayload);
         }
-        registryUpsert.handle(client);
     }
 
     private void sendMessageToConsumer(MessagePayload message, Client client) {

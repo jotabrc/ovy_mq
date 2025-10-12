@@ -4,12 +4,17 @@ import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
 @Builder
 @Getter
-public class Client {
+public class Client implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String id;
     private String topic;

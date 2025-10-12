@@ -1,13 +1,12 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.domain.ClientMapper;
+import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryRemoveHandler;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryUpsertHandler;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
@@ -21,12 +20,12 @@ import static java.util.Objects.nonNull;
 @Getter
 @Component
 @AllArgsConstructor
+@Deprecated
 public class ClientListener {
 
     private final ClientRegistryUpsertHandler clientRegistryUpsert;
     private final ClientRegistryRemoveHandler clientRegistryRemove;
 
-    @EventListener
     public void clientConnectionEventHandler(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         Map<String, Object> attributes = accessor.getSessionAttributes();
@@ -34,11 +33,10 @@ public class ClientListener {
         if (isAttributesAvailable(attributes)) {
             String clientId = getClientId(attributes);
             String topic = getTopic(attributes);
-            clientRegistryUpsert.handle(ClientMapper.of(clientId, topic));
+            clientRegistryUpsert.handle(ClientFactory.of(clientId, topic));
         }
     }
 
-    @EventListener
     public void clientDisconnectionEventHandler(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         Map<String, Object> attributes = accessor.getSessionAttributes();
@@ -46,7 +44,7 @@ public class ClientListener {
         if (isAttributesAvailable(attributes)) {
             String clientId = getClientId(attributes);
             log.info("Disconnecting client {}", clientId);
-            clientRegistryRemove.handle(ClientMapper.of(clientId));
+            clientRegistryRemove.handle(ClientFactory.of(clientId));
         }
     }
 

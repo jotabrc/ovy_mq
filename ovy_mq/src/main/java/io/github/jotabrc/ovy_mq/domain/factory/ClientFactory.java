@@ -1,8 +1,10 @@
-package io.github.jotabrc.ovy_mq.domain;
+package io.github.jotabrc.ovy_mq.domain.factory;
 
-public class ClientMapper {
+import io.github.jotabrc.ovy_mq.domain.Client;
 
-    private ClientMapper() {}
+public class ClientFactory {
+
+    private ClientFactory() {}
 
     public static Client of(String clientId, String topic) {
         return Client.builder()
