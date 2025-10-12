@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.service.ClientRegistryContextHolder;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistrySelectHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import java.util.Objects;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class ClientRegistrySelectHandlerImpl implements ClientRegistrySelectHandler {
+public class ClientRegistrySelectHandler implements ClientRegistryHandler {
 
     private final ClientRegistryContextHolder registry;
 

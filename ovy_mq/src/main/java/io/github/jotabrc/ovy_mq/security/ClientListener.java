@@ -1,9 +1,8 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryRemoveHandler;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryUpsertHandler;
+import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
+import io.github.jotabrc.ovy_mq.service.handler.executor.ClientHandlerExecutor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,8 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.Map;
 
+import static io.github.jotabrc.ovy_mq.service.handler.strategy.ClientRegistryStrategy.REMOVE;
+import static io.github.jotabrc.ovy_mq.service.handler.strategy.ClientRegistryStrategy.UPSERT;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -23,8 +24,7 @@ import static java.util.Objects.nonNull;
 @Deprecated
 public class ClientListener {
 
-    private final ClientRegistryUpsertHandler clientRegistryUpsert;
-    private final ClientRegistryRemoveHandler clientRegistryRemove;
+    private final ClientHandlerExecutor clientHandlerExecutor;
 
     public void clientConnectionEventHandler(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -33,7 +33,7 @@ public class ClientListener {
         if (isAttributesAvailable(attributes)) {
             String clientId = getClientId(attributes);
             String topic = getTopic(attributes);
-            clientRegistryUpsert.handle(ClientFactory.of(clientId, topic));
+            clientHandlerExecutor.execute(UPSERT, ClientFactory.of(clientId, topic));
         }
     }
 
@@ -44,7 +44,7 @@ public class ClientListener {
         if (isAttributesAvailable(attributes)) {
             String clientId = getClientId(attributes);
             log.info("Disconnecting client {}", clientId);
-            clientRegistryRemove.handle(ClientFactory.of(clientId));
+            clientHandlerExecutor.execute(REMOVE, ClientFactory.of(clientId));
         }
     }
 

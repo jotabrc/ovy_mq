@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.service.handler;
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
 import io.github.jotabrc.ovy_mq.service.ClientRegistryContextHolder;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryRemoveHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class ClientRegistryRemoveHandlerImpl implements ClientRegistryRemoveHandler {
+public class ClientRegistryRemoveHandler implements ClientRegistryHandler {
 
     private final ClientRegistryContextHolder registry;
 

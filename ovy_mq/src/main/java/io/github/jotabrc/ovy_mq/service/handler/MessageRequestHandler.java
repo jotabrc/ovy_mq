@@ -2,14 +2,12 @@ package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.config.BrokerMapping;
 import io.github.jotabrc.ovy_mq.domain.Client;
-import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq.domain.MessageRecord;
 import io.github.jotabrc.ovy_mq.domain.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.SecurityHandler;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistrySelectHandler;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryUpsertHandler;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageRequestHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.MessageHeaders;
@@ -26,23 +24,19 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class MessageRequestHandlerImpl implements MessageRequestHandler {
+public class MessageRequestHandler implements MessageHandler {
 
     private final MessageRepository messageRepository;
-    private final ClientRegistryUpsertHandler registryUpsert;
-    private final ClientRegistrySelectHandler registrySelect;
     private final SimpMessagingTemplate messagingTemplate;
     private final SecurityHandler securityHandler;
 
-    public void handle(String clientId) {
-        handle(ClientFactory.of(clientId));
-    }
-
     @Override
-    public void handle(Client client) {
+    public MessageRecord handle(MessageRecord messageRecord) {
+        Client client = messageRecord.getClient();
         log.info("Handling request for message for client={}", client.getId());
         MessagePayload messagePayload = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
         if (nonNull(messagePayload) && nonNull(client.getId())) handle(client, messagePayload);
+        return messageRecord;
     }
 
     private void handle(Client client, MessagePayload messagePayload) {

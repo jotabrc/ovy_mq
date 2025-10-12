@@ -1,11 +1,10 @@
 package io.github.jotabrc.ovy_mq.controller;
 
-import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.domain.ConfigPayload;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageRemoveHandler;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageRequestHandler;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageSaveHandler;
+import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
+import io.github.jotabrc.ovy_mq.domain.factory.MessageRecordFactory;
+import io.github.jotabrc.ovy_mq.service.handler.executor.MessageHandlerExecutor;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -15,33 +14,32 @@ import org.springframework.stereotype.Controller;
 import java.security.Principal;
 
 import static io.github.jotabrc.ovy_mq.config.BrokerMapping.*;
+import static io.github.jotabrc.ovy_mq.service.handler.strategy.MessageRegistryStrategy.*;
 import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
 @Controller
 public class MessageController {
 
-    private final MessageSaveHandler messageSaveHandler;
-    private final MessageRequestHandler messageRequestHandler;
-    private final MessageRemoveHandler messageRemoveHandler;
+    private final MessageHandlerExecutor messageHandlerExecutor;
 
     @MessageMapping(SAVE_MESSAGE)
-    public void saveMessage(@Payload MessagePayload message) {
-        messageSaveHandler.handle(message);
+    public void saveMessage(@Payload MessagePayload messagePayload) {
+        messageHandlerExecutor.execute(SAVE, MessageRecordFactory.of(messagePayload));
     }
 
     @MessageMapping(MESSAGE_REQUEST)
     public void requestMessage(String topic, Principal principal) {
-        messageRequestHandler.handle(ClientFactory.of(principal.getName(), topic));
+        messageHandlerExecutor.execute(REQUEST, MessageRecordFactory.of(ClientFactory.of(principal.getName(), topic)));
     }
 
     @MessageMapping(MESSAGE_PROCESSED)
     public void confirmProcessing(@Payload MessagePayload messagePayload, @Header("Listening-Topic") String topic) {
         if (nonNull(messagePayload) && nonNull(topic)) {
             messagePayload.setTopic(topic);
-            messageRemoveHandler.handle(messagePayload);
+            messageHandlerExecutor.execute(REMOVE, MessageRecordFactory.of(messagePayload));
             if (!messagePayload.isSuccess() && messagePayload.isProcessable()) {
-                messageSaveHandler.handle(messagePayload);
+                messageHandlerExecutor.execute(SAVE, MessageRecordFactory.of(messagePayload));
             }
         }
     }
