@@ -37,7 +37,7 @@ public class MessageRequestHandlerImpl implements MessageRequestHandler {
     @Override
     public void handle(String clientId) {
         Client client = registrySelect.handle(ClientMapper.of(clientId));
-        log.info("Handling client={} request for message", clientId);
+        log.info("Handling request for message for client={}", clientId);
         if (nonNull(client)) handle(client);
     }
 
@@ -48,8 +48,11 @@ public class MessageRequestHandlerImpl implements MessageRequestHandler {
 
     private void handle(Client client, MessagePayload messagePayload) {
         log.info("Found message={} for client={}", messagePayload.getId(), client.getId());
-        sendMessageToConsumer(messagePayload, client);
-        messageRepository.saveToQueue(messagePayload);
+        try {
+            sendMessageToConsumer(messagePayload, client);
+        } catch (Exception e) {
+            messageRepository.saveToQueue(messagePayload);
+        }
         registryUpsert.handle(client);
     }
 

@@ -33,7 +33,6 @@ public class ClientMessageHandlerImpl implements ClientMessageHandler {
             log.info("Error processing message={}", messagePayload.getId());
         } finally {
             client.setIsAvailable(true);
-            client.confirmProcessing(messagePayload);
             client.requestMessage();
         }
     }

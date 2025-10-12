@@ -17,7 +17,7 @@ public class Test implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         AtomicInteger counter = new AtomicInteger(0);
-        while (counter.getAndIncrement() < 100) {
+        while (counter.getAndIncrement() < 100000) {
             messageSaveHandler.handle(MessagePayload.builder()
                     .topic("teste")
                     .payload("String value")
