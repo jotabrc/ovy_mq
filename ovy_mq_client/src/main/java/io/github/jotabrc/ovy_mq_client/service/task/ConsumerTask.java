@@ -27,10 +27,10 @@ public class ConsumerTask {
 
     @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
-        log.info("Consumer task execution started with fixed delay of {}ms", delay);
+        log.info("Consumer task execution started with fixed delay of {} ms", delay);
         clientRegistryHandler.getAllAvailableClients()
                 .forEach(client -> {
-                    log.info("Requesting message for client {} listening to topic {}", client.getId(), client.getTopic());
+                    log.info("Requesting message for client={} listening to topic={}", client.getId(), client.getTopic());
                     client.requestMessage();
                 });
     }

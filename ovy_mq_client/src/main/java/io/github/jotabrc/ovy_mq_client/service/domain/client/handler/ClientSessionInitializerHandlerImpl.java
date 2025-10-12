@@ -31,7 +31,7 @@ public class ClientSessionInitializerHandlerImpl implements ClientSessionInitial
 
     @Override
     public void initializeSession(Client client) {
-        log.info("Initializing session for client {}", client.getId());
+        log.info("Initializing session for client={}", client.getId());
         WebSocketStompClient stompClient = ObjectMapperFactory.getWithConverter();
         AtomicLong counter = new AtomicLong(0L);
         while (true) {

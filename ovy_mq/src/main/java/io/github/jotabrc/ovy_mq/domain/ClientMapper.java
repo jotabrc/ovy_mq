@@ -11,4 +11,10 @@ public class ClientMapper {
                 .isAvailable(true)
                 .build();
     }
+
+    public static Client of(String clientId) {
+        return Client.builder()
+                .id(clientId)
+                .build();
+    }
 }

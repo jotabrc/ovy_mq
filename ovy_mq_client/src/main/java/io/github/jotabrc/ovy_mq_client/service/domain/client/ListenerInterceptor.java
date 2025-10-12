@@ -14,13 +14,14 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Aspect
 @Component
+@Deprecated
 public class ListenerInterceptor {
 
     private final ObjectProvider<ClientContextHolder> clientContextHolder;
 
     @Around("@annotation(ovyListener)")
     public void consumerProcessingAspect(ProceedingJoinPoint joinPoint) throws Throwable {
-        log.info("Executing listener Aspect");
+        log.info("Executing listener aspect");
 
         Object[] args = joinPoint.getArgs();
         MessagePayload messagePayload = (MessagePayload) args[0];

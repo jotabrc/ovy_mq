@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import static java.util.Objects.isNull;
 
+@Deprecated
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ClientContextHolder {

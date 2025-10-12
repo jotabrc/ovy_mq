@@ -41,7 +41,6 @@ public class ClientSession extends StompSessionHandlerAdapter {
 
     @Override
     public void handleFrame(StompHeaders headers, Object object) {
-        log.info("Handling frame {}", object);
         String destination = headers.getDestination();
         if (nonNull(destination) && destination.startsWith("/user/queue/")) {
             String topic = destination.substring("/user/queue/".length());

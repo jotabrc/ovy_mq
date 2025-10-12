@@ -1,9 +1,9 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.config.TaskConfig;
 import io.github.jotabrc.ovy_mq.domain.ClientMapper;
 import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryRemoveHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.ClientRegistryUpsertHandler;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,34 +23,30 @@ import static java.util.Objects.nonNull;
 @AllArgsConstructor
 public class ClientListener {
 
-    private final TaskConfig taskConfig;
-    private final ClientRegistryHandler clientRegistryHandler;
+    private final ClientRegistryUpsertHandler clientRegistryUpsert;
+    private final ClientRegistryRemoveHandler clientRegistryRemove;
 
     @EventListener
     public void clientConnectionEventHandler(SessionConnectEvent event) {
-        if (taskConfig.useRegistry()) {
-            StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-            Map<String, Object> attributes = accessor.getSessionAttributes();
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+        Map<String, Object> attributes = accessor.getSessionAttributes();
 
-            if (isAttributesAvailable(attributes)) {
-                String clientId = getClientId(attributes);
-                String topic = getTopic(attributes);
-                clientRegistryHandler.updateClientList(ClientMapper.of(clientId, topic));
-            }
+        if (isAttributesAvailable(attributes)) {
+            String clientId = getClientId(attributes);
+            String topic = getTopic(attributes);
+            clientRegistryUpsert.handle(ClientMapper.of(clientId, topic));
         }
     }
 
     @EventListener
     public void clientDisconnectionEventHandler(SessionDisconnectEvent event) {
-        if (taskConfig.useRegistry()) {
-            StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-            Map<String, Object> attributes = accessor.getSessionAttributes();
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+        Map<String, Object> attributes = accessor.getSessionAttributes();
 
-            if (isAttributesAvailable(attributes)) {
-                String clientId = getClientId(attributes);
-                log.info("Disconnecting client {}", clientId);
-                clientRegistryHandler.remove(clientId);
-            }
+        if (isAttributesAvailable(attributes)) {
+            String clientId = getClientId(attributes);
+            log.info("Disconnecting client {}", clientId);
+            clientRegistryRemove.handle(ClientMapper.of(clientId));
         }
     }
 

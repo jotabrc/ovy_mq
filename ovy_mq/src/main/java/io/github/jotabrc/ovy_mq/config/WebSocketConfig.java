@@ -15,7 +15,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import java.util.List;
 
-import static io.github.jotabrc.ovy_mq.service.BrokerMapping.*;
+import static io.github.jotabrc.ovy_mq.config.BrokerMapping.*;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -29,7 +29,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint(CLIENT_REGISTRATION)
+        registry.addEndpoint(RECEIVER_REGISTRATION)
                 .setHandshakeHandler(new CustomHandshakeHandler())
                 .addInterceptors(authInterceptor)
                 .setAllowedOrigins("*");
@@ -37,8 +37,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker(SEND_MESSAGE_TO_CONSUMER,
-                SEND_CONFIG_TO_CONSUMER);
+        registry.enableSimpleBroker(SENDER_MESSAGE_TO_CLIENT,
+                SENDER_CONFIGURATION_TO_CLIENT);
         registry.setApplicationDestinationPrefixes(DEFAULT_PREFIX);
         registry.setUserDestinationPrefix("/user");
     }

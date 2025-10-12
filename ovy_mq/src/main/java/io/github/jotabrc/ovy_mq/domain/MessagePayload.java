@@ -54,4 +54,9 @@ public class MessagePayload implements Serializable {
     public boolean isProcessable() {
         return nonNull(this.payload) && nonNull(this.topic);
     }
+
+    @JsonIgnore
+    public boolean hasIdentifiers() {
+        return nonNull(topic) && !topic.isBlank() && nonNull(id) && !id.isBlank();
+    }
 }

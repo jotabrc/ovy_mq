@@ -25,13 +25,14 @@ public class RedisRepository implements MessageRepository {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public void saveToQueue(MessagePayload message) {
+    public MessagePayload saveToQueue(MessagePayload messagePayload) {
         try {
-            String json = new ObjectMapper().writeValueAsString(message);
-            redisTemplate.opsForList().rightPush(message.getTopic(), json);
+            String json = new ObjectMapper().writeValueAsString(messagePayload);
+            redisTemplate.opsForList().rightPush(messagePayload.getTopic(), json);
         } catch (JsonProcessingException e) {
-            throw new MessageToJsonException("Error while converting message to json: %s".formatted(message.getId()));
+            throw new MessageToJsonException("Error while converting message to json: %s".formatted(messagePayload.getId()));
         }
+        return messagePayload;
     }
 
     private void savingErrorPrintLog(MessagePayload message) {

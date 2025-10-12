@@ -21,13 +21,14 @@ public class QueueInMemoryRepository implements MessageRepository{
     private Map<String, Queue<MessagePayload>> messages = new ConcurrentHashMap();
 
     @Override
-    public void saveToQueue(MessagePayload message) {
-        messages.compute(message.getTopic(), (key, queue) -> {
+    public MessagePayload saveToQueue(MessagePayload messagePayload) {
+        messages.compute(messagePayload.getTopic(), (key, queue) -> {
             if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
-            log.info("Saving message {} for topic {}", message.getId(), key);
-            queue.offer(message);
+            log.info("Saving message {} for topic {}", messagePayload.getId(), key);
+            queue.offer(messagePayload);
             return queue;
         });
+        return messagePayload;
     }
 
     @Override

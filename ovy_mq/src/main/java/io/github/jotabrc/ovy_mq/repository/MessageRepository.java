@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface MessageRepository {
 
-    void saveToQueue(MessagePayload message);
+    MessagePayload saveToQueue(MessagePayload messagePayload);
     MessagePayload removeFromQueueAndReturn(String topic);
     List<MessagePayload> removeFromQueueAndReturnList(String topic, int quantity);
     void removeFromProcessingQueue(String topic, String messageId);
