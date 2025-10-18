@@ -1,8 +1,8 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client;
+package io.github.jotabrc.ovy_mq_client.service;
 
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientMessageHandler;
+import io.github.jotabrc.ovy_mq_client.service.processor.interfaces.ClientMessageProcessor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import static java.util.Objects.nonNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ClientSession extends StompSessionHandlerAdapter {
 
-    private final ClientMessageHandler clientMessageHandler;
+    private final ClientMessageProcessor clientMessageProcessor;
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
 
     private StompSession session;
@@ -46,7 +46,7 @@ public class ClientSession extends StompSessionHandlerAdapter {
             String topic = destination.substring("/user/queue/".length());
             MessagePayload messagePayload = ObjectMapperFactory.get().convertValue(object, MessagePayload.class);
             messagePayload.setTopic(topic);
-            clientMessageHandler.handleMessage(this.clientId, topic, messagePayload);
+            clientMessageProcessor.process(this.clientId, topic, messagePayload);
         }
     }
 

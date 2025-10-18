@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.util;
+package io.github.jotabrc.ovy_mq_client.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeansException;

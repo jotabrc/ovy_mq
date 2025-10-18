@@ -1,10 +1,10 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces;
+package io.github.jotabrc.ovy_mq_client.service.registry.interfaces;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 
 import java.util.List;
 
-public interface ClientRegistryHandler extends AbstractHandler {
+public interface ClientRegistry {
 
     void save(Client client);
     Client getByClientIdOrThrow(String sessionId);

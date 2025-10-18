@@ -1,11 +1,11 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
+package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.domain.factory.HttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.ClientSession;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.ClientSession;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,13 +24,13 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ClientSessionInitializerHandlerImpl implements ClientSessionInitializerHandler {
+public class ClientStompSessionHandlerImpl implements ClientSessionHandler {
 
     private final ObjectProvider<ClientSession> clientSessionProvider;
     private final HttpHeaderFactory httpHeaderFactory;
 
     @Override
-    public void initializeSession(Client client) {
+    public void initialize(Client client) {
         log.info("Initializing session for client={}", client.getId());
         WebSocketStompClient stompClient = ObjectMapperFactory.getWithConverter();
         AtomicLong counter = new AtomicLong(0L);

@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client;
 
-import io.github.jotabrc.ovy_mq_client.service.domain.client.OvyListener;
+import io.github.jotabrc.ovy_mq_client.service.OvyListener;
 import org.springframework.stereotype.Component;
 
 @Component

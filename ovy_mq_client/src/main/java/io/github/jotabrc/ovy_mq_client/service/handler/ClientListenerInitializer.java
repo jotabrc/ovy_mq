@@ -1,12 +1,11 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client.handler;
+package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.OvyListener;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientListenerHandler;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientRegistryHandler;
-import io.github.jotabrc.ovy_mq_client.service.domain.client.handler.interfaces.ClientSessionInitializerHandler;
-import io.github.jotabrc.ovy_mq_client.util.ApplicationContextHolder;
+import io.github.jotabrc.ovy_mq_client.service.OvyListener;
+import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionHandler;
+import io.github.jotabrc.ovy_mq_client.service.ApplicationContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -20,17 +19,16 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ClientListenerHandlerImpl implements ClientListenerHandler, CommandLineRunner {
+public class ClientListenerInitializer implements CommandLineRunner {
 
-    private final ClientSessionInitializerHandler clientSessionInitializerHandler;
-    private final ClientRegistryHandler clientRegistryHandler;
+    private final ClientSessionHandler clientSessionHandler;
+    private final ClientRegistry clientRegistry;
 
     @Override
     public void run(String... args) {
         initialize();
     }
 
-    @Override
     public void initialize() {
         log.info("Listener handler initialized");
         String[] beanNames = ApplicationContextHolder.get().getBeanDefinitionNames();
@@ -49,8 +47,8 @@ public class ClientListenerHandlerImpl implements ClientListenerHandler, Command
                     for (int i = 0; i < listener.replicas(); i++) {
                         Client client = ClientFactory.of(topic, method);
                         log.info("Creating client {}/{} for topic={}", i + 1, listener.replicas(), listener.topic());
-                        clientSessionInitializerHandler.initializeSession(client);
-                        clientRegistryHandler.save(client);
+                        clientSessionHandler.initialize(client);
+                        clientRegistry.save(client);
                     }
                 }
             }

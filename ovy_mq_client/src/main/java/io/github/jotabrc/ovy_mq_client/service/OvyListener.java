@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.service.domain.client;
+package io.github.jotabrc.ovy_mq_client.service;
 
 import org.springframework.scheduling.annotation.Async;
 
