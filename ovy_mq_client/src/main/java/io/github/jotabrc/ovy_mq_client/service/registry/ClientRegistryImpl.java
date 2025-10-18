@@ -27,7 +27,7 @@ public class ClientRegistryImpl implements ClientRegistry {
     public void save(Client client) {
         if (nonNull(client)
                 && nonNull(client.getTopic())
-                && nonNull(client.getClientSession())) {
+                && nonNull(client.getClientSessionHandler())) {
             clientRegistryContextHolder.getClients().compute(client.getTopic(), (key, queue) -> {
                 if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
                 if (!queue.contains(client)) queue.offer(client);
@@ -55,7 +55,7 @@ public class ClientRegistryImpl implements ClientRegistry {
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(Client::getIsAvailable)
-                .filter(client -> client.getClientSession().getSession().isConnected())
+                .filter(client -> client.getClientSessionHandler().getSession().isConnected())
                 .toList();
     }
 }

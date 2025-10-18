@@ -4,8 +4,7 @@ import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.domain.factory.HttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
-import io.github.jotabrc.ovy_mq_client.service.ClientSession;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +23,9 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ClientStompSessionHandlerImpl implements ClientSessionHandler {
+public class ClientStompSessionInitializerHandlerImpl implements ClientSessionInitializerHandler {
 
-    private final ObjectProvider<ClientSession> clientSessionProvider;
+    private final ObjectProvider<ClientSessionHandler> clientSessionProvider;
     private final HttpHeaderFactory httpHeaderFactory;
 
     @Override
@@ -41,12 +40,12 @@ public class ClientStompSessionHandlerImpl implements ClientSessionHandler {
 
     private boolean connect(Client client, WebSocketStompClient stompClient, AtomicLong counter) {
         WebSocketHttpHeaders headers = httpHeaderFactory.get(client.getTopic());
-        ClientSession clientSession = clientSessionProvider.getObject();
+        ClientSessionHandler clientSessionHandler = clientSessionProvider.getObject();
 
         try {
-            StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSession);
-            client.setClientSession(clientSession);
-            clientSession.setClientId(client.getId());
+            StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
+            client.setClientSessionHandler(clientSessionHandler);
+            clientSessionHandler.setClientId(client.getId());
             log.info("Session initialized {} for topic {}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {
@@ -60,14 +59,13 @@ public class ClientStompSessionHandlerImpl implements ClientSessionHandler {
         return false;
     }
 
-    private StompSession connectToServerAndInitializeSubscription(String topic, WebSocketStompClient stompClient, WebSocketHttpHeaders headers, ClientSession clientSession) throws ExecutionException, InterruptedException {
-        stompClient.connectAsync("ws://localhost:9090/registry", headers, clientSession);
-        return clientSession.getFuture().whenComplete((returnedSession, exception) -> {
+    private StompSession connectToServerAndInitializeSubscription(String topic, WebSocketStompClient stompClient, WebSocketHttpHeaders headers, ClientSessionHandler clientSessionHandler) throws ExecutionException, InterruptedException {
+        stompClient.connectAsync("ws://localhost:9090/registry", headers, clientSessionHandler);
+        return clientSessionHandler.getFuture().whenComplete((returnedSession, exception) -> {
             if (nonNull(returnedSession) && returnedSession.isConnected()) {
-                returnedSession.subscribe("/queue/" + topic, clientSession);
-                returnedSession.subscribe("/config/", clientSession);
-                returnedSession.subscribe("/user/queue/" + topic, clientSession);
-                clientSession.setSession(returnedSession);
+                returnedSession.subscribe("/queue/" + topic, clientSessionHandler);
+                returnedSession.subscribe("/config/", clientSessionHandler);
+                returnedSession.subscribe("/user/queue/" + topic, clientSessionHandler);
             } else {
                 throw new ServerSubscribeException("Server not ready...");
             }

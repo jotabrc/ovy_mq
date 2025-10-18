@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.service;
+package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
@@ -24,7 +24,7 @@ import static java.util.Objects.nonNull;
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ClientSession extends StompSessionHandlerAdapter {
+public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
     private final ClientMessageProcessor clientMessageProcessor;
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
@@ -52,7 +52,7 @@ public class ClientSession extends StompSessionHandlerAdapter {
 
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-        setSession(session);
+        this.setSession(session);
         future.complete(session);
     }
 

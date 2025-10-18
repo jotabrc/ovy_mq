@@ -35,15 +35,15 @@ public class MessageRequestHandler implements MessageHandler {
         Client client = messageRecord.getClient();
         log.info("Handling request for message for client={}", client.getId());
         MessagePayload messagePayload = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
-        if (nonNull(messagePayload) && nonNull(client.getId())) handle(client, messagePayload);
+        if (nonNull(messagePayload) && nonNull(client.getId())) sendMessageToClient(client, messagePayload);
         return messageRecord;
     }
 
-    private void handle(Client client, MessagePayload messagePayload) {
+    private void sendMessageToClient(Client client, MessagePayload messagePayload) {
         log.info("Found message={} for client={}", messagePayload.getId(), client.getId());
         try {
             sendMessageToConsumer(messagePayload, client);
-        } catch (Exception e) {
+        } finally {
             messageRepository.saveToQueue(messagePayload);
         }
     }

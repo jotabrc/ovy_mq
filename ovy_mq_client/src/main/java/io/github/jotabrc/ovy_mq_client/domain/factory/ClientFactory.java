@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.domain.factory;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
-import io.github.jotabrc.ovy_mq_client.service.ClientSession;
+import io.github.jotabrc.ovy_mq_client.service.handler.ClientSessionHandler;
 
 import java.lang.reflect.Method;
 import java.util.UUID;
@@ -10,11 +10,11 @@ public class ClientFactory {
 
     private ClientFactory() {}
 
-    public static Client of(String topic, ClientSession clientSession, Method method) {
+    public static Client of(String topic, ClientSessionHandler clientSessionHandler, Method method) {
         return Client.builder()
                 .topic(topic)
                 .method(method)
-                .clientSession(clientSession)
+                .clientSessionHandler(clientSessionHandler)
                 .isAvailable(true)
                 .build();
     }
@@ -28,10 +28,20 @@ public class ClientFactory {
                 .build();
     }
 
-    public static Client of(String topic, ClientSession clientSession) {
+    public static Client of(String topic, Method method, Object beanInstance) {
+        return Client.builder()
+                .id(UUID.randomUUID().toString())
+                .topic(topic)
+                .method(method)
+                .beanInstance(beanInstance)
+                .isAvailable(true)
+                .build();
+    }
+
+    public static Client of(String topic, ClientSessionHandler clientSessionHandler) {
         return Client.builder()
                 .topic(topic)
-                .clientSession(clientSession)
+                .clientSessionHandler(clientSessionHandler)
                 .isAvailable(true)
                 .build();
     }

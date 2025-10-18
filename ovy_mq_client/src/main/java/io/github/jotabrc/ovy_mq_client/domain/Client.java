@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.domain;
 
 import io.github.jotabrc.ovy_mq_client.domain.factory.StompHeaderFactory;
-import io.github.jotabrc.ovy_mq_client.service.ClientSession;
+import io.github.jotabrc.ovy_mq_client.service.handler.ClientSessionHandler;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,15 +22,16 @@ public class Client implements Serializable {
     private String id;
     private String topic;
     private Boolean isAvailable;
+    private Object beanInstance;
     private Method method;
-    private ClientSession clientSession;
+    private ClientSessionHandler clientSessionHandler;
 
     public void requestMessage() {
-        this.clientSession.getSession().send(StompHeaderFactory.get(this.topic, "/request/message"), this.topic);
+        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/message"), this.topic);
     }
 
     public void confirmProcessing(MessagePayload messagePayload) {
-        this.clientSession.getSession().send(StompHeaderFactory.get(this.topic, "/request/message/confirm"), messagePayload);
+        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/message/confirm"), messagePayload);
     }
 
     @Override

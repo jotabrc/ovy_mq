@@ -2,10 +2,10 @@ package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
-import io.github.jotabrc.ovy_mq_client.service.OvyListener;
-import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionHandler;
 import io.github.jotabrc.ovy_mq_client.service.ApplicationContextHolder;
+import io.github.jotabrc.ovy_mq_client.service.OvyListener;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -21,7 +21,7 @@ import static java.util.Objects.nonNull;
 @Component
 public class ClientListenerInitializer implements CommandLineRunner {
 
-    private final ClientSessionHandler clientSessionHandler;
+    private final ClientSessionInitializerHandler clientSessionInitializerHandler;
     private final ClientRegistry clientRegistry;
 
     @Override
@@ -45,9 +45,9 @@ public class ClientListenerInitializer implements CommandLineRunner {
                     String topic = listener.topic();
                     log.info("Listener for topic={} has {} replica(s)", topic, listener.replicas());
                     for (int i = 0; i < listener.replicas(); i++) {
-                        Client client = ClientFactory.of(topic, method);
+                        Client client = ClientFactory.of(topic, method, bean);
                         log.info("Creating client {}/{} for topic={}", i + 1, listener.replicas(), listener.topic());
-                        clientSessionHandler.initialize(client);
+                        clientSessionInitializerHandler.initialize(client);
                         clientRegistry.save(client);
                     }
                 }
