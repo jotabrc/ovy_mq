@@ -1,8 +1,8 @@
-package io.github.jotabrc.ovy_mq_client.service.processor;
+package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq_client.service.processor.interfaces.ClientMessageHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientMessageHandler;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.config.BrokerMapping;
+import io.github.jotabrc.ovy_mq.config.Mapping;
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.MessageRecord;
@@ -59,7 +59,7 @@ public class MessageRequestHandler implements MessageHandler {
     }
 
     private String createDestination(String topic) {
-        return BrokerMapping.SENDER_MESSAGE_TO_CLIENT + "/" + topic;
+        return Mapping.WS_QUEUE + "/" + topic;
     }
 
     private MessageHeaders createHeaders() {
@@ -68,6 +68,7 @@ public class MessageRequestHandler implements MessageHandler {
         accessor.setLeaveMutable(true);
         Map<String, Object> securityHeader = securityHandler.createAuthorizationHeader();
         accessor.setNativeHeader("Authorization", securityHeader.get("Authorization").toString());
+        accessor.setNativeHeader("payload-type", "message-payload");
         return accessor.getMessageHeaders();
     }
 }

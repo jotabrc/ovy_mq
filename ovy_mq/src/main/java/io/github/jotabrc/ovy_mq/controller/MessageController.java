@@ -1,6 +1,5 @@
 package io.github.jotabrc.ovy_mq.controller;
 
-import io.github.jotabrc.ovy_mq.domain.ConfigPayload;
 import io.github.jotabrc.ovy_mq.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
-import static io.github.jotabrc.ovy_mq.config.BrokerMapping.*;
+import static io.github.jotabrc.ovy_mq.config.Mapping.*;
 import static io.github.jotabrc.ovy_mq.service.handler.strategy.MessageRegistryStrategy.*;
 import static java.util.Objects.nonNull;
 
@@ -26,17 +25,17 @@ public class MessageController {
     private final MessageHandlerExecutor messageHandlerExecutor;
     private final HealthCheck healthCheck;
 
-    @MessageMapping(SAVE_MESSAGE)
+    @MessageMapping(WS_SAVE)
     public void saveMessage(@Payload MessagePayload messagePayload) {
         messageHandlerExecutor.execute(SAVE, MessageRecordFactory.of(messagePayload));
     }
 
-    @MessageMapping(MESSAGE_REQUEST)
+    @MessageMapping(WS_MESSAGE + WS_CONFIRM)
     public void requestMessage(String topic, Principal principal) {
         messageHandlerExecutor.execute(REQUEST, MessageRecordFactory.of(ClientFactory.of(principal.getName(), topic)));
     }
 
-    @MessageMapping(MESSAGE_PROCESSED)
+    @MessageMapping(WS_CONFIRM)
     public void confirmProcessing(@Payload MessagePayload messagePayload, @Header("Listening-Topic") String topic) {
         if (nonNull(messagePayload) && nonNull(topic)) {
             messagePayload.setTopic(topic);
@@ -47,14 +46,9 @@ public class MessageController {
         }
     }
 
-    @MessageMapping(HEALTH_CHECK)
+    @MessageMapping(WS_HEALTH)
     public void healthCheck(@Payload HealthStatus healthStatus, Principal principal) {
         healthStatus.setRequestedFromClientId(principal.getName());
         healthCheck.confirmServerIsAlive(healthStatus);
-    }
-
-    @MessageMapping(CONFIGURE)
-    public void replyConfiguration(@Payload ConfigPayload configPayload, Principal principal) {
-
     }
 }

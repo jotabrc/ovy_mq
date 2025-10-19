@@ -58,4 +58,12 @@ public class ClientRegistryImpl implements ClientRegistry {
                 .filter(client -> client.getClientSessionHandler().getSession().isConnected())
                 .toList();
     }
+
+    @Override
+    public List<Client> getAllClients() {
+        return clientRegistryContextHolder.getClients().values()
+                .stream()
+                .flatMap(Collection::stream)
+                .toList();
+    }
 }

@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.service.processor.interfaces;
+package io.github.jotabrc.ovy_mq_client.service.handler.interfaces;
 
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
 

@@ -9,4 +9,5 @@ public interface ClientRegistry {
     void save(Client client);
     Client getByClientIdOrThrow(String sessionId);
     List<Client> getAllAvailableClients();
+    List<Client> getAllClients();
 }

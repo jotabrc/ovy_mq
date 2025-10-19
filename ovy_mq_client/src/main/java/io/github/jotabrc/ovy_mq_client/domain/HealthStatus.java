@@ -2,6 +2,8 @@ package io.github.jotabrc.ovy_mq_client.domain;
 
 import lombok.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 
 @Setter
@@ -9,7 +11,10 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HealthStatus {
+public class HealthStatus implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String requestedFromClientId;
     private Boolean isServerAlive;

@@ -34,12 +34,15 @@ public class HealthCheckTask {
     @Scheduled(fixedDelayString = "${ovymq.task.health-check.delay}")
     public void execute() {
         log.info("Health check task execution started with fixed delay of {} ms", delay);
-        clientRegistry.getAllAvailableClients()
-                .stream()
+        clientRegistry.getAllClients()
                 .forEach(client -> {
                     log.info("Request health check for client={} listening to topic={}", client.getId(), client.getTopic());
-                    if (OffsetDateTime.now().minusMinutes(1).isAfter(client.getLastHealthCheckResponse())) {
-                        client.getClientSessionHandler().getSession().disconnect();
+                    if (OffsetDateTime.now().minusMinutes(1).isAfter(client.getLastHealthCheckResponse())
+                            || !client.getClientSessionHandler().getSession().isConnected()) {
+                        if (client.getClientSessionHandler().getSession().isConnected()) {
+                            client.getClientSessionHandler().getSession().disconnect();
+                        }
+                        client.setLastHealthCheckResponse(OffsetDateTime.now());
                         clientSessionInitializerHandler.initialize(client);
                     } else {
                         client.requestHealthCheck();

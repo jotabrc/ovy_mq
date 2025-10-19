@@ -17,6 +17,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static io.github.jotabrc.ovy_mq_client.config.Mapping.*;
 import static java.util.Objects.nonNull;
 
 @Getter
@@ -44,8 +45,8 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
 
         try {
             StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
-            client.setClientSessionHandler(clientSessionHandler);
             clientSessionHandler.setClientId(client.getId());
+            client.setClientSessionHandler(clientSessionHandler);
             log.info("Session initialized {} for topic {}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {
@@ -60,12 +61,11 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
     }
 
     private StompSession connectToServerAndInitializeSubscription(String topic, WebSocketStompClient stompClient, WebSocketHttpHeaders headers, ClientSessionHandler clientSessionHandler) throws ExecutionException, InterruptedException {
-        stompClient.connectAsync("ws://localhost:9090/registry", headers, clientSessionHandler);
+        stompClient.connectAsync("ws://localhost:9090/" + WS_REGISTRY, headers, clientSessionHandler);
         return clientSessionHandler.getFuture().whenComplete((returnedSession, exception) -> {
             if (nonNull(returnedSession) && returnedSession.isConnected()) {
-                returnedSession.subscribe("/user/config/", clientSessionHandler);
-                returnedSession.subscribe("/user/health/", clientSessionHandler);
-                returnedSession.subscribe("/user/queue/" + topic, clientSessionHandler);
+                returnedSession.subscribe(WS_USER + WS_HEALTH, clientSessionHandler);
+                returnedSession.subscribe(WS_USER + WS_QUEUE + "/" + topic, clientSessionHandler);
             } else {
                 throw new ServerSubscribeException("Server not ready...");
             }

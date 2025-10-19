@@ -13,7 +13,7 @@ public class HeaderFactory {
         SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
         accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
         accessor.setLeaveMutable(true);
-        accessor.setNativeHeader("content-type-x", contentType);
+        accessor.setNativeHeader("payload-type", contentType);
         return accessor.getMessageHeaders();
     }
 }

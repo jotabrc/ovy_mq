@@ -2,8 +2,8 @@ package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
-import io.github.jotabrc.ovy_mq_client.service.processor.interfaces.ClientMessageHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.executor.ClientMessageHandlerExecutor;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientMessageHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,6 @@ import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @Slf4j
 @Getter
@@ -27,6 +26,7 @@ import static java.util.Objects.nonNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
+    private final ClientMessageHandlerExecutor clientMessageHandlerExecutor;
     private final ClientMessageHandler clientMessageHandler;
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
 
@@ -35,31 +35,21 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
     @Override
     public Type getPayloadType(StompHeaders headers) {
-        String customContentType = headers.getFirst("content-type-x");
-        if ("HealthStatus.class".equalsIgnoreCase(customContentType)) return HealthStatus.class;
+        String customContentType = headers.getFirst("payload-type");
+        if ("message-payload".equalsIgnoreCase(customContentType)) return MessagePayload.class;
+        if ("health-status".equalsIgnoreCase(customContentType)) return HealthStatus.class;
 
-        String contentType = headers.getFirst("content-type");
-        if ("text/plain".equalsIgnoreCase(contentType)) return String.class;
-
-        return MessagePayload.class;
+        return Void.class;
     }
 
     @Override
     public void handleFrame(StompHeaders headers, Object object) {
-        String destination = headers.getDestination();
-        if (nonNull(destination) && destination.startsWith("/user/queue/")) {
-            String topic = destination.substring("/user/queue/".length());
-            MessagePayload messagePayload = ObjectMapperFactory.get().convertValue(object, MessagePayload.class);
-            messagePayload.setTopic(topic);
-            clientMessageHandler.handle(this.clientId, topic, messagePayload);
-        } else if (nonNull(destination) && destination.startsWith("/user/health/")) {
-            // TODO: add handler to process health check status response
-        }
+        clientMessageHandlerExecutor.execute(headers, object,this.clientId, this.getPayloadType(headers));
     }
 
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-        this.setSession(session);
+        this.session = session;
         future.complete(session);
     }
 
@@ -69,7 +59,7 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
     }
 
     public void setSession(StompSession session) {
-        if (isNull(this.session) || this.session.isConnected()) {
+        if (isNull(this.session)) {
             this.session = session;
         }
     }
