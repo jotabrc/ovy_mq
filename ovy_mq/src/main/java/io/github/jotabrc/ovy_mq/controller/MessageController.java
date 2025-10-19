@@ -30,12 +30,12 @@ public class MessageController {
         messageHandlerExecutor.execute(SAVE, MessageRecordFactory.of(messagePayload));
     }
 
-    @MessageMapping(WS_MESSAGE + WS_CONFIRM)
+    @MessageMapping(WS_MESSAGE)
     public void requestMessage(String topic, Principal principal) {
         messageHandlerExecutor.execute(REQUEST, MessageRecordFactory.of(ClientFactory.of(principal.getName(), topic)));
     }
 
-    @MessageMapping(WS_CONFIRM)
+    @MessageMapping(WS_MESSAGE + WS_CONFIRM)
     public void confirmProcessing(@Payload MessagePayload messagePayload, @Header("Listening-Topic") String topic) {
         if (nonNull(messagePayload) && nonNull(topic)) {
             messagePayload.setTopic(topic);

@@ -12,6 +12,8 @@ import java.lang.reflect.Method;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
+import static io.github.jotabrc.ovy_mq_client.config.Mapping.*;
+
 @Setter
 @Builder
 @Getter
@@ -30,11 +32,11 @@ public class Client implements Serializable {
     private OffsetDateTime lastHealthCheckResponse = OffsetDateTime.now();
 
     public void requestMessage() {
-        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/message"), this.topic);
+        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE), this.topic);
     }
 
     public void confirmProcessing(MessagePayload messagePayload) {
-        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/message/confirm"), messagePayload);
+        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM), messagePayload);
     }
 
     public void requestHealthCheck() {
@@ -42,7 +44,7 @@ public class Client implements Serializable {
                 .requestedAt(OffsetDateTime.now())
                 .isServerAlive(false)
                 .build();
-        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/health"), healthStatus);
+        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_HEALTH), healthStatus);
     }
 
     @Override

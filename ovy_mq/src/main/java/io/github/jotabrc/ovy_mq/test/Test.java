@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq;
+package io.github.jotabrc.ovy_mq.test;
 
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.factory.MessageRecordFactory;
@@ -20,10 +20,10 @@ public class Test implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         AtomicInteger counter = new AtomicInteger(0);
-        while (counter.getAndIncrement() < 100000) {
+        while (counter.getAndIncrement() < 1000000) {
             messageHandlerExecutor.execute(SAVE, MessageRecordFactory.of(MessagePayload.builder()
                     .topic("teste")
-                    .payload("String value")
+                    .payload("" + counter.get())
                     .build()));
         }
     }
