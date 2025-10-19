@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
-import io.github.jotabrc.ovy_mq_client.domain.factory.HttpHeaderFactory;
+import io.github.jotabrc.ovy_mq_client.domain.factory.WebSocketHttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
@@ -26,7 +26,7 @@ import static java.util.Objects.nonNull;
 public class ClientStompSessionInitializerHandlerImpl implements ClientSessionInitializerHandler {
 
     private final ObjectProvider<ClientSessionHandler> clientSessionProvider;
-    private final HttpHeaderFactory httpHeaderFactory;
+    private final WebSocketHttpHeaderFactory webSocketHttpHeaderFactory;
 
     @Override
     public void initialize(Client client) {
@@ -39,7 +39,7 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
     }
 
     private boolean connect(Client client, WebSocketStompClient stompClient, AtomicLong counter) {
-        WebSocketHttpHeaders headers = httpHeaderFactory.get(client.getTopic());
+        WebSocketHttpHeaders headers = webSocketHttpHeaderFactory.get(client.getTopic());
         ClientSessionHandler clientSessionHandler = clientSessionProvider.getObject();
 
         try {
@@ -63,8 +63,8 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
         stompClient.connectAsync("ws://localhost:9090/registry", headers, clientSessionHandler);
         return clientSessionHandler.getFuture().whenComplete((returnedSession, exception) -> {
             if (nonNull(returnedSession) && returnedSession.isConnected()) {
-                returnedSession.subscribe("/queue/" + topic, clientSessionHandler);
-                returnedSession.subscribe("/config/", clientSessionHandler);
+                returnedSession.subscribe("/user/config/", clientSessionHandler);
+                returnedSession.subscribe("/user/health/", clientSessionHandler);
                 returnedSession.subscribe("/user/queue/" + topic, clientSessionHandler);
             } else {
                 throw new ServerSubscribeException("Server not ready...");

@@ -1,9 +1,11 @@
 package io.github.jotabrc.ovy_mq.controller;
 
 import io.github.jotabrc.ovy_mq.domain.ConfigPayload;
+import io.github.jotabrc.ovy_mq.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.domain.factory.MessageRecordFactory;
+import io.github.jotabrc.ovy_mq.service.HealthCheck;
 import io.github.jotabrc.ovy_mq.service.handler.executor.MessageHandlerExecutor;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.Header;
@@ -22,6 +24,7 @@ import static java.util.Objects.nonNull;
 public class MessageController {
 
     private final MessageHandlerExecutor messageHandlerExecutor;
+    private final HealthCheck healthCheck;
 
     @MessageMapping(SAVE_MESSAGE)
     public void saveMessage(@Payload MessagePayload messagePayload) {
@@ -45,8 +48,9 @@ public class MessageController {
     }
 
     @MessageMapping(HEALTH_CHECK)
-    public void healthCheck() {
-
+    public void healthCheck(@Payload HealthStatus healthStatus, Principal principal) {
+        healthStatus.setRequestedFromClientId(principal.getName());
+        healthCheck.confirmServerIsAlive(healthStatus);
     }
 
     @MessageMapping(CONFIGURE)

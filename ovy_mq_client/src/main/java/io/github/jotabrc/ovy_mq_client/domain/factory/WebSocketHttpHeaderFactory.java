@@ -11,7 +11,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class HttpHeaderFactory {
+public class WebSocketHttpHeaderFactory {
 
     private final CredentialConfig credentialConfig;
 

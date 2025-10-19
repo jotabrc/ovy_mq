@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Setter
@@ -25,6 +26,8 @@ public class Client implements Serializable {
     private Object beanInstance;
     private Method method;
     private ClientSessionHandler clientSessionHandler;
+    @Builder.Default
+    private OffsetDateTime lastHealthCheckResponse = OffsetDateTime.now();
 
     public void requestMessage() {
         this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/message"), this.topic);
@@ -32,6 +35,14 @@ public class Client implements Serializable {
 
     public void confirmProcessing(MessagePayload messagePayload) {
         this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/message/confirm"), messagePayload);
+    }
+
+    public void requestHealthCheck() {
+        HealthStatus healthStatus = HealthStatus.builder()
+                .requestedAt(OffsetDateTime.now())
+                .isServerAlive(false)
+                .build();
+        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, "/request/health"), healthStatus);
     }
 
     @Override

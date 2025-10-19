@@ -8,6 +8,9 @@ logging:
 ovymq:
   task:
     consumer:
+      active: false
+      delay: 5000
+    health-check:
       active: true
       delay: 5000
 

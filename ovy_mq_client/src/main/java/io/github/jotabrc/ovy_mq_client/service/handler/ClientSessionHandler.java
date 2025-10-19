@@ -1,8 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.service.handler;
 
+import io.github.jotabrc.ovy_mq_client.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
-import io.github.jotabrc.ovy_mq_client.service.processor.interfaces.ClientMessageProcessor;
+import io.github.jotabrc.ovy_mq_client.service.processor.interfaces.ClientMessageHandler;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ import static java.util.Objects.nonNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
-    private final ClientMessageProcessor clientMessageProcessor;
+    private final ClientMessageHandler clientMessageHandler;
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
 
     private StompSession session;
@@ -34,8 +35,12 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
     @Override
     public Type getPayloadType(StompHeaders headers) {
+        String customContentType = headers.getFirst("content-type-x");
+        if ("HealthStatus.class".equalsIgnoreCase(customContentType)) return HealthStatus.class;
+
         String contentType = headers.getFirst("content-type");
         if ("text/plain".equalsIgnoreCase(contentType)) return String.class;
+
         return MessagePayload.class;
     }
 
@@ -46,7 +51,9 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
             String topic = destination.substring("/user/queue/".length());
             MessagePayload messagePayload = ObjectMapperFactory.get().convertValue(object, MessagePayload.class);
             messagePayload.setTopic(topic);
-            clientMessageProcessor.process(this.clientId, topic, messagePayload);
+            clientMessageHandler.handle(this.clientId, topic, messagePayload);
+        } else if (nonNull(destination) && destination.startsWith("/user/health/")) {
+            // TODO: add handler to process health check status response
         }
     }
 
@@ -62,7 +69,7 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
     }
 
     public void setSession(StompSession session) {
-        if (isNull(this.session)) {
+        if (isNull(this.session) || this.session.isConnected()) {
             this.session = session;
         }
     }
