@@ -2,8 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq_client.service.handler.executor.ClientMessageHandlerExecutor;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientMessageHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.payload.PayloadExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +25,7 @@ import static java.util.Objects.isNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
-    private final ClientMessageHandlerExecutor clientMessageHandlerExecutor;
-    private final ClientMessageHandler clientMessageHandler;
+    private final PayloadExecutor payloadExecutor;
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
 
     private StompSession session;
@@ -44,7 +42,7 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
     @Override
     public void handleFrame(StompHeaders headers, Object object) {
-        clientMessageHandlerExecutor.execute(headers, object,this.clientId, this.getPayloadType(headers));
+        payloadExecutor.execute(clientId, object, headers);
     }
 
     @Override

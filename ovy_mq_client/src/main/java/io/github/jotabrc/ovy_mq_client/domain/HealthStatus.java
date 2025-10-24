@@ -6,6 +6,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
+import static java.util.Objects.nonNull;
+
 @Setter
 @Getter
 @Builder
@@ -20,4 +22,10 @@ public class HealthStatus implements Serializable {
     private Boolean isServerAlive;
     private OffsetDateTime receivedAt;
     private OffsetDateTime requestedAt;
+
+    public Long responseTime() {
+        return nonNull(receivedAt) && nonNull(requestedAt)
+                ? receivedAt.toInstant().toEpochMilli() - requestedAt.toInstant().toEpochMilli()
+                : null;
+    }
 }

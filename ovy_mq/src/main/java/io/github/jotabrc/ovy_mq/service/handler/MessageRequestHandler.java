@@ -33,7 +33,7 @@ public class MessageRequestHandler implements MessageHandler {
     @Override
     public MessageRecord handle(MessageRecord messageRecord) {
         Client client = messageRecord.getClient();
-        log.info("Handling request for message for client={}", client.getId());
+        log.info("Handling message request for client={}", client.getId());
         MessagePayload messagePayload = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
         if (nonNull(messagePayload) && nonNull(client.getId())) sendMessageToClient(client, messagePayload);
         return messageRecord;
@@ -49,7 +49,7 @@ public class MessageRequestHandler implements MessageHandler {
     }
 
     private void sendMessageToConsumer(MessagePayload message, Client client) {
-        log.info("Sending message={} for client={} with topic={} created at {}", message.getId(), client.getId(), client.getTopic(), message.getCreatedDate());
+        log.info("Sending message={} to client={} with topic={} created-at={}", message.getId(), client.getId(), client.getTopic(), message.getCreatedDate());
         message.setTopic(client.getTopic());
         messagingTemplate.convertAndSendToUser(client.getId(),
                 createDestination(client.getTopic()),

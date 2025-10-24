@@ -10,7 +10,7 @@ public class Test {
 
     private final TestRepo repo;
 
-    @OvyListener(topic = "teste", replicas = 100)
+    @OvyListener(topic = "teste", replicas = 1)
     public void listener(Object object) {
         repo.save(TestObj.builder().objeto(object.toString()).build());
     }
