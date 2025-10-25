@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +17,7 @@ import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+@Service
 public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
     private final ClientRegistry clientRegistry;

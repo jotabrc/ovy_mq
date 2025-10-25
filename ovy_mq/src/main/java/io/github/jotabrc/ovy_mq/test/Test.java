@@ -1,30 +1,29 @@
 package io.github.jotabrc.ovy_mq.test;
 
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.domain.factory.MessageRecordFactory;
-import io.github.jotabrc.ovy_mq.service.handler.executor.MessageHandlerExecutor;
+import io.github.jotabrc.ovy_mq.service.handler.PayloadExecutor;
+import io.github.jotabrc.ovy_mq.service.handler.PayloadHandlerCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.jotabrc.ovy_mq.service.handler.strategy.MessageRegistryStrategy.SAVE;
-
 @Component
 @RequiredArgsConstructor
 public class Test implements CommandLineRunner {
 
-    private final MessageHandlerExecutor messageHandlerExecutor;
+    private final PayloadExecutor payloadExecutor;
 
     @Override
     public void run(String... args) throws Exception {
         AtomicInteger counter = new AtomicInteger(0);
         while (counter.getAndIncrement() < 1000000) {
-            messageHandlerExecutor.execute(SAVE, MessageRecordFactory.of(MessagePayload.builder()
+            payloadExecutor.execute(MessagePayload.builder()
                     .topic("teste")
                     .payload("" + counter.get())
-                    .build()));
+                    .build(),
+                    PayloadHandlerCommand.SAVE);
         }
     }
 }

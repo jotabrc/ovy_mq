@@ -3,11 +3,10 @@ package io.github.jotabrc.ovy_mq.service.handler;
 import io.github.jotabrc.ovy_mq.config.Mapping;
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.domain.MessageRecord;
 import io.github.jotabrc.ovy_mq.domain.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.SecurityHandler;
-import io.github.jotabrc.ovy_mq.service.handler.interfaces.MessageHandler;
+import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.MessageHeaders;
@@ -24,38 +23,52 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class MessageRequestHandler implements MessageHandler {
+public class PayloadRequestHandler implements PayloadHandler<Client> {
 
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final SecurityHandler securityHandler;
 
     @Override
-    public MessageRecord handle(MessageRecord messageRecord) {
-        Client client = messageRecord.getClient();
+    public void handle(Client client) {
         log.info("Handling message request for client={}", client.getId());
         MessagePayload messagePayload = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
         if (nonNull(messagePayload) && nonNull(client.getId())) sendMessageToClient(client, messagePayload);
-        return messageRecord;
     }
 
     private void sendMessageToClient(Client client, MessagePayload messagePayload) {
         log.info("Found message={} for client={}", messagePayload.getId(), client.getId());
         try {
             sendMessageToConsumer(messagePayload, client);
+        } catch (Exception e) {
+            log.warn("Message={} not sent to client={} on topic={}. Saving message in AWAITING_PROCESSING queue. Error: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), e.getMessage(), e);
         } finally {
+            messagePayload.updateMessageStatusTo(MessageStatus.PROCESSING);
             messageRepository.saveToQueue(messagePayload);
+            /* TODO
+            *   will not use ack/nack
+            * implement an message task for cleaning up stuck messages at PROCESSING queue
+            * this scenarios are expected when message are:
+            * 1- sent and not received
+            * 2- sent, received, but not confirmation is sent back with success status
+            * Client requests messages
+            *   Server send message
+            *       save message to processing queue
+            * Client receives message
+            *   client process the message and send confirmation with success true/false
+            * server receives confirmation,
+            *   if success true the message is removed from processing queue,
+            *   else message is removed from processing queue and save at awaiting processing queue */
         }
     }
 
-    private void sendMessageToConsumer(MessagePayload message, Client client) {
-        log.info("Sending message={} to client={} with topic={} created-at={}", message.getId(), client.getId(), client.getTopic(), message.getCreatedDate());
-        message.setTopic(client.getTopic());
+    private void sendMessageToConsumer(MessagePayload messagePayload, Client client) {
+        log.info("Sending message={} to client={} with topic={} created-at={}", messagePayload.getId(), client.getId(), client.getTopic(), messagePayload.getCreatedDate());
+        messagePayload.setTopic(client.getTopic());
         messagingTemplate.convertAndSendToUser(client.getId(),
                 createDestination(client.getTopic()),
-                message,
+                messagePayload,
                 createHeaders());
-        message.updateMessageStatusTo(MessageStatus.PROCESSING);
     }
 
     private String createDestination(String topic) {
@@ -70,5 +83,15 @@ public class MessageRequestHandler implements MessageHandler {
         accessor.setNativeHeader("Authorization", securityHeader.get("Authorization").toString());
         accessor.setNativeHeader("payload-type", "message-payload");
         return accessor.getMessageHeaders();
+    }
+
+    @Override
+    public Class<Client> supports() {
+        return Client.class;
+    }
+
+    @Override
+    public PayloadHandlerCommand command() {
+        return PayloadHandlerCommand.REQUEST;
     }
 }
