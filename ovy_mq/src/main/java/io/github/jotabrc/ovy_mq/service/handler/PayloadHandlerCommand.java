@@ -4,5 +4,6 @@ public enum PayloadHandlerCommand {
 
     SAVE,
     REQUEST,
-    REMOVE;
+    REMOVE,
+    REAPER;
 }

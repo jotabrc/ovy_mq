@@ -45,20 +45,6 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         } finally {
             messagePayload.updateMessageStatusTo(MessageStatus.PROCESSING);
             messageRepository.saveToQueue(messagePayload);
-            /* TODO
-            *   will not use ack/nack
-            * implement an message task for cleaning up stuck messages at PROCESSING queue
-            * this scenarios are expected when message are:
-            * 1- sent and not received
-            * 2- sent, received, but not confirmation is sent back with success status
-            * Client requests messages
-            *   Server send message
-            *       save message to processing queue
-            * Client receives message
-            *   client process the message and send confirmation with success true/false
-            * server receives confirmation,
-            *   if success true the message is removed from processing queue,
-            *   else message is removed from processing queue and save at awaiting processing queue */
         }
     }
 

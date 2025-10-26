@@ -25,6 +25,8 @@ public class MessagePayload implements Serializable {
     private String topic;
     private MessageStatus messageStatus;
     private OffsetDateTime createdDate;
+    @JsonIgnore
+    private OffsetDateTime processingStartedAt;
     private boolean success;
 
     @JsonIgnore
@@ -58,5 +60,10 @@ public class MessagePayload implements Serializable {
     @JsonIgnore
     public boolean hasIdentifiers() {
         return nonNull(topic) && !topic.isBlank() && nonNull(id) && !id.isBlank();
+    }
+
+    @JsonIgnore
+    public long getMsSinceStartedProcessing() {
+        return this.processingStartedAt.toEpochSecond() - OffsetDateTime.now().toEpochSecond();
     }
 }

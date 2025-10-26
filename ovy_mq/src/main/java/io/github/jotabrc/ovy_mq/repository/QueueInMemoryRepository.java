@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -37,21 +39,18 @@ public class QueueInMemoryRepository implements MessageRepository{
     }
 
     @Override
-    public List<MessagePayload> removeFromQueueAndReturnList(String topic, int quantity) {
-        Queue<MessagePayload> queue = messages.get(topic);
-        List<MessagePayload> returningMessages = new ArrayList<>();
-        while (returningMessages.size() < quantity) {
-            returningMessages.add(queue.poll());
-        }
-
-        return returningMessages;
+    public List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms) {
+        return messages.values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(s -> s.getProcessingStartedAt().minus(ms, ChronoUnit.MILLIS).isAfter(OffsetDateTime.now()))
+                .toList();
     }
 
     @Override
     public synchronized void removeFromProcessingQueue(String topic, String messageId) {
         for (MessagePayload message : messages.get(topic)) {
             if (Objects.equals(messageId, message.getId())) {
-                log.info("Deleting message {} from topic {} after successful processing", messageId, topic);
                 messages.get(topic).remove(message);
                 break;
             }

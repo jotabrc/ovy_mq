@@ -8,6 +8,6 @@ public interface MessageRepository {
 
     MessagePayload saveToQueue(MessagePayload messagePayload);
     MessagePayload removeFromQueueAndReturn(String topic);
-    List<MessagePayload> removeFromQueueAndReturnList(String topic, int quantity);
+    List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms);
     void removeFromProcessingQueue(String topic, String messageId);
 }
