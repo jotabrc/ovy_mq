@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Profile("dev")
 @Slf4j
@@ -43,6 +44,7 @@ public class QueueInMemoryRepository implements MessageRepository{
         return messages.values()
                 .stream()
                 .flatMap(Collection::stream)
+                .filter(s -> nonNull(s.getProcessingStartedAt()))
                 .filter(s -> s.getProcessingStartedAt().minus(ms, ChronoUnit.MILLIS).isAfter(OffsetDateTime.now()))
                 .toList();
     }

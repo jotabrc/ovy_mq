@@ -10,8 +10,8 @@ public class TopicUtil {
         return topic + ":" + MessageStatus.AWAITING_PROCESSING;
     }
 
-    public static String createTopicKeyForProcessing(String topic) {
-        return topic + ":" + MessageStatus.PROCESSING;
+    public static String createTopicKeyForSent(String topic) {
+        return topic + ":" + MessageStatus.SENT;
     }
 
     public static String createTopicKey(String topic, MessageStatus messageStatus) {

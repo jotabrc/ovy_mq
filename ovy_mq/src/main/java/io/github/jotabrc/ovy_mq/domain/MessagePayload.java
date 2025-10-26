@@ -43,7 +43,7 @@ public class MessagePayload implements Serializable {
     @JsonIgnore
     public String getTopic() {
         return (success)
-                ? TopicUtil.createTopicKeyForProcessing(this.topic)
+                ? TopicUtil.createTopicKeyForSent(this.topic)
                 : TopicUtil.createTopicKey(this.topic, this.messageStatus);
     }
 

@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,16 +47,16 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
     private void handle(String clientId, MessagePayload messagePayload) {
         log.info("Retrieving client={} for topic={}", clientId, messagePayload.getTopic());
         Client client = clientRegistry.getByClientIdOrThrow(clientId);
+        client.confirmPayloadReceived(messagePayload);
         try {
             client.setIsAvailable(false);
             client.getMethod().invoke(client.getBeanInstance(), messagePayload.getPayload());
-            messagePayload.cleanDataAndUpdateSuccessValue(true);
             log.info("Client consuming message={} for topic={}", messagePayload.getId(), messagePayload.getTopic());
-        } catch (Exception e) {
-            log.info("Error processing message={}", messagePayload.getId());
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            log.warn("Error while processing payload={} with topic={}", messagePayload.getId(), messagePayload.getTopic(), e);
+            throw new RuntimeException(e);
         } finally {
             client.setIsAvailable(true);
-            client.confirmProcessing(messagePayload);
             client.requestMessage();
         }
     }

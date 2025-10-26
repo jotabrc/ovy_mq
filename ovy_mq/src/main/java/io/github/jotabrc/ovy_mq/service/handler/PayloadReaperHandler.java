@@ -16,7 +16,7 @@ public class PayloadReaperHandler implements PayloadHandler<Long> {
 
     @Override
     public void handle(Long ms) {
-        log.info("Handling reaper task. Reaping all messages in PROCESSING QUEUE for longer than={}ms without success confirmation.", ms);
+        log.info("Handling reaper task. Reaping all messages in SENT QUEUE for longer than={}ms without success confirmation.", ms);
         messageRepository.getMessagesByLastUsedDateGreaterThen(ms)
                 .forEach(payload -> {
                     log.info("Saving Payload={} with topic={} in AWAITING_PROCESSING queue after {}ms without processing success confirmation",

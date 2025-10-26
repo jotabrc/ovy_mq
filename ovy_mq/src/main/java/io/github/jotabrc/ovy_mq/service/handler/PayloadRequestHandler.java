@@ -43,7 +43,7 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         } catch (Exception e) {
             log.warn("Message={} not sent to client={} on topic={}. Saving message in AWAITING_PROCESSING queue. Error: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), e.getMessage(), e);
         } finally {
-            messagePayload.updateMessageStatusTo(MessageStatus.PROCESSING);
+            messagePayload.updateMessageStatusTo(MessageStatus.SENT);
             messageRepository.saveToQueue(messagePayload);
         }
     }

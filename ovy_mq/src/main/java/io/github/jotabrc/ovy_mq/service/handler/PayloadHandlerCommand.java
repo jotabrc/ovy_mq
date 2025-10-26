@@ -5,5 +5,6 @@ public enum PayloadHandlerCommand {
     SAVE,
     REQUEST,
     REMOVE,
-    REAPER;
+    REAPER,
+    HEALTH_CHECK;
 }

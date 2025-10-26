@@ -35,8 +35,11 @@ public class Client implements Serializable {
         this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE), this.topic);
     }
 
-    public void confirmProcessing(MessagePayload messagePayload) {
-        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM), messagePayload);
+    public void confirmPayloadReceived(MessagePayload messagePayload) {
+        this.clientSessionHandler.getSession()
+                .send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM),
+                        messagePayload.cleanDataAndUpdateSuccessTo(true)
+                );
     }
 
     public void requestHealthCheck() {

@@ -1,6 +1,5 @@
-package io.github.jotabrc.ovy_mq_client.service.task;
+package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +29,6 @@ public class ConsumerTask {
     public void execute() {
         log.info("Consumer task execution started with fixed delay of {} ms", delay);
         clientRegistry.getAllAvailableClients()
-                .stream()
-                .filter(Client::getIsAvailable)
                 .forEach(client -> {
                     log.info("Requesting message for client={} listening to topic={}", client.getId(), client.getTopic());
                     client.requestMessage();

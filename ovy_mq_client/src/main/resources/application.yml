@@ -8,11 +8,13 @@ logging:
 ovymq:
   task:
     consumer:
-      active: true
-      delay: 5000
+      active: false
+      delay: 10000
     health-check:
       active: true
-      delay: 5000
+      delay: 60000
+      threshold: 65000
+
 
 spring:
   application.name: OVY_Mq_client

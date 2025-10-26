@@ -25,8 +25,11 @@ public class MessagePayload implements Serializable {
     private boolean success;
 
     @JsonIgnore
-    public void cleanDataAndUpdateSuccessValue(boolean success) {
-        this.payload = null;
-        this.success = success;
+    public MessagePayload cleanDataAndUpdateSuccessTo(boolean success) {
+        return MessagePayload.builder()
+                .id(this.id)
+                .topic(this.topic)
+                .success(success)
+                .build();
     }
 }
