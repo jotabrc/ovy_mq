@@ -2,6 +2,7 @@ package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.config.Mapping;
 import io.github.jotabrc.ovy_mq.domain.HealthStatus;
+import io.github.jotabrc.ovy_mq.domain.defaults.Key;
 import io.github.jotabrc.ovy_mq.domain.factory.HeaderFactory;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
 
     @Override
     public void handle(HealthStatus healthStatus) {
-        log.info("Sending health status to client={}", healthStatus.getClientId());
+        log.info("Sending health status: client={}", healthStatus.getClientId());
         healthStatus.setReceivedAt(OffsetDateTime.now());
         healthStatus.setIsServerAlive(true);
         sendHealthCheckResponse(healthStatus);
@@ -30,7 +31,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
         messagingTemplate.convertAndSendToUser(healthStatus.getClientId(),
                 Mapping.WS_HEALTH,
                 healthStatus,
-                HeaderFactory.of("health-status"));
+                HeaderFactory.of(Key.PAYLOAD_TYPE_HEALTH_STATUS));
     }
 
     @Override

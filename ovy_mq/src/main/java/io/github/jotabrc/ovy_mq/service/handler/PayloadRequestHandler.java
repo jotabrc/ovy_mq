@@ -3,7 +3,8 @@ package io.github.jotabrc.ovy_mq.service.handler;
 import io.github.jotabrc.ovy_mq.config.Mapping;
 import io.github.jotabrc.ovy_mq.domain.Client;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.domain.MessageStatus;
+import io.github.jotabrc.ovy_mq.domain.defaults.Key;
+import io.github.jotabrc.ovy_mq.domain.defaults.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.SecurityHandler;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
@@ -31,17 +32,17 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
 
     @Override
     public void handle(Client client) {
-        log.info("Handling message request for client={}", client.getId());
+        log.info("Message request: client={}", client.getId());
         MessagePayload messagePayload = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
         if (nonNull(messagePayload) && nonNull(client.getId())) sendMessageToClient(client, messagePayload);
     }
 
     private void sendMessageToClient(Client client, MessagePayload messagePayload) {
-        log.info("Found message={} for client={}", messagePayload.getId(), client.getId());
+        log.info("Message request: message={} client={}", messagePayload.getId(), client.getId());
         try {
             sendMessageToConsumer(messagePayload, client);
         } catch (Exception e) {
-            log.warn("Message={} not sent to client={} on topic={}. Saving message in AWAITING_PROCESSING queue. Error: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), e.getMessage(), e);
+            log.warn("Error while sending message: requeue message={} client={} topic={}:AWAITING_PROCESSING. Error-message: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), e.getMessage(), e);
         } finally {
             messagePayload.updateMessageStatusTo(MessageStatus.SENT);
             messageRepository.saveToQueue(messagePayload);
@@ -66,8 +67,8 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
         accessor.setLeaveMutable(true);
         Map<String, Object> securityHeader = securityHandler.createAuthorizationHeader();
-        accessor.setNativeHeader("Authorization", securityHeader.get("Authorization").toString());
-        accessor.setNativeHeader("payload-type", "message-payload");
+        accessor.setNativeHeader(Key.HEADER_AUTHORIZATION, securityHeader.get(Key.HEADER_AUTHORIZATION).toString());
+        accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
         return accessor.getMessageHeaders();
     }
 

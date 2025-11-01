@@ -2,6 +2,7 @@ package io.github.jotabrc.ovy_mq.controller;
 
 import io.github.jotabrc.ovy_mq.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq.domain.defaults.Key;
 import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadExecutor;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadHandlerCommand;
@@ -37,7 +38,7 @@ public class MessageController {
     }
 
     @MessageMapping(WS_MESSAGE + WS_CONFIRM)
-    public void confirmProcessing(@Payload MessagePayload messagePayload, @Header("Listening-Topic") String topic) {
+    public void confirmProcessing(@Payload MessagePayload messagePayload, @Header(Key.HEADER_TOPIC) String topic) {
         if (nonNull(messagePayload) && nonNull(topic)) {
             messagePayload.setTopic(topic);
             payloadExecutor.execute(messagePayload, PayloadHandlerCommand.REMOVE);

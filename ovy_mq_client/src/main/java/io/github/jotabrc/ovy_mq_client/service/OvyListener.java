@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service;
 
+import io.github.jotabrc.ovy_mq_client.domain.defaults.ListenerState;
 import org.springframework.scheduling.annotation.Async;
 
 import java.lang.annotation.*;

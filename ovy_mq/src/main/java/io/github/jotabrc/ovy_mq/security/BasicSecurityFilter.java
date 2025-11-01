@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
+import io.github.jotabrc.ovy_mq.domain.defaults.Key;
 import io.github.jotabrc.ovy_mq.handler.AuthorizationRequestDeniedException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,25 +24,25 @@ public class BasicSecurityFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         log.info("Authentication request received: {}", servletRequest.getRequestId());
         HttpServletRequest req = (HttpServletRequest) servletRequest;
-        String auth = req.getHeader("Authorization");
-        String topic = req.getHeader(DefaultClientKey.CLIENT_LISTENING_TOPIC.getValue());
+        String auth = req.getHeader(Key.HEADER_AUTHORIZATION);
+        String topic = req.getHeader(Key.HEADER_TOPIC);
 
         if (nonNull(auth) && !auth.isBlank() && nonNull(topic) && !topic.isBlank()) {
             String credential = securityHandler.retrieveCredentials(auth);
             if (securityHandler.hasCredentials(credential)) {
                 if (securityHandler.validate(credential)) {
                     String clientId = createClientId();
-                    log.info("Authentication validated, user authorized: {}", clientId);
+                    log.info("Authentication: authorized-client={}", clientId);
 
-                    servletRequest.setAttribute(DefaultClientKey.CLIENT_ID.getValue(), clientId);
-                    servletRequest.setAttribute(DefaultClientKey.CLIENT_LISTENING_TOPIC.getValue(), topic);
+                    servletRequest.setAttribute(Key.HEADER_CLIEND_ID, clientId);
+                    servletRequest.setAttribute(Key.HEADER_TOPIC, topic);
                     filterChain.doFilter(servletRequest, servletResponse);
                     return;
                 }
             }
         }
 
-        log.info("Authentication request denied, request is unauthorized: {}", servletRequest.getRequestId());
+        log.info("Authentication: denied-request={}", servletRequest.getRequestId());
         throw new AuthorizationRequestDeniedException("Request for authorization is denied");
     }
 

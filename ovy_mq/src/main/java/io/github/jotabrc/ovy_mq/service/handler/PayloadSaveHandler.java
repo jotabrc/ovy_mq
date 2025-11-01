@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.domain.MessageStatus;
+import io.github.jotabrc.ovy_mq.domain.defaults.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class PayloadSaveHandler implements PayloadHandler<MessagePayload> {
     @Override
     public void handle(MessagePayload messagePayload) {
         updateMessageMetadata(messagePayload);
-        log.info("Handling message save request with id={} in topic={}", messagePayload.getId(), messagePayload.getTopic());
+        log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
         messageRepository.saveToQueue(messagePayload);
     }
 

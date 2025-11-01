@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.jotabrc.ovy_mq.domain.defaults.MessageStatus;
 import io.github.jotabrc.ovy_mq.util.TopicUtil;
 import lombok.*;
 

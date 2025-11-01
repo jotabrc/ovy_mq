@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.domain.DefaultClientKey;
+import io.github.jotabrc.ovy_mq.domain.defaults.Key;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
@@ -14,6 +14,6 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
     protected Principal determineUser(ServerHttpRequest request,
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
-        return () -> attributes.get(DefaultClientKey.CLIENT_ID.getValue()).toString();
+        return () -> attributes.get(Key.HEADER_CLIEND_ID).toString();
     }
 }

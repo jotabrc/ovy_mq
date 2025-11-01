@@ -19,7 +19,7 @@ public class PayloadRemoveHandler implements PayloadHandler<MessagePayload> {
     @Override
     public void handle(MessagePayload messagePayload) {
         if (nonNull(messagePayload) && messagePayload.hasIdentifiers()) {
-            log.info("Removing message {} from topic={}", messagePayload.getId(), messagePayload.getTopic());
+            log.info("Removing message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
             messageRepository.removeFromProcessingQueue(messagePayload.getTopic(), messagePayload.getId());
         }
     }

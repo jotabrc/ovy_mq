@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq.security;
 
 import io.github.jotabrc.ovy_mq.config.CredentialConfig;
+import io.github.jotabrc.ovy_mq.domain.defaults.Key;
 import jakarta.annotation.PostConstruct;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -50,7 +51,7 @@ public class SecurityHandler {
     }
 
     public Map<String, Object> createAuthorizationHeader() {
-        return Map.of("Authorization", getBasic());
+        return Map.of(Key.HEADER_AUTHORIZATION, getBasic());
     }
 
     private String getBasic() {

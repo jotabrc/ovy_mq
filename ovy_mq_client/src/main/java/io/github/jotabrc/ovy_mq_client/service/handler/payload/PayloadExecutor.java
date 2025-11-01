@@ -16,7 +16,7 @@ public class PayloadExecutor {
     public void execute(String clientId, Object payload, StompHeaders headers) {
         payloadHandlerRegistry.getHandler(payload.getClass())
                 .ifPresentOrElse(handler -> execute(handler, clientId, payload, headers),
-                        () -> log.warn("No handler available for payload class {}", payload.getClass()));
+                        () -> log.warn("No handler available for payload-class={}", payload.getClass()));
     }
 
     private <T> void execute(PayloadHandler<T> handler, String clientId, Object payload, StompHeaders headers) {

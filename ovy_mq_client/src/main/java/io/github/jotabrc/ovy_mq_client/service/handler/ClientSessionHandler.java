@@ -2,6 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_client.domain.defaults.Key;
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.PayloadExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,9 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
     @Override
     public Type getPayloadType(StompHeaders headers) {
-        String customContentType = headers.getFirst("payload-type");
-        if ("message-payload".equalsIgnoreCase(customContentType)) return MessagePayload.class;
-        if ("health-status".equalsIgnoreCase(customContentType)) return HealthStatus.class;
+        String customContentType = headers.getFirst(Key.HEADER_PAYLOAD_TYPE);
+        if (Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD.equalsIgnoreCase(customContentType)) return MessagePayload.class;
+        if (Key.PAYLOAD_TYPE_HEALTH_STATUS.equalsIgnoreCase(customContentType)) return HealthStatus.class;
 
         return Void.class;
     }

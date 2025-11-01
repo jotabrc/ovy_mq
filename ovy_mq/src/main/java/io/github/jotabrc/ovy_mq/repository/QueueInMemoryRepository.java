@@ -27,7 +27,7 @@ public class QueueInMemoryRepository implements MessageRepository{
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
         messages.compute(messagePayload.getTopic(), (key, queue) -> {
             if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
-            log.info("Saving message {} for topic {}", messagePayload.getId(), key);
+            log.info("Saving message={} topic={}", messagePayload.getId(), key);
             queue.offer(messagePayload);
             return queue;
         });

@@ -45,15 +45,15 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
     }
 
     private void handle(String clientId, MessagePayload messagePayload) {
-        log.info("Retrieving client={} for topic={}", clientId, messagePayload.getTopic());
+        log.info("Retrieving client={} topic={}", clientId, messagePayload.getTopic());
         Client client = clientRegistry.getByClientIdOrThrow(clientId);
         client.confirmPayloadReceived(messagePayload);
         try {
             client.setIsAvailable(false);
             client.getMethod().invoke(client.getBeanInstance(), messagePayload.getPayload());
-            log.info("Client consuming message={} for topic={}", messagePayload.getId(), messagePayload.getTopic());
+            log.info("Client consuming message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
         } catch (InvocationTargetException | IllegalAccessException e) {
-            log.warn("Error while processing payload={} with topic={}", messagePayload.getId(), messagePayload.getTopic(), e);
+            log.warn("Error while processing payload={} topic={}", messagePayload.getId(), messagePayload.getTopic(), e);
             throw new RuntimeException(e);
         } finally {
             client.setIsAvailable(true);

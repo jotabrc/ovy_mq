@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.domain;
+package io.github.jotabrc.ovy_mq_client.domain.defaults;
 
 public enum MessageStatus {
 

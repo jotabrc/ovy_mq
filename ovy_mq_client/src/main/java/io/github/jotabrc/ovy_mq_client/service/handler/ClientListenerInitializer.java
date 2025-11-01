@@ -41,12 +41,10 @@ public class ClientListenerInitializer implements CommandLineRunner {
                 OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
 
                 if (nonNull(listener)) {
-                    log.info("Found listener for topic={} in class={} on method={}", listener.topic(), beanClass.getSimpleName(), method.getName());
-                    String topic = listener.topic();
-                    log.info("Listener for topic={} has {} replica(s)", topic, listener.replicas());
+                    log.info("Listener: topic={} class={} method={} replicas={}", listener.topic(), beanClass.getSimpleName(), method.getName(), listener.replicas());
                     for (int i = 0; i < listener.replicas(); i++) {
-                        Client client = ClientFactory.of(topic, method, bean);
-                        log.info("Creating client {}/{} for topic={}", i + 1, listener.replicas(), listener.topic());
+                        Client client = ClientFactory.of(listener.topic(), method, bean);
+                        log.info("Creating client: replica={}/{} topic={} class={} method={}", i + 1, listener.replicas(), listener.topic(), beanClass.getSimpleName(), method.getName());
                         clientSessionInitializerHandler.initialize(client);
                         clientRegistry.save(client);
                     }

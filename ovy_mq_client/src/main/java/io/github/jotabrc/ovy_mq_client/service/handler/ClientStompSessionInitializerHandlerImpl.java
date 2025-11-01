@@ -31,7 +31,7 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
 
     @Override
     public void initialize(Client client) {
-        log.info("Initializing session for client={}", client.getId());
+        log.info("Initializing-session client={}", client.getId());
         WebSocketStompClient stompClient = ObjectMapperFactory.getWithConverter();
         AtomicLong counter = new AtomicLong(0L);
         while (true) {
@@ -47,14 +47,14 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
             StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
             clientSessionHandler.setClientId(client.getId());
             client.setClientSessionHandler(clientSessionHandler);
-            log.info("Session initialized {} for topic {}", session.getSessionId(), client.getTopic());
+            log.info("Session-initialized={} topic={}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {
-            log.info("Server is unavailable, retrying connection. Retry number {} for client {} on topic {}", counter.getAndIncrement(), client.getId(), client.getTopic());
+            log.info("Server is unavailable, retrying connection. Retry-number={} client={} topic={}", counter.getAndIncrement(), client.getId(), client.getTopic());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
-                log.error("Thread interrupted {}: {}", Thread.interrupted(), ex.getMessage());
+                log.error("Thread-interrupted={}: {}", Thread.interrupted(), ex.getMessage());
             }
         }
         return false;

@@ -15,7 +15,7 @@ public class PayloadExecutor {
     public void execute(Object payload, PayloadHandlerCommand command) {
         payloadHandlerRegistry.getHandler(payload.getClass(), command)
                 .ifPresentOrElse(handler -> execute(handler, payload),
-                        () -> log.warn("No handler available for payload class {}", payload.getClass()));
+                        () -> log.warn("No handler available for payload-class-{}", payload.getClass()));
     }
 
     private <T> void execute(PayloadHandler<T> handler, Object payload) {
