@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
+import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -40,18 +41,18 @@ public class HealthCheckTask {
         log.info("Health check task execution started, delay={} and threshold={}", delay, threshold);
         clientRegistry.getAllClients()
                 .forEach(client -> {
-                    log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheckResponse());
-                    if (OffsetDateTime.now().minus(threshold, ChronoUnit.MILLIS).isAfter(client.getLastHealthCheckResponse())
-                            || !client.getClientSessionHandler().getSession().isConnected()) {
-                        if (client.getClientSessionHandler().getSession().isConnected()) {
-                            client.getClientSessionHandler().getSession().disconnect();
-                        }
+                    log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheck());
+                    if (isLastHealthCheckExpired(client) || !client.isConnected()) {
+                        client.disconnect();
                         clientSessionInitializerHandler.initialize(client);
-                        client.setLastHealthCheckResponse(OffsetDateTime.now());
+                        client.setLastHealthCheck(OffsetDateTime.now());
                     } else {
                         client.requestHealthCheck();
                     }
                 });
-        // TODO Health Check component
+    }
+
+    private boolean isLastHealthCheckExpired(Client client) {
+        return OffsetDateTime.now().minus(threshold, ChronoUnit.MILLIS).isAfter(client.getLastHealthCheck());
     }
 }

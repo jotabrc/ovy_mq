@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.jotabrc.ovy_mq_client.domain.factory.StompHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.service.handler.ClientSessionHandler;
 import lombok.Builder;
@@ -29,23 +30,38 @@ public class Client implements Serializable {
     private Method method;
     private ClientSessionHandler clientSessionHandler;
     @Builder.Default
-    private OffsetDateTime lastHealthCheckResponse = OffsetDateTime.now();
+    private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
 
+    @JsonIgnore
     public void requestMessage() {
         this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE), this.topic);
     }
 
+    @JsonIgnore
     public void confirmPayloadReceived(MessagePayload messagePayload) {
         this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM),
                 messagePayload.cleanDataAndUpdateSuccessTo(true));
     }
 
+    @JsonIgnore
     public void requestHealthCheck() {
         HealthStatus healthStatus = HealthStatus.builder()
                 .requestedAt(OffsetDateTime.now())
                 .alive(false)
                 .build();
         this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_HEALTH), healthStatus);
+    }
+
+    @JsonIgnore
+    public void disconnect() {
+        if (this.getClientSessionHandler().getSession().isConnected()) {
+            this.getClientSessionHandler().getSession().disconnect();
+        }
+    }
+
+    @JsonIgnore
+    public boolean isConnected() {
+        return this.getClientSessionHandler().getSession().isConnected();
     }
 
     @Override

@@ -26,7 +26,7 @@ public class HealthStatusHandler implements PayloadHandler<HealthStatus> {
 
     private void handle(String clientId, HealthStatus healthStatus) {
         log.info("Health check response for client={} received, response-time={} ms", clientId, healthStatus.responseTime());
-        clientRegistry.getByClientIdOrThrow(clientId).setLastHealthCheckResponse(OffsetDateTime.now());
+        clientRegistry.getByClientIdOrThrow(clientId).setLastHealthCheck(OffsetDateTime.now());
     }
 
     @Override
