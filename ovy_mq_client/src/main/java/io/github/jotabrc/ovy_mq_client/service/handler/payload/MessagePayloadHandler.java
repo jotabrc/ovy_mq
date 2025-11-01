@@ -56,6 +56,7 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
             log.warn("Error while processing payload={} topic={}", messagePayload.getId(), messagePayload.getTopic(), e);
             throw new RuntimeException(e);
         } finally {
+            log.info("Requesting message: Client={} topic={}", client.getId(), client.getTopic());
             client.setIsAvailable(true);
             client.requestMessage();
         }

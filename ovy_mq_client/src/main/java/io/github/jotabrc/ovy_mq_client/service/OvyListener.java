@@ -1,6 +1,5 @@
 package io.github.jotabrc.ovy_mq_client.service;
 
-import io.github.jotabrc.ovy_mq_client.domain.defaults.ListenerState;
 import org.springframework.scheduling.annotation.Async;
 
 import java.lang.annotation.*;
@@ -11,6 +10,17 @@ import java.lang.annotation.*;
 @Documented
 public @interface OvyListener {
     String topic() default "";
-    int replicas() default 1;
-    ListenerState initialState() default ListenerState.STANDBY;
+    int maxReplicas() default 1;
+    int minReplicas() default 0;
+    int stepReplicas() default 1;
+    boolean autoManageReplicas() default false;
+    // TODO:
+    /*
+    1- keep state of client replicas for step up/down with configuration
+    2- clients subscription to broadcast with each with it's own topic
+        broadcast will be sent to all clients with topic X
+    3- new Payload/type configuration
+    4- new configuration handler
+    5- (Server) new Mapping for configuration (HTTP) for runtime usage
+     */
 }
