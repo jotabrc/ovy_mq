@@ -24,6 +24,7 @@ public class MessagePayload implements Serializable {
     private MessageStatus messageStatus;
     private OffsetDateTime createdDate;
     private boolean success;
+    private Long version;
 
     @JsonIgnore
     public MessagePayload cleanDataAndUpdateSuccessTo(boolean success) {

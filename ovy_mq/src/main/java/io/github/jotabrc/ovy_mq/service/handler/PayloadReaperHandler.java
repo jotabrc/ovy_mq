@@ -19,13 +19,10 @@ public class PayloadReaperHandler implements PayloadHandler<Long> {
         log.info("Reaping all messages in SENT QUEUE for longer than={}ms without success confirmation.", ms);
         messageRepository.getMessagesByLastUsedDateGreaterThen(ms)
                 .forEach(payload -> {
-                    log.info("Saving payload={} topic={}:AWAITING_PROCESSING queue after {}ms without processing success confirmation",
+                    log.info("Saving payload={} topic={}:AWAITING_PROCESSING after {}ms without processing success confirmation",
                             payload.getId(), payload.getTopic(), payload.getMsSinceStartedProcessing());
-                    messageRepository.removeFromProcessingQueue(payload.getTopic(), payload.getId());
                     payload.updateMessageStatusTo(MessageStatus.AWAITING_PROCESSING);
-                    // TODO
-                    // atomic .requeueAsAwaiting(..)
-                    messageRepository.saveToQueue(payload);
+                    messageRepository.removeAndRequeue(payload);
                 });
 
     }

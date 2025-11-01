@@ -40,7 +40,7 @@ public class HealthCheckTask {
         log.info("Health check task execution started, delay={} and threshold={}", delay, threshold);
         clientRegistry.getAllClients()
                 .forEach(client -> {
-                    log.info("Request health check for client={} listening to topic={}", client.getId(), client.getTopic());
+                    log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheckResponse());
                     if (OffsetDateTime.now().minus(threshold, ChronoUnit.MILLIS).isAfter(client.getLastHealthCheckResponse())
                             || !client.getClientSessionHandler().getSession().isConnected()) {
                         if (client.getClientSessionHandler().getSession().isConnected()) {

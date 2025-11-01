@@ -15,8 +15,8 @@ import java.util.Objects;
 import static io.github.jotabrc.ovy_mq_client.config.Mapping.*;
 
 @Setter
-@Builder
 @Getter
+@Builder
 public class Client implements Serializable {
 
     @Serial
@@ -36,16 +36,14 @@ public class Client implements Serializable {
     }
 
     public void confirmPayloadReceived(MessagePayload messagePayload) {
-        this.clientSessionHandler.getSession()
-                .send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM),
-                        messagePayload.cleanDataAndUpdateSuccessTo(true)
-                );
+        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM),
+                messagePayload.cleanDataAndUpdateSuccessTo(true));
     }
 
     public void requestHealthCheck() {
         HealthStatus healthStatus = HealthStatus.builder()
                 .requestedAt(OffsetDateTime.now())
-                .isServerAlive(false)
+                .alive(false)
                 .build();
         this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_HEALTH), healthStatus);
     }

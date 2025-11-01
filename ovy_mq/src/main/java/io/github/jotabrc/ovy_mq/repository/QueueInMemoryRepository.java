@@ -27,7 +27,7 @@ public class QueueInMemoryRepository implements MessageRepository{
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
         messages.compute(messagePayload.getTopic(), (key, queue) -> {
             if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
-            log.info("Saving message={} topic={}", messagePayload.getId(), key);
+            log.info("Saving message={} topic-key={}", messagePayload.getId(), key);
             queue.offer(messagePayload);
             return queue;
         });
@@ -35,7 +35,7 @@ public class QueueInMemoryRepository implements MessageRepository{
     }
 
     @Override
-    public synchronized MessagePayload removeFromQueueAndReturn(String topic) {
+    public synchronized MessagePayload pollFromQueue(String topic) {
         return messages.get(topic).poll();
     }
 
@@ -50,12 +50,13 @@ public class QueueInMemoryRepository implements MessageRepository{
     }
 
     @Override
-    public synchronized void removeFromProcessingQueue(String topic, String messageId) {
-        for (MessagePayload message : messages.get(topic)) {
-            if (Objects.equals(messageId, message.getId())) {
-                messages.get(topic).remove(message);
-                break;
-            }
-        }
+    public synchronized void removeFromQueue(String topic, String messageId) {
+        messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+    }
+
+    @Override
+    public synchronized void removeAndRequeue(MessagePayload messagePayload) {
+        removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
+        saveToQueue(messagePayload);
     }
 }

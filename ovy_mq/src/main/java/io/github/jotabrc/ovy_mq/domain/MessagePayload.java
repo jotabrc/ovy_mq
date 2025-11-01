@@ -29,6 +29,7 @@ public class MessagePayload implements Serializable {
     @JsonIgnore
     private OffsetDateTime processingStartedAt;
     private boolean success;
+    private Long version;
 
     @JsonIgnore
     public void updateMessageMetadata(String id, OffsetDateTime createdDate) {

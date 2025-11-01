@@ -7,7 +7,8 @@ import java.util.List;
 public interface MessageRepository {
 
     MessagePayload saveToQueue(MessagePayload messagePayload);
-    MessagePayload removeFromQueueAndReturn(String topic);
+    MessagePayload pollFromQueue(String topic);
     List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms);
-    void removeFromProcessingQueue(String topic, String messageId);
+    void removeFromQueue(String topic, String messageId);
+    void removeAndRequeue(MessagePayload messagePayload);
 }

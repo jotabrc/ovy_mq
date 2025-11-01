@@ -17,7 +17,7 @@ public class HealthStatus implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String clientId;
-    private Boolean isServerAlive;
+    private Boolean alive;
     private OffsetDateTime receivedAt;
     private OffsetDateTime requestedAt;
 }

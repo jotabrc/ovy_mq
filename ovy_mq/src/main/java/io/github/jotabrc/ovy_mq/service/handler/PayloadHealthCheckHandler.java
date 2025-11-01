@@ -23,7 +23,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
     public void handle(HealthStatus healthStatus) {
         log.info("Sending health status: client={}", healthStatus.getClientId());
         healthStatus.setReceivedAt(OffsetDateTime.now());
-        healthStatus.setIsServerAlive(true);
+        healthStatus.setAlive(true);
         sendHealthCheckResponse(healthStatus);
     }
 

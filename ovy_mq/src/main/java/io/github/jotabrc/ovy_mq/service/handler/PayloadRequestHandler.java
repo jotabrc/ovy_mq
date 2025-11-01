@@ -33,7 +33,7 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
     @Override
     public void handle(Client client) {
         log.info("Message request: client={}", client.getId());
-        MessagePayload messagePayload = messageRepository.removeFromQueueAndReturn(client.getTopicForAwaitingProcessingQueue());
+        MessagePayload messagePayload = messageRepository.pollFromQueue(client.getTopicForAwaitingProcessingQueue());
         if (nonNull(messagePayload) && nonNull(client.getId())) sendMessageToClient(client, messagePayload);
     }
 
@@ -41,16 +41,16 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         log.info("Message request: message={} client={}", messagePayload.getId(), client.getId());
         try {
             sendMessageToConsumer(messagePayload, client);
-        } catch (Exception e) {
-            log.warn("Error while sending message: requeue message={} client={} topic={}:AWAITING_PROCESSING. Error-message: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), e.getMessage(), e);
-        } finally {
             messagePayload.updateMessageStatusTo(MessageStatus.SENT);
+        } catch (Exception e) {
+            log.warn("Error while sending message: requeue message={} client={} topic={}:{}. Error-message: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), messagePayload.getMessageStatus(), e.getMessage(), e);
+        } finally {
             messageRepository.saveToQueue(messagePayload);
         }
     }
 
     private void sendMessageToConsumer(MessagePayload messagePayload, Client client) {
-        log.info("Sending message={} to client={} with topic={} created-at={}", messagePayload.getId(), client.getId(), client.getTopic(), messagePayload.getCreatedDate());
+        log.info("Sending message={} client={} topic={} created-at={}", messagePayload.getId(), client.getId(), client.getTopic(), messagePayload.getCreatedDate());
         messagePayload.setTopic(client.getTopic());
         messagingTemplate.convertAndSendToUser(client.getId(),
                 createDestination(client.getTopic()),
