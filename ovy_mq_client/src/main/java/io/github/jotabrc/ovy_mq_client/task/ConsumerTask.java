@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
+import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +18,15 @@ import org.springframework.stereotype.Component;
 public class ConsumerTask {
 
     private final ClientRegistry clientRegistry;
+    private final ClientMessageSender clientMessageSender;
+
     private final String delay;
 
     public ConsumerTask(ClientRegistry clientRegistry,
+                        ClientMessageSender clientMessageSender,
                         @Value("${ovymq.task.consumer.delay}") String delay) {
         this.clientRegistry = clientRegistry;
+        this.clientMessageSender = clientMessageSender;
         this.delay = delay;
     }
 
@@ -31,7 +36,7 @@ public class ConsumerTask {
         clientRegistry.getAllAvailableClients()
                 .forEach(client -> {
                     log.info("Requesting message for client={} listening to topic={}", client.getId(), client.getTopic());
-                    client.requestMessage();
+                    clientMessageSender.send(client.requestMessage(), client);
                 });
     }
 }

@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
+import io.github.jotabrc.ovy_mq_client.domain.ListenerState;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.service.ApplicationContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.OvyListener;
@@ -34,22 +35,45 @@ public class ClientListenerInitializer implements CommandLineRunner {
         String[] beanNames = ApplicationContextHolder.get().getBeanDefinitionNames();
         log.info("Searching for clients");
         for (String beanName : beanNames) {
-            Object bean = ApplicationContextHolder.get().getBean(beanName);
+            Object bean = ApplicationContextHolder.getContextBean(beanName);
             Class<?> beanClass = bean.getClass();
 
             for (Method method : beanClass.getMethods()) {
                 OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
 
                 if (nonNull(listener)) {
-                    log.info("Listener: topic={} class={} method={} replicas={}", listener.topic(), beanClass.getSimpleName(), method.getName(), listener.maxReplicas());
-                    for (int i = 0; i < listener.maxReplicas(); i++) {
-                        Client client = ClientFactory.of(listener.topic(), method, bean);
-                        log.info("Creating client: replica={}/{} topic={} class={} method={}", i + 1, listener.maxReplicas(), listener.topic(), beanClass.getSimpleName(), method.getName());
+                    ListenerState listenerState = createListenerState(listener);
+                    log.info("Listener: topic={} class={} method={} replicas={}", listener.topic(), beanClass.getSimpleName(), method.getName(), listener.replicas());
+                    for (int i = 0; i < listener.replicas(); i++) {
+                        Client client = ClientFactory.of(listener.topic(), method, beanName, listenerState);
+                        log.info("Creating client: replica={}/{} topic={} class={} method={} config=[maxReplicas={} minReplicas={} stepReplicas={} autoManageReplicas={} timeout={}ms]",
+                                i + 1,
+                                listener.replicas(),
+                                listener.topic(),
+                                beanClass.getSimpleName(),
+                                method.getName(),
+                                listener.maxReplicas(),
+                                listener.minReplicas(),
+                                listener.stepReplicas(),
+                                listener.autoManageReplicas(),
+                                listener.timeout());
                         clientSessionInitializerHandler.initialize(client);
                         clientRegistry.save(client);
                     }
                 }
             }
         }
+    }
+
+    private static ListenerState createListenerState(OvyListener listener) {
+        return ListenerState.builder()
+                .topic(listener.topic())
+                .replicas(listener.replicas())
+                .maxReplicas(listener.maxReplicas())
+                .minReplicas(listener.minReplicas())
+                .stepReplicas(listener.stepReplicas())
+                .autoManageReplicas(listener.autoManageReplicas())
+                .timeout(listener.timeout())
+                .build();
     }
 }

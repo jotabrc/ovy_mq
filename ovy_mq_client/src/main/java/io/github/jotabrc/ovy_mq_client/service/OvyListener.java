@@ -1,19 +1,17 @@
 package io.github.jotabrc.ovy_mq_client.service;
 
-import org.springframework.scheduling.annotation.Async;
-
 import java.lang.annotation.*;
 
-@Async
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 public @interface OvyListener {
-    String topic() default "";
-    int maxReplicas() default 1;
+    String topic();
+    int replicas() default 10;
+    int maxReplicas() default 3;
     int minReplicas() default 0;
     int stepReplicas() default 1;
     boolean autoManageReplicas() default false;
+    long timeout() default 120000;
     // TODO:
     /*
     1- keep state of client replicas for step up/down with configuration

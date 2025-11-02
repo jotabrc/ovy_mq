@@ -38,7 +38,7 @@ public class PayloadSaveHandler implements PayloadHandler<MessagePayload> {
     }
 
     @Override
-    public PayloadHandlerCommand command() {
-        return PayloadHandlerCommand.SAVE;
+    public PayloadDispatcherCommand command() {
+        return PayloadDispatcherCommand.SAVE;
     }
 }

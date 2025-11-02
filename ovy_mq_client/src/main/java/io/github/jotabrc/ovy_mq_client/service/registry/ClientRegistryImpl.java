@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.registry;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.handler.ClientNotFoundException;
-import io.github.jotabrc.ovy_mq_client.service.ClientRegistryContextHolder;
+import io.github.jotabrc.ovy_mq_client.service.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +21,14 @@ import static java.util.Objects.nonNull;
 @Component
 public class ClientRegistryImpl implements ClientRegistry {
 
-    private final ClientRegistryContextHolder clientRegistryContextHolder;
+    private final ClientRegistryProvider clientRegistryProvider;
 
     @Override
     public void save(Client client) {
         if (nonNull(client)
                 && nonNull(client.getTopic())
                 && nonNull(client.getClientSessionHandler())) {
-            clientRegistryContextHolder.getClients().compute(client.getTopic(), (key, queue) -> {
+            clientRegistryProvider.getClients().compute(client.getTopic(), (key, queue) -> {
                 if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
                 if (!queue.contains(client)) queue.offer(client);
                 return queue;
@@ -41,7 +41,7 @@ public class ClientRegistryImpl implements ClientRegistry {
 
     @Override
     public Client getByClientIdOrThrow(String clientId) {
-        return clientRegistryContextHolder.getClients().values()
+        return clientRegistryProvider.getClients().values()
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(client -> Objects.equals(clientId, client.getId()))
@@ -51,7 +51,7 @@ public class ClientRegistryImpl implements ClientRegistry {
 
     @Override
     public List<Client> getAllAvailableClients() {
-        return clientRegistryContextHolder.getClients().values()
+        return clientRegistryProvider.getClients().values()
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(Client::getIsAvailable)
@@ -61,7 +61,7 @@ public class ClientRegistryImpl implements ClientRegistry {
 
     @Override
     public List<Client> getAllClients() {
-        return clientRegistryContextHolder.getClients().values()
+        return clientRegistryProvider.getClients().values()
                 .stream()
                 .flatMap(Collection::stream)
                 .toList();

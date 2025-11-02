@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 @Component
-public class ClientRegistryContextHolder {
+public class ClientRegistryProvider {
 
     private Map<String, Queue<Client>> clients = new ConcurrentHashMap<>();
 

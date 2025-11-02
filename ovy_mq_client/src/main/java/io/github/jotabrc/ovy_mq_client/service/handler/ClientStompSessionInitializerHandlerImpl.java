@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import java.time.OffsetDateTime;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,6 +48,7 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
             StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
             clientSessionHandler.setClientId(client.getId());
             client.setClientSessionHandler(clientSessionHandler);
+            client.setLastHealthCheck(OffsetDateTime.now());
             log.info("Session-initialized={} topic={}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {

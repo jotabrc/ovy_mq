@@ -30,7 +30,7 @@ public class PayloadRemoveHandler implements PayloadHandler<MessagePayload> {
     }
 
     @Override
-    public PayloadHandlerCommand command() {
-        return PayloadHandlerCommand.REMOVE;
+    public PayloadDispatcherCommand command() {
+        return PayloadDispatcherCommand.REMOVE;
     }
 }

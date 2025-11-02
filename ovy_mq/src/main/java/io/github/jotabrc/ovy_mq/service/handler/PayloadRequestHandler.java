@@ -78,7 +78,7 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
     }
 
     @Override
-    public PayloadHandlerCommand command() {
-        return PayloadHandlerCommand.REQUEST;
+    public PayloadDispatcherCommand command() {
+        return PayloadDispatcherCommand.REQUEST;
     }
 }

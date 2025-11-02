@@ -40,7 +40,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
     }
 
     @Override
-    public PayloadHandlerCommand command() {
-        return PayloadHandlerCommand.HEALTH_CHECK;
+    public PayloadDispatcherCommand command() {
+        return PayloadDispatcherCommand.HEALTH_CHECK;
     }
 }

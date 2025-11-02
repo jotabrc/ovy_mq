@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
+import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +24,19 @@ public class HealthCheckTask {
 
     private final ClientSessionInitializerHandler clientSessionInitializerHandler;
     private final ClientRegistry clientRegistry;
+    private final ClientMessageSender clientMessageSender;
+
     private final Long delay;
     private final Long threshold;
 
     public HealthCheckTask(ClientSessionInitializerHandler clientSessionInitializerHandler,
                            ClientRegistry clientRegistry,
+                           ClientMessageSender clientMessageSender,
                            @Value("${ovymq.task.health-check.delay}") Long delay,
                            @Value("${ovymq.task.health-check.threshold}") Long threshold) {
         this.clientSessionInitializerHandler = clientSessionInitializerHandler;
         this.clientRegistry = clientRegistry;
+        this.clientMessageSender = clientMessageSender;
         this.delay = delay;
         this.threshold = threshold;
     }
@@ -45,9 +50,8 @@ public class HealthCheckTask {
                     if (isLastHealthCheckExpired(client) || !client.isConnected()) {
                         client.disconnect();
                         clientSessionInitializerHandler.initialize(client);
-                        client.setLastHealthCheck(OffsetDateTime.now());
                     } else {
-                        client.requestHealthCheck();
+                        clientMessageSender.send(client.requestHealthCheck(), client);
                     }
                 });
     }

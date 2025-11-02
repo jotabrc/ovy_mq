@@ -10,7 +10,6 @@ public class ClientFactory {
         return Client.builder()
                 .id(clientId)
                 .topic(topic)
-                .isAvailable(true)
                 .build();
     }
 

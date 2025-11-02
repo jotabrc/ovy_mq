@@ -13,7 +13,7 @@ import static java.util.Objects.isNull;
 @Component
 public class PayloadHandlerRegistry {
 
-    private final Map<Class<?>, Map<PayloadHandlerCommand,PayloadHandler<?>>> handlers;
+    private final Map<Class<?>, Map<PayloadDispatcherCommand,PayloadHandler<?>>> handlers;
 
     public PayloadHandlerRegistry(List<PayloadHandler<?>> availableHandlers) {
         this.handlers = new HashMap<>();
@@ -26,7 +26,7 @@ public class PayloadHandlerRegistry {
         }
     }
 
-    public Optional<PayloadHandler<?>> getHandler(Class<?> classType, PayloadHandlerCommand command) {
+    public Optional<PayloadHandler<?>> getHandler(Class<?> classType, PayloadDispatcherCommand command) {
         return Optional.ofNullable(handlers.get(classType).get(command));
     }
 }

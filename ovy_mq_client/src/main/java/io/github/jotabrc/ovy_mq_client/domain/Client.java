@@ -26,30 +26,35 @@ public class Client implements Serializable {
     private String id;
     private String topic;
     private Boolean isAvailable;
-    private Object beanInstance;
+    private String beanName;
     private Method method;
     private ClientSessionHandler clientSessionHandler;
     @Builder.Default
     private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
+    @Builder.Default
+    private OffsetDateTime lastExecution = OffsetDateTime.now();
+    ListenerState listenerState;
 
     @JsonIgnore
-    public void requestMessage() {
-        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE), this.topic);
+    public Runnable requestMessage() {
+        return this.isAvailable
+                ? () -> this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE), this.topic)
+                : null;
     }
 
     @JsonIgnore
-    public void confirmPayloadReceived(MessagePayload messagePayload) {
-        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM),
+    public Runnable confirmPayloadReceived(MessagePayload messagePayload) {
+        return () -> this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_MESSAGE + WS_CONFIRM),
                 messagePayload.cleanDataAndUpdateSuccessTo(true));
     }
 
     @JsonIgnore
-    public void requestHealthCheck() {
+    public Runnable requestHealthCheck() {
         HealthStatus healthStatus = HealthStatus.builder()
                 .requestedAt(OffsetDateTime.now())
                 .alive(false)
                 .build();
-        this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_HEALTH), healthStatus);
+        return () -> this.clientSessionHandler.getSession().send(StompHeaderFactory.get(this.topic, WS_REQUEST + WS_HEALTH), healthStatus);
     }
 
     @JsonIgnore

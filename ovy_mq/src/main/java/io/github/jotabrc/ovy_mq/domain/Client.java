@@ -7,7 +7,6 @@ import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Objects;
 
 @Builder
@@ -19,8 +18,6 @@ public class Client implements Serializable {
 
     private String id;
     private String topic;
-    private Boolean isAvailable;
-    private Method method;
 
     public String getTopicForAwaitingProcessingQueue() {
         return TopicUtil.createTopicKey(this.topic, MessageStatus.AWAITING_PROCESSING);

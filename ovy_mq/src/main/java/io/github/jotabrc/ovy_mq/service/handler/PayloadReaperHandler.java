@@ -33,7 +33,7 @@ public class PayloadReaperHandler implements PayloadHandler<Long> {
     }
 
     @Override
-    public PayloadHandlerCommand command() {
-        return PayloadHandlerCommand.REAPER;
+    public PayloadDispatcherCommand command() {
+        return PayloadDispatcherCommand.REAPER;
     }
 }

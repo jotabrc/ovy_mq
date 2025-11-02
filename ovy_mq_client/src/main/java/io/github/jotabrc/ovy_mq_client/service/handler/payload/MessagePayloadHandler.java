@@ -2,19 +2,22 @@ package io.github.jotabrc.ovy_mq_client.service.handler.payload;
 
 import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
+import io.github.jotabrc.ovy_mq_client.service.ListenerExecutionContextHolder;
+import io.github.jotabrc.ovy_mq_client.service.ListenerInvocator;
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,43 +25,50 @@ import static java.util.Objects.nonNull;
 public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
     private final ClientRegistry clientRegistry;
+    private final Executor listenerExecutor;
+    private final ClientMessageSender clientMessageSender;
+    private final ListenerExecutionContextHolder listenerExecutionContextHolder;
+    private final ListenerInvocator listenerInvocator;
 
     private static final Pattern PATTERN_EXTRACT_TOPIC = Pattern.compile("/user/queue/(.*)");
 
-    @Async
     @Override
     public void handle(String clientId, MessagePayload payload, StompHeaders headers) {
-        String destination = headers.getDestination();
-        if (nonNull(destination)) {
-            String topic = extractTopicFromDestination(destination);
-            if (nonNull(topic)) {
-                payload.setTopic(topic);
-                handle(clientId, payload);
-            }
-        }
+        extractTopicFrom(headers.getDestination()).ifPresent(topic -> {
+            payload.setTopic(topic);
+            handleAsync(clientId, payload);
+        });
     }
 
-    private String extractTopicFromDestination(String destination) {
+    private Optional<String> extractTopicFrom(String destination) {
         Matcher matcher = PATTERN_EXTRACT_TOPIC.matcher(destination);
-        if (matcher.find()) return matcher.group(1);
-        return null;
+        if (matcher.find()) return Optional.of(matcher.group(1));
+        return Optional.empty();
     }
 
-    private void handle(String clientId, MessagePayload messagePayload) {
-        log.info("Retrieving client={} topic={}", clientId, messagePayload.getTopic());
+    private void handleAsync(String clientId, MessagePayload messagePayload) {
         Client client = clientRegistry.getByClientIdOrThrow(clientId);
-        client.confirmPayloadReceived(messagePayload);
+        clientMessageSender.send(client.confirmPayloadReceived(messagePayload), client);
+
+        long timeout = client.getListenerState().getTimeout();
+        CompletableFuture.runAsync(() -> execute(messagePayload, client),
+                        listenerExecutor)
+                .orTimeout(timeout, TimeUnit.MILLISECONDS)
+                .exceptionally(e -> {
+                    log.error("Listener task failed: client={} message={} topic={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), e);
+                    return null;
+                });
+    }
+
+    private void execute(MessagePayload messagePayload, Client client) {
         try {
+            listenerExecutionContextHolder.setThreadLocal(client);
             client.setIsAvailable(false);
-            client.getMethod().invoke(client.getBeanInstance(), messagePayload.getPayload());
-            log.info("Client consuming message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            log.warn("Error while processing payload={} topic={}", messagePayload.getId(), messagePayload.getTopic(), e);
+            log.info("Executing client={}: message={} topic={} class={} method={}",client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName());
+            listenerInvocator.invoke(client, messagePayload.getPayload());
+        } catch (Throwable e) {
+            log.warn("Error while executing client={}: message={} topic={} class={} method={}",client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName(), e);
             throw new RuntimeException(e);
-        } finally {
-            log.info("Requesting message: Client={} topic={}", client.getId(), client.getTopic());
-            client.setIsAvailable(true);
-            client.requestMessage();
         }
     }
 

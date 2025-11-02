@@ -12,4 +12,5 @@ public class Mapping {
     public static final String WS_MESSAGE = "/message";
     public static final String WS_CONFIRM = "/confirm";
     public static final String WS_HEALTH = "/health";
+    public static final String WS_CONFIG_LISTENER = "/listener/config";
 }

@@ -4,8 +4,8 @@ import io.github.jotabrc.ovy_mq.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.domain.defaults.Key;
 import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
-import io.github.jotabrc.ovy_mq.service.handler.PayloadExecutor;
-import io.github.jotabrc.ovy_mq.service.handler.PayloadHandlerCommand;
+import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
+import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -21,19 +21,19 @@ import static java.util.Objects.nonNull;
 @Controller
 public class MessageController {
 
-    private final PayloadExecutor payloadExecutor;
+    private final PayloadDispatcher payloadDispatcher;
 
     @MessageMapping(WS_SAVE)
     public void saveMessage(@Payload MessagePayload messagePayload) {
         if (nonNull(messagePayload)) {
-            payloadExecutor.execute(messagePayload, PayloadHandlerCommand.SAVE);
+            payloadDispatcher.execute(messagePayload, PayloadDispatcherCommand.SAVE);
         }
     }
 
     @MessageMapping(WS_MESSAGE)
     public void requestMessage(@Payload String topic, Principal principal) {
         if (nonNull(topic) && !topic.isBlank() && nonNull(principal)) {
-            payloadExecutor.execute(ClientFactory.of(principal.getName(), topic), PayloadHandlerCommand.REQUEST);
+            payloadDispatcher.execute(ClientFactory.of(principal.getName(), topic), PayloadDispatcherCommand.REQUEST);
         }
     }
 
@@ -41,7 +41,7 @@ public class MessageController {
     public void confirmProcessing(@Payload MessagePayload messagePayload, @Header(Key.HEADER_TOPIC) String topic) {
         if (nonNull(messagePayload) && nonNull(topic)) {
             messagePayload.setTopic(topic);
-            payloadExecutor.execute(messagePayload, PayloadHandlerCommand.REMOVE);
+            payloadDispatcher.execute(messagePayload, PayloadDispatcherCommand.REMOVE);
         }
     }
 
@@ -49,7 +49,7 @@ public class MessageController {
     public void healthCheck(@Payload HealthStatus healthStatus, Principal principal) {
         if (nonNull(healthStatus) && nonNull(principal)) {
             healthStatus.setClientId(principal.getName());
-            payloadExecutor.execute(healthStatus, PayloadHandlerCommand.HEALTH_CHECK);
+            payloadDispatcher.execute(healthStatus, PayloadDispatcherCommand.HEALTH_CHECK);
         }
     }
 }

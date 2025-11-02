@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class PayloadExecutor {
+public class PayloadDispatcher {
 
     private final PayloadHandlerRegistry payloadHandlerRegistry;
 
-    public void execute(Object payload, PayloadHandlerCommand command) {
+    public void execute(Object payload, PayloadDispatcherCommand command) {
         payloadHandlerRegistry.getHandler(payload.getClass(), command)
                 .ifPresentOrElse(handler -> execute(handler, payload),
                         () -> log.warn("No handler available for payload-class-{}", payload.getClass()));

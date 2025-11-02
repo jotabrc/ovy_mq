@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-public enum PayloadHandlerCommand {
+public enum PayloadDispatcherCommand {
 
     SAVE,
     REQUEST,
