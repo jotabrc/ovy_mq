@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.domain.factory;
 
 import io.github.jotabrc.ovy_mq_client.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_client.domain.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHttpHeaders;

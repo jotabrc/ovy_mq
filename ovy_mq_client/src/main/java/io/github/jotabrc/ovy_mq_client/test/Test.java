@@ -10,7 +10,7 @@ public class Test {
 
     private final TestRepo repo;
 
-    @OvyListener(topic = "teste", replicas = 1000)
+    @OvyListener(topic = "teste", replicas = 3)
     public void listener(Object object) {
 //        try {
 //            Thread.sleep(Random.from(new Random()).nextInt(1, 29000));

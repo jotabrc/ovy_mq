@@ -1,12 +1,12 @@
 package io.github.jotabrc.ovy_mq_client.service.handler.payload;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
-import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
 import io.github.jotabrc.ovy_mq_client.service.ListenerExecutionContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.ListenerInvocator;
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -48,7 +48,7 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
     private void handleAsync(String clientId, MessagePayload messagePayload) {
         Client client = clientRegistry.getByClientIdOrThrow(clientId);
-        clientMessageSender.send(client.confirmPayloadReceived(messagePayload), client);
+        clientMessageSender.send(client,client.getTopic(), client.confirmPayloadReceived(messagePayload), messagePayload.cleanDataAndUpdateSuccessTo(true));
 
         long timeout = client.getListenerState().getTimeout();
         CompletableFuture.runAsync(() -> execute(messagePayload, client),

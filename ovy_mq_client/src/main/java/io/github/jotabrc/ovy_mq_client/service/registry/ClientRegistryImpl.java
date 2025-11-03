@@ -1,9 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.service.registry;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.handler.ClientNotFoundException;
 import io.github.jotabrc.ovy_mq_client.service.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,12 +22,11 @@ import static java.util.Objects.nonNull;
 public class ClientRegistryImpl implements ClientRegistry {
 
     private final ClientRegistryProvider clientRegistryProvider;
+    private final ClientSessionRegistryProvider clientSessionRegistryProvider;
 
     @Override
     public void save(Client client) {
-        if (nonNull(client)
-                && nonNull(client.getTopic())
-                && nonNull(client.getClientSessionHandler())) {
+        if (nonNull(client) && nonNull(client.getTopic())) {
             clientRegistryProvider.getClients().compute(client.getTopic(), (key, queue) -> {
                 if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
                 if (!queue.contains(client)) queue.offer(client);
@@ -55,7 +54,9 @@ public class ClientRegistryImpl implements ClientRegistry {
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(Client::getIsAvailable)
-                .filter(client -> client.getClientSessionHandler().getSession().isConnected())
+                .filter(client -> clientSessionRegistryProvider.getBy(client.getId())
+                        .map(clientSessionHandler -> clientSessionHandler.getSession().isConnected())
+                        .orElse(false))
                 .toList();
     }
 

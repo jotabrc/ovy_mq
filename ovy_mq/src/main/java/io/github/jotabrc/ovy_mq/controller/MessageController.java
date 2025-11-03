@@ -1,8 +1,6 @@
 package io.github.jotabrc.ovy_mq.controller;
 
-import io.github.jotabrc.ovy_mq.domain.HealthStatus;
-import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.domain.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
@@ -14,7 +12,7 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
-import static io.github.jotabrc.ovy_mq.config.Mapping.*;
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
 import static java.util.Objects.nonNull;
 
 @AllArgsConstructor

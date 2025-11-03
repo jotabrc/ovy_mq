@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.domain.defaults.MessageStatus;
+import io.github.jotabrc.ovy_mq_core.domain.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import lombok.RequiredArgsConstructor;

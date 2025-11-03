@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.domain;
+package io.github.jotabrc.ovy_mq_core.domain;
 
 import lombok.Builder;
 import lombok.Getter;

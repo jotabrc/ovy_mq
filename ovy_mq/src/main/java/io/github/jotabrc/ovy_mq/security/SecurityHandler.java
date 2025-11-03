@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.security;
 
 import io.github.jotabrc.ovy_mq.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq.domain.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import jakarta.annotation.PostConstruct;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;

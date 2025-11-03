@@ -1,13 +1,13 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.config.Mapping;
-import io.github.jotabrc.ovy_mq.domain.Client;
-import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.domain.defaults.Key;
-import io.github.jotabrc.ovy_mq.domain.defaults.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.SecurityHandler;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.MessageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.MessageHeaders;

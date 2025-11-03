@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.domain.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq.handler.AuthorizationRequestDeniedException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;

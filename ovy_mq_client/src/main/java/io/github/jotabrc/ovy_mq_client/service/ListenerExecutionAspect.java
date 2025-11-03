@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -33,7 +33,7 @@ public class ListenerExecutionAspect {
         } finally {
             if (nonNull(client)) client.setIsAvailable(true);
             listenerExecutionContextHolder.clear();
-            clientMessageSender.send(client.requestMessage(), client);
+            clientMessageSender.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
         }
     }
 }

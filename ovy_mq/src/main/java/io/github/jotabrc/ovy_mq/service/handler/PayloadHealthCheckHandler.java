@@ -1,10 +1,10 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.config.Mapping;
-import io.github.jotabrc.ovy_mq.domain.HealthStatus;
-import io.github.jotabrc.ovy_mq.domain.defaults.Key;
 import io.github.jotabrc.ovy_mq.domain.factory.HeaderFactory;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
+import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

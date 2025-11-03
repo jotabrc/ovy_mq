@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.domain.factory;
 
-import io.github.jotabrc.ovy_mq.domain.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;

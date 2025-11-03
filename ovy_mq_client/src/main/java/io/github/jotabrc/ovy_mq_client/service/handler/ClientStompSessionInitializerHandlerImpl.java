@@ -1,10 +1,11 @@
 package io.github.jotabrc.ovy_mq_client.service.handler;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
-import io.github.jotabrc.ovy_mq_client.domain.factory.WebSocketHttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
+import io.github.jotabrc.ovy_mq_client.domain.factory.WebSocketHttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistryProvider;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static io.github.jotabrc.ovy_mq_client.config.Mapping.*;
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
 import static java.util.Objects.nonNull;
 
 @Getter
@@ -29,6 +30,7 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
 
     private final ObjectProvider<ClientSessionHandler> clientSessionProvider;
     private final WebSocketHttpHeaderFactory webSocketHttpHeaderFactory;
+    private final ClientSessionRegistryProvider clientSessionRegistryProvider;
 
     @Override
     public void initialize(Client client) {
@@ -47,8 +49,9 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
         try {
             StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
             clientSessionHandler.setClientId(client.getId());
-            client.setClientSessionHandler(clientSessionHandler);
+//            client.setClientSessionHandler(clientSessionHandler);
             client.setLastHealthCheck(OffsetDateTime.now());
+            clientSessionRegistryProvider.addOrReplace(client.getId(), clientSessionHandler);
             log.info("Session-initialized={} topic={}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {

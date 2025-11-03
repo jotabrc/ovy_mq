@@ -1,6 +1,5 @@
 package io.github.jotabrc.ovy_mq.test;
 
-import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
 import lombok.RequiredArgsConstructor;

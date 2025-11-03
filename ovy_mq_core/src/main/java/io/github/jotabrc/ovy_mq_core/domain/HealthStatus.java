@@ -1,10 +1,13 @@
-package io.github.jotabrc.ovy_mq.domain;
+package io.github.jotabrc.ovy_mq_core.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+
+import static java.util.Objects.nonNull;
 
 @Setter
 @Getter
@@ -20,4 +23,11 @@ public class HealthStatus implements Serializable {
     private Boolean alive;
     private OffsetDateTime receivedAt;
     private OffsetDateTime requestedAt;
+
+    @JsonIgnore
+    public Long responseTime() {
+        return nonNull(receivedAt) && nonNull(requestedAt)
+                ? receivedAt.toInstant().toEpochMilli() - requestedAt.toInstant().toEpochMilli()
+                : null;
+    }
 }

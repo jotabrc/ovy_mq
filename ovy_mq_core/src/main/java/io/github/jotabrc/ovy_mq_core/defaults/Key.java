@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.domain.defaults;
+package io.github.jotabrc.ovy_mq_core.defaults;
 
 public class Key {
 
@@ -8,8 +8,8 @@ public class Key {
     public static final String PAYLOAD_TYPE_LISTENER_CONFIG = "listener-config";
 
     // HEADER's
-    public static final String HEADER_PAYLOAD_TYPE = "X-PAYLOAD-TYPE";
     public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String HEADER_PAYLOAD_TYPE = "X-PAYLOAD-TYPE";
     public static final String HEADER_CLIEND_ID = "X-CLIENT_ID";
     public static final String HEADER_TOPIC = "X-SUBSCRIBED-TOPIC";
 }

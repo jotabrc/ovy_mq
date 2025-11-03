@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.jotabrc</groupId>
+    <artifactId>ovy_mq_project</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>ovy_mq_root</name>
+    <modules>
+        <module>ovy_mq</module>
+        <module>ovy_mq_client</module>
+        <module>ovy_mq_core</module>
+    </modules>
+
+</project>

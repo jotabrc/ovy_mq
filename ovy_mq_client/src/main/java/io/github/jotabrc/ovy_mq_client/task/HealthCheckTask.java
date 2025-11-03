@@ -1,9 +1,11 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
 import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,6 +26,7 @@ public class HealthCheckTask {
 
     private final ClientSessionInitializerHandler clientSessionInitializerHandler;
     private final ClientRegistry clientRegistry;
+    private final ClientSessionRegistryProvider clientSessionRegistryProvider;
     private final ClientMessageSender clientMessageSender;
 
     private final Long delay;
@@ -31,11 +34,13 @@ public class HealthCheckTask {
 
     public HealthCheckTask(ClientSessionInitializerHandler clientSessionInitializerHandler,
                            ClientRegistry clientRegistry,
+                           ClientSessionRegistryProvider clientSessionRegistryProvider,
                            ClientMessageSender clientMessageSender,
                            @Value("${ovymq.task.health-check.delay}") Long delay,
                            @Value("${ovymq.task.health-check.threshold}") Long threshold) {
         this.clientSessionInitializerHandler = clientSessionInitializerHandler;
         this.clientRegistry = clientRegistry;
+        this.clientSessionRegistryProvider = clientSessionRegistryProvider;
         this.clientMessageSender = clientMessageSender;
         this.delay = delay;
         this.threshold = threshold;
@@ -47,16 +52,27 @@ public class HealthCheckTask {
         clientRegistry.getAllClients()
                 .forEach(client -> {
                     log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheck());
-                    if (isLastHealthCheckExpired(client) || !client.isConnected()) {
-                        client.disconnect();
-                        clientSessionInitializerHandler.initialize(client);
-                    } else {
-                        clientMessageSender.send(client.requestHealthCheck(), client);
-                    }
+                    clientSessionRegistryProvider.getBy(client.getId())
+                            .ifPresent(clientSessionHandler -> {
+                                if (isLastHealthCheckExpired(client) || !clientSessionHandler.isConnected()) {
+                                    clientSessionHandler.disconnect();
+                                    clientSessionInitializerHandler.initialize(client);
+                                } else {
+                                    HealthStatus healthStatus = buildHealthStatus();
+                                    clientMessageSender.send(client, client.getTopic(), client.requestHealthCheck(), healthStatus, clientSessionHandler.getSession());
+                                }
+                            });
                 });
     }
 
     private boolean isLastHealthCheckExpired(Client client) {
         return OffsetDateTime.now().minus(threshold, ChronoUnit.MILLIS).isAfter(client.getLastHealthCheck());
+    }
+
+    private static HealthStatus buildHealthStatus() {
+        return HealthStatus.builder()
+                .requestedAt(OffsetDateTime.now())
+                .alive(false)
+                .build();
     }
 }

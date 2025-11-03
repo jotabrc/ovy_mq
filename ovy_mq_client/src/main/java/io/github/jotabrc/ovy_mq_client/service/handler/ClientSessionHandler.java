@@ -1,9 +1,10 @@
 package io.github.jotabrc.ovy_mq_client.service.handler;
 
-import io.github.jotabrc.ovy_mq_client.domain.HealthStatus;
-import io.github.jotabrc.ovy_mq_client.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq_client.domain.defaults.Key;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.PayloadDispatcher;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
+import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,5 +68,17 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter {
         if (isNull(this.clientId)) {
             this.clientId = clientId;
         }
+    }
+
+    @JsonIgnore
+    public void disconnect() {
+        if (this.session.isConnected()) {
+            this.session.disconnect();
+        }
+    }
+
+    @JsonIgnore
+    public boolean isConnected() {
+        return this.session.isConnected();
     }
 }

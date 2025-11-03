@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

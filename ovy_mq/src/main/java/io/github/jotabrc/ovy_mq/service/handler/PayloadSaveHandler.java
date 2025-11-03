@@ -1,9 +1,9 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq.domain.defaults.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.MessageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class PayloadSaveHandler implements PayloadHandler<MessagePayload> {
         messageRepository.saveToQueue(messagePayload);
     }
 
-    private void updateMessageMetadata(io.github.jotabrc.ovy_mq.domain.MessagePayload message) {
+    private void updateMessageMetadata(MessagePayload message) {
         message.updateMessageStatusTo(MessageStatus.AWAITING_PROCESSING);
         if (isNull(message.getId())) message.updateMessageMetadata(UUID.randomUUID().toString(), OffsetDateTime.now());
     }

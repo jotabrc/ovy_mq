@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.domain.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

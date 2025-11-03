@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.repository;
 
-import io.github.jotabrc.ovy_mq.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;

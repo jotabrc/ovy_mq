@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.registry.interfaces;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
 
 import java.util.List;
 

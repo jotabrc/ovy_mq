@@ -1,8 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.domain.factory;
 
-import io.github.jotabrc.ovy_mq_client.domain.Client;
-import io.github.jotabrc.ovy_mq_client.domain.ListenerState;
-import io.github.jotabrc.ovy_mq_client.service.handler.ClientSessionHandler;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.ListenerState;
 
 import java.lang.reflect.Method;
 import java.util.UUID;
@@ -10,15 +9,6 @@ import java.util.UUID;
 public class ClientFactory {
 
     private ClientFactory() {}
-
-    public static Client of(String topic, ClientSessionHandler clientSessionHandler, Method method) {
-        return Client.builder()
-                .topic(topic)
-                .method(method)
-                .clientSessionHandler(clientSessionHandler)
-                .isAvailable(true)
-                .build();
-    }
 
     public static Client of(String topic, Method method) {
         return Client.builder()
@@ -29,7 +19,7 @@ public class ClientFactory {
                 .build();
     }
 
-    public static Client of(String topic, Method method, String beanName, ListenerState listenerState) {
+    public static io.github.jotabrc.ovy_mq_core.domain.Client of(String topic, Method method, String beanName, ListenerState listenerState) {
         return Client.builder()
                 .id(UUID.randomUUID().toString())
                 .topic(topic)
@@ -37,21 +27,6 @@ public class ClientFactory {
                 .beanName(beanName)
                 .isAvailable(true)
                 .listenerState(listenerState)
-                .build();
-    }
-
-    public static Client of(String topic, ClientSessionHandler clientSessionHandler) {
-        return Client.builder()
-                .topic(topic)
-                .clientSessionHandler(clientSessionHandler)
-                .isAvailable(true)
-                .build();
-    }
-
-    public static Client of(String topic) {
-        return Client.builder()
-                .topic(topic)
-                .isAvailable(true)
                 .build();
     }
 }

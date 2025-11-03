@@ -15,7 +15,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import java.util.List;
 
-import static io.github.jotabrc.ovy_mq.config.Mapping.*;
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
 
 @Configuration
 @EnableWebSocketMessageBroker

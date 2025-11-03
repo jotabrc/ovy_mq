@@ -35,8 +35,8 @@ public class ConsumerTask {
         log.info("Consumer task execution started with fixed delay of {} ms", delay);
         clientRegistry.getAllAvailableClients()
                 .forEach(client -> {
-                    log.info("Requesting message for client={} listening to topic={}", client.getId(), client.getTopic());
-                    clientMessageSender.send(client.requestMessage(), client);
+                    log.info("Requesting message: client={} topic={}", client.getId(), client.getTopic());
+                    clientMessageSender.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
                 });
     }
 }
