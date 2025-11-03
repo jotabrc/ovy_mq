@@ -1,12 +1,12 @@
 package io.github.jotabrc.ovy_mq_client.service.handler.payload;
 
-import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
 import io.github.jotabrc.ovy_mq_client.service.ListenerExecutionContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.ListenerInvocator;
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;

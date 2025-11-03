@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.service.ApplicationContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.OvyListener;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerState;
 import lombok.RequiredArgsConstructor;

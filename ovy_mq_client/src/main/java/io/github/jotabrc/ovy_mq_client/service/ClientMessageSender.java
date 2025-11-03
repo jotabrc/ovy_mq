@@ -19,19 +19,23 @@ public class ClientMessageSender {
 
     public void send(Client client, String topic, String destination, Object payload) {
         synchronized (client.getId()) {
-            log.info("Sending message: client={} topic={} destination={}", client.getId(), topic, destination);
-            clientSessionRegistryProvider.getBy(client.getId())
-                    .ifPresent(clientSessionHandler -> {
-                        if (!clientSessionHandler.isConnected()) clientSessionInitializerHandler.initialize(client);
-                        send(client, topic, destination, payload, clientSessionHandler.getSession());
+            logInfo(client, topic, destination);
+            clientSessionRegistryProvider.getById(client.getId())
+                    .ifPresent(session -> {
+                        if (!session.isConnected()) clientSessionInitializerHandler.initialize(client);
+                        send(client, topic, destination, payload, session);
                     });
         }
     }
 
     public void send(Client client, String topic, String destination, Object payload, StompSession session) {
         synchronized (client.getId()) {
-            log.info("Sending message: client={} topic={} destination={}", client.getId(), topic, destination);
+            logInfo(client, topic, destination);
             session.send(StompHeaderFactory.get(topic, destination), payload);
         }
+    }
+
+    private static void logInfo(Client client, String topic, String destination) {
+        log.info("Sending message: client={} topic={} destination={}", client.getId(), topic, destination);
     }
 }

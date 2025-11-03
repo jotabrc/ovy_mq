@@ -47,11 +47,9 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
         ClientSessionHandler clientSessionHandler = clientSessionProvider.getObject();
 
         try {
-            StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
             clientSessionHandler.setClientId(client.getId());
-//            client.setClientSessionHandler(clientSessionHandler);
             client.setLastHealthCheck(OffsetDateTime.now());
-            clientSessionRegistryProvider.addOrReplace(client.getId(), clientSessionHandler);
+            StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
             log.info("Session-initialized={} topic={}", session.getSessionId(), client.getTopic());
             return true;
         } catch (Exception e) {
@@ -71,8 +69,9 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
             if (nonNull(returnedSession) && returnedSession.isConnected()) {
                 returnedSession.subscribe(WS_USER + WS_HEALTH, clientSessionHandler);
                 returnedSession.subscribe(WS_USER + WS_QUEUE + "/" + topic, clientSessionHandler);
+                clientSessionRegistryProvider.addOrReplace(clientSessionHandler.getClientId(), returnedSession);
             } else {
-                throw new ServerSubscribeException("Server not ready...");
+                throw new ServerSubscribeException("Server not ready");
             }
         }).get();
     }

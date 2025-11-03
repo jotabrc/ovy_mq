@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.handler.payload;
 
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_client.service.registry.PayloadHandlerRegistryProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class PayloadDispatcher {
 
-    private final PayloadHandlerRegistry payloadHandlerRegistry;
+    private final PayloadHandlerRegistryProvider payloadHandlerRegistryProvider;
 
     public void execute(String clientId, Object payload, StompHeaders headers) {
-        payloadHandlerRegistry.getHandler(payload.getClass())
+        payloadHandlerRegistryProvider.getHandler(payload.getClass())
                 .ifPresentOrElse(handler -> execute(handler, clientId, payload, headers),
                         () -> log.warn("No handler available for payload-class={}", payload.getClass()));
     }

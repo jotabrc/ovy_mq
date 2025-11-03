@@ -27,8 +27,8 @@ import static java.util.Objects.isNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ClientSessionHandler extends StompSessionHandlerAdapter {
 
-    private final PayloadDispatcher payloadDispatcher;
     private final CompletableFuture<StompSession> future = new CompletableFuture<>();
+    private final PayloadDispatcher payloadDispatcher;
 
     private StompSession session;
     private String clientId;

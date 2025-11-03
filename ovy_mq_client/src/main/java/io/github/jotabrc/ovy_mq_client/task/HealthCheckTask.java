@@ -2,8 +2,8 @@ package io.github.jotabrc.ovy_mq_client.task;
 
 import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistryProvider;
-import io.github.jotabrc.ovy_mq_client.service.registry.interfaces.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -52,14 +52,14 @@ public class HealthCheckTask {
         clientRegistry.getAllClients()
                 .forEach(client -> {
                     log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheck());
-                    clientSessionRegistryProvider.getBy(client.getId())
-                            .ifPresent(clientSessionHandler -> {
-                                if (isLastHealthCheckExpired(client) || !clientSessionHandler.isConnected()) {
-                                    clientSessionHandler.disconnect();
+                    clientSessionRegistryProvider.getById(client.getId())
+                            .ifPresent(session -> {
+                                if (isLastHealthCheckExpired(client) || !session.isConnected()) {
+                                    session.disconnect();
                                     clientSessionInitializerHandler.initialize(client);
                                 } else {
                                     HealthStatus healthStatus = buildHealthStatus();
-                                    clientMessageSender.send(client, client.getTopic(), client.requestHealthCheck(), healthStatus, clientSessionHandler.getSession());
+                                    clientMessageSender.send(client, client.getTopic(), client.requestHealthCheck(), healthStatus, session);
                                 }
                             });
                 });
