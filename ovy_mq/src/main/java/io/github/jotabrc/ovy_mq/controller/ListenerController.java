@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq.controller;
 
+import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
