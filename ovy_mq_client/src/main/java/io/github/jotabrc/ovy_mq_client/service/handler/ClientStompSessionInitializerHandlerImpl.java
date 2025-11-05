@@ -1,19 +1,17 @@
 package io.github.jotabrc.ovy_mq_client.service.handler;
 
-import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
 import io.github.jotabrc.ovy_mq_client.domain.factory.WebSocketHttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.time.OffsetDateTime;
 import java.util.concurrent.ExecutionException;
@@ -28,29 +26,28 @@ import static java.util.Objects.nonNull;
 @Component
 public class ClientStompSessionInitializerHandlerImpl implements ClientSessionInitializerHandler {
 
-    private final ObjectProvider<ClientSessionHandler> clientSessionProvider;
+    private final ObjectProvider<SessionManager> sessionManagerProvider;
     private final WebSocketHttpHeaderFactory webSocketHttpHeaderFactory;
     private final ClientSessionRegistryProvider clientSessionRegistryProvider;
 
     @Override
     public void initialize(Client client) {
         log.info("Initializing-session client={}", client.getId());
-        WebSocketStompClient stompClient = ObjectMapperFactory.getWithConverter();
         AtomicLong counter = new AtomicLong(0L);
         while (true) {
-            if (connect(client, stompClient, counter)) return;
+            if (connect(client, counter)) return;
         }
     }
 
-    private boolean connect(Client client, WebSocketStompClient stompClient, AtomicLong counter) {
+    private boolean connect(Client client, AtomicLong counter) {
         WebSocketHttpHeaders headers = webSocketHttpHeaderFactory.get(client.getTopic());
-        ClientSessionHandler clientSessionHandler = clientSessionProvider.getObject();
+        SessionManager sessionManager = sessionManagerProvider.getObject();
 
         try {
-            clientSessionHandler.setClientId(client.getId());
+            sessionManager.setClient(client);
             client.setLastHealthCheck(OffsetDateTime.now());
-            StompSession session = connectToServerAndInitializeSubscription(client.getTopic(), stompClient, headers, clientSessionHandler);
-            log.info("Session-initialized={} topic={}", session.getSessionId(), client.getTopic());
+            SessionManager session = connectToServerAndInitializeSubscription(sessionManager, headers, client.getTopic());
+            log.info("Session initialized: client={} topic={}", session.getClient().getId(), client.getTopic());
             return true;
         } catch (Exception e) {
             log.info("Server is unavailable, retrying connection. Retry-number={} client={} topic={}", counter.getAndIncrement(), client.getId(), client.getTopic());
@@ -63,16 +60,17 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
         return false;
     }
 
-    private StompSession connectToServerAndInitializeSubscription(String topic, WebSocketStompClient stompClient, WebSocketHttpHeaders headers, ClientSessionHandler clientSessionHandler) throws ExecutionException, InterruptedException {
-        stompClient.connectAsync("ws://localhost:9090/" + WS_REGISTRY, headers, clientSessionHandler);
-        return clientSessionHandler.getFuture().whenComplete((returnedSession, exception) -> {
-            if (nonNull(returnedSession) && returnedSession.isConnected()) {
-                returnedSession.subscribe(WS_USER + WS_HEALTH, clientSessionHandler);
-                returnedSession.subscribe(WS_USER + WS_QUEUE + "/" + topic, clientSessionHandler);
-                clientSessionRegistryProvider.addOrReplace(clientSessionHandler.getClientId(), returnedSession);
-            } else {
-                throw new ServerSubscribeException("Server not ready");
-            }
-        }).get();
+    private SessionManager connectToServerAndInitializeSubscription(SessionManager sessionManager, WebSocketHttpHeaders headers, String topic) throws ExecutionException, InterruptedException {
+        return sessionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers)
+                .whenComplete((manager, exception) -> {
+                    if (nonNull(manager) && manager.isConnected()) {
+                        sessionManager
+                                .subscribe(WS_USER + WS_HEALTH)
+                                .subscribe(WS_USER + WS_QUEUE + "/" + topic);
+                        clientSessionRegistryProvider.addOrReplace(manager.getClient().getId(), sessionManager);
+                    } else {
+                        throw new ServerSubscribeException("Server not ready");
+                    }
+                }).get();
     }
 }

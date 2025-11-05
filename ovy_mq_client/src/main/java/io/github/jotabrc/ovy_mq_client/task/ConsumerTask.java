@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.service.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -17,26 +17,26 @@ import org.springframework.stereotype.Component;
 )
 public class ConsumerTask {
 
-    private final ClientRegistry clientRegistry;
-    private final ClientMessageSender clientMessageSender;
+    private final ClientRegistryProvider clientRegistryProvider;
+    private final ClientMessageDispatcher clientMessageDispatcher;
 
     private final String delay;
 
-    public ConsumerTask(ClientRegistry clientRegistry,
-                        ClientMessageSender clientMessageSender,
+    public ConsumerTask(ClientRegistryProvider clientRegistryProvider,
+                        ClientMessageDispatcher clientMessageDispatcher,
                         @Value("${ovymq.task.consumer.delay}") String delay) {
-        this.clientRegistry = clientRegistry;
-        this.clientMessageSender = clientMessageSender;
+        this.clientRegistryProvider = clientRegistryProvider;
+        this.clientMessageDispatcher = clientMessageDispatcher;
         this.delay = delay;
     }
 
     @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
         log.info("Consumer task execution started with fixed delay of {} ms", delay);
-        clientRegistry.getAllAvailableClients()
+        clientRegistryProvider.getAllAvailableClients()
                 .forEach(client -> {
                     log.info("Requesting message: client={} topic={}", client.getId(), client.getTopic());
-                    clientMessageSender.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
+                    clientMessageDispatcher.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
                 });
     }
 }

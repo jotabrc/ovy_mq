@@ -1,7 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.service.handler.payload;
 
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,17 +17,15 @@ import java.time.OffsetDateTime;
 @Service
 public class HealthStatusHandler implements PayloadHandler<HealthStatus> {
 
-    private final ClientRegistry clientRegistry;
-
     @Async
     @Override
-    public void handle(String clientId, HealthStatus payload, StompHeaders headers) {
-        handle(clientId, payload);
+    public void handle(Client client, HealthStatus payload, StompHeaders headers) {
+        handle(client, payload);
     }
 
-    private void handle(String clientId, HealthStatus healthStatus) {
-        log.info("Health check response for client={} received, response-time={} ms", clientId, healthStatus.responseTime());
-        clientRegistry.getByClientIdOrThrow(clientId).setLastHealthCheck(OffsetDateTime.now());
+    private void handle(Client client, HealthStatus healthStatus) {
+        log.info("Health check response for client={} received, response-time={} ms", client.getId(), healthStatus.responseTime());
+        client.setLastHealthCheck(OffsetDateTime.now());
     }
 
     @Override

@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.service.registry;
 
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -14,13 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ClientSessionRegistry {
 
-    private final Map<String, StompSession> sessions = new ConcurrentHashMap<>();
+    private final Map<String, SessionManager> sessions = new ConcurrentHashMap<>();
 
-    public void addOrReplace(String clientId, StompSession session) {
+    public void addOrReplace(String clientId, SessionManager session) {
         this.sessions.put(clientId, session);
     }
 
-    public Optional<StompSession> getById(String clientId) {
+    public Optional<SessionManager> getById(String clientId) {
         return Optional.of(this.sessions.get(clientId));
     }
 

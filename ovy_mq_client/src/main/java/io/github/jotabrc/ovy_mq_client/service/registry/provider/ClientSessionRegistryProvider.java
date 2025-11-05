@@ -1,8 +1,9 @@
-package io.github.jotabrc.ovy_mq_client.service.registry;
+package io.github.jotabrc.ovy_mq_client.service.registry.provider;
 
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -14,11 +15,11 @@ public class ClientSessionRegistryProvider {
 
     private final ClientSessionRegistry clientSessionRegistry;
 
-    public void addOrReplace(String clientId, StompSession session) {
+    public void addOrReplace(String clientId, SessionManager session) {
         clientSessionRegistry.addOrReplace(clientId, session);
     }
 
-    public Optional<StompSession> getById(String clientId) {
+    public Optional<SessionManager> getById(String clientId) {
         return clientSessionRegistry.getById(clientId);
     }
 

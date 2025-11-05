@@ -1,9 +1,10 @@
 package io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces;
 
+import io.github.jotabrc.ovy_mq_core.domain.Client;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 
 public interface PayloadHandler<T> {
 
-    void handle(String clientId, T payload, StompHeaders headers);
+    void handle(Client client, T payload, StompHeaders headers);
     Class<T> supports();
 }

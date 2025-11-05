@@ -1,49 +1,49 @@
 package io.github.jotabrc.ovy_mq_client.service.registry;
 
-import io.github.jotabrc.ovy_mq_client.handler.ClientNotFoundException;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component
 public class ClientRegistry {
 
-    private final ClientRegistryProvider clientRegistryProvider;
-    private final ClientSessionRegistryProvider clientSessionRegistryProvider;
+    private final Map<String, Queue<Client>> clients = new ConcurrentHashMap<>();
 
-    public void save(Client client) {
-        if (nonNull(client) && nonNull(client.getTopic())) {
-            clientRegistryProvider.add(client);
-            log.info("Client={} saved in registry for topic={}", client.getId(), client.getTopic());
-        } else {
-            log.error("Client cannot be saved in registry");
-        }
-    }
-
-    public Client getByClientIdOrThrow(String clientId) {
-        return clientRegistryProvider.getById(clientId)
-                .orElseThrow(() -> new ClientNotFoundException("Client %s not found".formatted(clientId)));
-    }
-
-    public List<Client> getAllAvailableClients() {
-        return clientRegistryProvider.getClients()
+    public Optional<Client> getById(String clientId) {
+        return clients.values()
                 .stream()
-                .filter(Client::getIsAvailable)
-                .filter(client -> clientSessionRegistryProvider.getById(client.getId())
-                        .map(StompSession::isConnected)
-                        .orElse(false))
+                .flatMap(Collection::stream)
+                .filter(client -> Objects.equals(clientId, client.getId()))
+                .findFirst();
+    }
+
+    public List<Client> getClients() {
+        return clients.values()
+                .stream()
+                .flatMap(Collection::stream)
                 .toList();
     }
 
-    public List<Client> getAllClients() {
-        return clientRegistryProvider.getClients();
+    public void add(Client client) {
+        clients.compute(client.getTopic(), (key, queue) -> {
+            if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
+            if (!queue.contains(client)) queue.offer(client);
+            return queue;
+        });
+    }
+
+    public void removeById(String clientId) {
+        clients.computeIfPresent(clientId, (key, queue) -> {
+            queue.removeIf(client -> Objects.equals(clientId, client.getId()));
+            return queue;
+        });
     }
 }
+

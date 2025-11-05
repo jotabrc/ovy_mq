@@ -1,9 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
+import io.github.jotabrc.ovy_mq_client.service.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -25,23 +25,23 @@ import java.time.temporal.ChronoUnit;
 public class HealthCheckTask {
 
     private final ClientSessionInitializerHandler clientSessionInitializerHandler;
-    private final ClientRegistry clientRegistry;
+    private final ClientRegistryProvider clientRegistryProvider;
     private final ClientSessionRegistryProvider clientSessionRegistryProvider;
-    private final ClientMessageSender clientMessageSender;
+    private final ClientMessageDispatcher clientMessageDispatcher;
 
     private final Long delay;
     private final Long threshold;
 
     public HealthCheckTask(ClientSessionInitializerHandler clientSessionInitializerHandler,
-                           ClientRegistry clientRegistry,
+                           ClientRegistryProvider clientRegistryProvider,
                            ClientSessionRegistryProvider clientSessionRegistryProvider,
-                           ClientMessageSender clientMessageSender,
+                           ClientMessageDispatcher clientMessageDispatcher,
                            @Value("${ovymq.task.health-check.delay}") Long delay,
                            @Value("${ovymq.task.health-check.threshold}") Long threshold) {
         this.clientSessionInitializerHandler = clientSessionInitializerHandler;
-        this.clientRegistry = clientRegistry;
+        this.clientRegistryProvider = clientRegistryProvider;
         this.clientSessionRegistryProvider = clientSessionRegistryProvider;
-        this.clientMessageSender = clientMessageSender;
+        this.clientMessageDispatcher = clientMessageDispatcher;
         this.delay = delay;
         this.threshold = threshold;
     }
@@ -49,7 +49,7 @@ public class HealthCheckTask {
     @Scheduled(fixedDelayString = "${ovymq.task.health-check.delay}")
     public void execute() {
         log.info("Health check task execution started, delay={} and threshold={}", delay, threshold);
-        clientRegistry.getAllClients()
+        clientRegistryProvider.getAllClients()
                 .forEach(client -> {
                     log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheck());
                     clientSessionRegistryProvider.getById(client.getId())
@@ -59,7 +59,7 @@ public class HealthCheckTask {
                                     clientSessionInitializerHandler.initialize(client);
                                 } else {
                                     HealthStatus healthStatus = buildHealthStatus();
-                                    clientMessageSender.send(client, client.getTopic(), client.requestHealthCheck(), healthStatus, session);
+                                    clientMessageDispatcher.send(client, client.getTopic(), client.requestHealthCheck(), healthStatus, session);
                                 }
                             });
                 });

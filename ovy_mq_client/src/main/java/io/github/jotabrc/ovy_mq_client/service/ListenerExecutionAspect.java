@@ -17,7 +17,7 @@ import static java.util.Objects.nonNull;
 public class ListenerExecutionAspect {
 
     private final ListenerExecutionContextHolder listenerExecutionContextHolder;
-    private final ClientMessageSender clientMessageSender;
+    private final ClientMessageDispatcher clientMessageDispatcher;
 
     @Around("@annotation(ovyListener)")
     public Object manageClientAvailability(ProceedingJoinPoint joinPoint, OvyListener ovyListener) {
@@ -33,7 +33,7 @@ public class ListenerExecutionAspect {
         } finally {
             if (nonNull(client)) client.setIsAvailable(true);
             listenerExecutionContextHolder.clear();
-            clientMessageSender.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
+            clientMessageDispatcher.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
         }
     }
 }

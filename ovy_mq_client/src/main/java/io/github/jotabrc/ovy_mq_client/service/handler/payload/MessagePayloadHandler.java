@@ -1,10 +1,10 @@
 package io.github.jotabrc.ovy_mq_client.service.handler.payload;
 
-import io.github.jotabrc.ovy_mq_client.service.ClientMessageSender;
+import io.github.jotabrc.ovy_mq_client.service.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.service.ListenerExecutionContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.ListenerInvocator;
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
@@ -24,19 +24,19 @@ import java.util.regex.Pattern;
 @Service
 public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
-    private final ClientRegistry clientRegistry;
+    private final ClientRegistryProvider clientRegistryProvider;
     private final Executor listenerExecutor;
-    private final ClientMessageSender clientMessageSender;
+    private final ClientMessageDispatcher clientMessageDispatcher;
     private final ListenerExecutionContextHolder listenerExecutionContextHolder;
     private final ListenerInvocator listenerInvocator;
 
     private static final Pattern PATTERN_EXTRACT_TOPIC = Pattern.compile("/user/queue/(.*)");
 
     @Override
-    public void handle(String clientId, MessagePayload payload, StompHeaders headers) {
+    public void handle(Client client, MessagePayload payload, StompHeaders headers) {
         extractTopicFrom(headers.getDestination()).ifPresent(topic -> {
             payload.setTopic(topic);
-            handleAsync(clientId, payload);
+            handleAsync(client, payload);
         });
     }
 
@@ -46,9 +46,8 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
         return Optional.empty();
     }
 
-    private void handleAsync(String clientId, MessagePayload messagePayload) {
-        Client client = clientRegistry.getByClientIdOrThrow(clientId);
-        clientMessageSender.send(client,client.getTopic(), client.confirmPayloadReceived(messagePayload), messagePayload.cleanDataAndUpdateSuccessTo(true));
+    private void handleAsync(Client client, MessagePayload messagePayload) {
+        clientMessageDispatcher.send(client,client.getTopic(), client.confirmPayloadReceived(messagePayload), messagePayload.cleanDataAndUpdateSuccessTo(true));
 
         long timeout = client.getListenerState().getTimeout();
         CompletableFuture.runAsync(() -> execute(messagePayload, client),

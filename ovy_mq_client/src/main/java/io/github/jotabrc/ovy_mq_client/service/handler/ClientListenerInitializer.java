@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.service.ApplicationContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.OvyListener;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerState;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import static java.util.Objects.nonNull;
 public class ClientListenerInitializer implements CommandLineRunner {
 
     private final ClientSessionInitializerHandler clientSessionInitializerHandler;
-    private final ClientRegistry clientRegistry;
+    private final ClientRegistryProvider clientRegistryProvider;
 
     @Override
     public void run(String... args) {
@@ -43,22 +43,20 @@ public class ClientListenerInitializer implements CommandLineRunner {
 
                 if (nonNull(listener)) {
                     ListenerState listenerState = createListenerState(listener);
-                    log.info("Listener: topic={} class={} method={} replicas={}", listener.topic(), beanClass.getSimpleName(), method.getName(), listener.replicas());
+                    log.info("Listener: topic={} replicas={}", listener.topic(), listener.replicas());
                     for (int i = 0; i < listener.replicas(); i++) {
                         Client client = ClientFactory.of(listener.topic(), method, beanName, listenerState);
-                        log.info("Creating client: replica={}/{} topic={} class={} method={} config=[maxReplicas={} minReplicas={} stepReplicas={} autoManageReplicas={} timeout={}ms]",
+                        log.info("Creating client: replica={}/{} topic={} config=[maxReplicas={} minReplicas={} stepReplicas={} autoManageReplicas={} timeout={}ms]",
                                 i + 1,
                                 listener.replicas(),
                                 listener.topic(),
-                                beanClass.getSimpleName(),
-                                method.getName(),
                                 listener.maxReplicas(),
                                 listener.minReplicas(),
                                 listener.stepReplicas(),
                                 listener.autoManageReplicas(),
                                 listener.timeout());
                         clientSessionInitializerHandler.initialize(client);
-                        clientRegistry.save(client);
+                        clientRegistryProvider.save(client);
                     }
                 }
             }
