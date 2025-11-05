@@ -2,25 +2,23 @@ package io.github.jotabrc.ovy_mq_client.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
 @Configuration
-public class ThreadPoolConfig implements AsyncConfigurer {
+public class ThreadPoolConfig {
 
-    public static final String DEFAULT_EXECUTOR = "defaultExecutor";
+    public static final String SMALL_POOL_EXECUTOR = "smallPoolExecutor";
     public static final String LISTENER_EXECUTOR = "listenerExecutor";
 
-    @Override
-    @Bean(name = DEFAULT_EXECUTOR)
-    public Executor getAsyncExecutor() {
+    @Bean(name = SMALL_POOL_EXECUTOR)
+    public Executor smallPoolExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(3);
-        executor.setQueueCapacity(3);
-        executor.setThreadNamePrefix("Default-ThreadPool-");
+        executor.setQueueCapacity(2);
+        executor.setThreadNamePrefix("Small-ThreadPool-");
         executor.initialize();
         return executor;
     }
