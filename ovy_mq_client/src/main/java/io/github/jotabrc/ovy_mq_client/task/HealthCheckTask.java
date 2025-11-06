@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
 import io.github.jotabrc.ovy_mq_client.service.ClientMessageDispatcher;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
@@ -24,7 +24,7 @@ import java.time.temporal.ChronoUnit;
 )
 public class HealthCheckTask {
 
-    private final ClientSessionInitializerHandler clientSessionInitializerHandler;
+    private final SessionInitializer sessionInitializer;
     private final ClientRegistryProvider clientRegistryProvider;
     private final ClientSessionRegistryProvider clientSessionRegistryProvider;
     private final ClientMessageDispatcher clientMessageDispatcher;
@@ -32,13 +32,13 @@ public class HealthCheckTask {
     private final Long delay;
     private final Long threshold;
 
-    public HealthCheckTask(ClientSessionInitializerHandler clientSessionInitializerHandler,
+    public HealthCheckTask(SessionInitializer sessionInitializer,
                            ClientRegistryProvider clientRegistryProvider,
                            ClientSessionRegistryProvider clientSessionRegistryProvider,
                            ClientMessageDispatcher clientMessageDispatcher,
                            @Value("${ovymq.task.health-check.delay}") Long delay,
                            @Value("${ovymq.task.health-check.threshold}") Long threshold) {
-        this.clientSessionInitializerHandler = clientSessionInitializerHandler;
+        this.sessionInitializer = sessionInitializer;
         this.clientRegistryProvider = clientRegistryProvider;
         this.clientSessionRegistryProvider = clientSessionRegistryProvider;
         this.clientMessageDispatcher = clientMessageDispatcher;
@@ -56,7 +56,7 @@ public class HealthCheckTask {
                             .ifPresent(session -> {
                                 if (isLastHealthCheckExpired(client) || !session.isConnected()) {
                                     session.disconnect();
-                                    clientSessionInitializerHandler.initialize(client);
+                                    sessionInitializer.initialize(client);
                                 } else {
                                     HealthStatus healthStatus = buildHealthStatus();
                                     clientMessageDispatcher.send(client, client.getTopic(), client.requestHealthCheck(), healthStatus, session);

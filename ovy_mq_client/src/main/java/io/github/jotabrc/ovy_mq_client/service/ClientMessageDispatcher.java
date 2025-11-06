@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service;
 
 import io.github.jotabrc.ovy_mq_client.domain.factory.StompHeaderFactory;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ClientMessageDispatcher {
 
-    private final ClientSessionInitializerHandler clientSessionInitializerHandler;
+    private final SessionInitializer sessionInitializer;
     private final ClientSessionRegistryProvider clientSessionRegistryProvider;
 
     public void send(Client client, String topic, String destination, Object payload) {
@@ -22,7 +22,7 @@ public class ClientMessageDispatcher {
             logInfo(client, topic, destination);
             clientSessionRegistryProvider.getById(client.getId())
                     .ifPresent(session -> {
-                        if (!session.isConnected()) clientSessionInitializerHandler.initialize(client);
+                        if (!session.isConnected()) sessionInitializer.initialize(client);
                         send(client, topic, destination, payload, session);
                     });
         }

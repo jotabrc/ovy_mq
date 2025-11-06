@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.factory.WebSocketHttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
@@ -24,7 +24,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ClientStompSessionInitializerHandlerImpl implements ClientSessionInitializerHandler {
+public class SessionInitializerImpl implements SessionInitializer {
 
     private final ObjectProvider<SessionManager> sessionManagerProvider;
     private final WebSocketHttpHeaderFactory webSocketHttpHeaderFactory;
@@ -46,7 +46,7 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
         try {
             sessionManager.setClient(client);
             client.setLastHealthCheck(OffsetDateTime.now());
-            SessionManager session = connectToServerAndInitializeSubscription(sessionManager, headers, client.getTopic());
+            SessionManager session = connectToServerAndInitializeSubscription(sessionManager, headers);
             log.info("Session initialized: client={} topic={}", session.getClient().getId(), client.getTopic());
             return true;
         } catch (Exception e) {
@@ -60,13 +60,10 @@ public class ClientStompSessionInitializerHandlerImpl implements ClientSessionIn
         return false;
     }
 
-    private SessionManager connectToServerAndInitializeSubscription(SessionManager sessionManager, WebSocketHttpHeaders headers, String topic) throws ExecutionException, InterruptedException {
+    private SessionManager connectToServerAndInitializeSubscription(SessionManager sessionManager, WebSocketHttpHeaders headers) throws ExecutionException, InterruptedException {
         return sessionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers)
                 .whenComplete((manager, exception) -> {
                     if (nonNull(manager) && manager.isConnected()) {
-                        sessionManager
-                                .subscribe(WS_USER + WS_HEALTH)
-                                .subscribe(WS_USER + WS_QUEUE + "/" + topic);
                         clientSessionRegistryProvider.addOrReplace(manager.getClient().getId(), sessionManager);
                     } else {
                         throw new ServerSubscribeException("Server not ready");

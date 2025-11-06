@@ -21,18 +21,20 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @Getter
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ClientSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
+public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
 
     /*
     TODO:
-    Interface SessionManager* for ClientSessionHandler
+    Interface SessionManager* for StompSessionHandler
     Interface for WebSocketStompClient
     Interface for WebSocketHttpHeaders
     Interface for StompHeaders
@@ -70,7 +72,7 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter implements 
 
     @Override
     public void disconnect() {
-        if (this.session.isConnected()) {
+        if (nonNull(this.session) && this.session.isConnected()) {
             this.session.disconnect();
             this.session = null;
         }
@@ -98,11 +100,8 @@ public class ClientSessionHandler extends StompSessionHandlerAdapter implements 
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
         this.session = session;
-        /*
-        TODO:
-        subscribe here
-        requires sending topic in headers on connect(..) call and returning from the server
-         */
+        this.subscribe(WS_USER + WS_HEALTH)
+                .subscribe(WS_USER + WS_QUEUE + "/" + client.getTopic());
         future.complete(this);
     }
 

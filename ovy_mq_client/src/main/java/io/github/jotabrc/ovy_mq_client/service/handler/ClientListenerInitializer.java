@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq_client.service.handler;
 import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.service.ApplicationContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.OvyListener;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.ClientSessionInitializerHandler;
+import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerState;
@@ -22,7 +22,7 @@ import static java.util.Objects.nonNull;
 @Component
 public class ClientListenerInitializer implements CommandLineRunner {
 
-    private final ClientSessionInitializerHandler clientSessionInitializerHandler;
+    private final SessionInitializer sessionInitializer;
     private final ClientRegistryProvider clientRegistryProvider;
 
     @Override
@@ -55,7 +55,7 @@ public class ClientListenerInitializer implements CommandLineRunner {
                                 listener.stepReplicas(),
                                 listener.autoManageReplicas(),
                                 listener.timeout());
-                        clientSessionInitializerHandler.initialize(client);
+                        sessionInitializer.initialize(client);
                         clientRegistryProvider.save(client);
                     }
                 }
