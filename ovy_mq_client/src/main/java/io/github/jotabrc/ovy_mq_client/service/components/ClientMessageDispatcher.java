@@ -1,7 +1,7 @@
-package io.github.jotabrc.ovy_mq_client.service;
+package io.github.jotabrc.ovy_mq_client.service.components;
 
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,6 @@ public class ClientMessageDispatcher {
             logInfo(client, topic, destination);
             clientSessionRegistryProvider.getById(client.getId())
                     .ifPresent(session -> {
-                        if (!session.isConnected()) sessionInitializer.initialize(client);
                         send(client, topic, destination, payload, session);
                     });
         }
@@ -29,6 +28,7 @@ public class ClientMessageDispatcher {
 
     public void send(Client client, String topic, String destination, Object payload, SessionManager session) {
         synchronized (client.getId()) {
+            if (!session.isConnected()) session = sessionInitializer.initialize(client);
             logInfo(client, topic, destination);
             session.send(destination, payload);
         }

@@ -1,9 +1,9 @@
-package io.github.jotabrc.ovy_mq_client.service.handler;
+package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.factory.WebSocketHttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.Getter;
@@ -31,15 +31,16 @@ public class SessionInitializerImpl implements SessionInitializer {
     private final ClientSessionRegistryProvider clientSessionRegistryProvider;
 
     @Override
-    public void initialize(Client client) {
+    public SessionManager initialize(Client client) {
         log.info("Initializing-session client={}", client.getId());
         AtomicLong counter = new AtomicLong(0L);
         while (true) {
-            if (connect(client, counter)) return;
+            SessionManager sessionManager = connect(client, counter);
+            if (nonNull(sessionManager)) return sessionManager;
         }
     }
 
-    private boolean connect(Client client, AtomicLong counter) {
+    private SessionManager connect(Client client, AtomicLong counter) {
         WebSocketHttpHeaders headers = webSocketHttpHeaderFactory.get(client.getTopic());
         SessionManager sessionManager = sessionManagerProvider.getObject();
 
@@ -48,7 +49,7 @@ public class SessionInitializerImpl implements SessionInitializer {
             client.setLastHealthCheck(OffsetDateTime.now());
             SessionManager session = connectToServerAndInitializeSubscription(sessionManager, headers);
             log.info("Session initialized: client={} topic={}", session.getClient().getId(), client.getTopic());
-            return true;
+            return sessionManager;
         } catch (Exception e) {
             log.info("Server is unavailable, retrying connection. Retry-number={} client={} topic={}", counter.getAndIncrement(), client.getId(), client.getTopic());
             try {
@@ -57,7 +58,7 @@ public class SessionInitializerImpl implements SessionInitializer {
                 log.error("Thread-interrupted={}: {}", Thread.interrupted(), ex.getMessage());
             }
         }
-        return false;
+        return null;
     }
 
     private SessionManager connectToServerAndInitializeSubscription(SessionManager sessionManager, WebSocketHttpHeaders headers) throws ExecutionException, InterruptedException {

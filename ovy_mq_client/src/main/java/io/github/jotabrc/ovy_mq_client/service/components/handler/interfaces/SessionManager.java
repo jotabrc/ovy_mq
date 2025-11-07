@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.service.handler.interfaces;
+package io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces;
 
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -14,4 +14,5 @@ public interface SessionManager {
     Client getClient();
     void disconnect();
     boolean isConnected();
+    void changeClientAvailabilityTo(boolean isAvailable);
 }

@@ -1,6 +1,6 @@
-package io.github.jotabrc.ovy_mq_client.service.handler.payload;
+package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
-import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.payload.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.PayloadHandlerRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class PayloadDispatcher {
+public class PayloadHandlerDispatcher {
 
     private final PayloadHandlerRegistryProvider payloadHandlerRegistryProvider;
 

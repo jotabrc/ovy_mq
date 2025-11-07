@@ -1,9 +1,9 @@
-package io.github.jotabrc.ovy_mq_client.service.handler;
+package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.service.ApplicationContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.OvyListener;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerState;

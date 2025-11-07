@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.service.ClientMessageDispatcher;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
+import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;

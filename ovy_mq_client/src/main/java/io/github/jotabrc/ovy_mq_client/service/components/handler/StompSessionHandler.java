@@ -1,9 +1,8 @@
-package io.github.jotabrc.ovy_mq_client.service.handler;
+package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
 import io.github.jotabrc.ovy_mq_client.service.components.HeadersFactoryResolver;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.service.handler.payload.PayloadDispatcher;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
@@ -39,8 +38,9 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     Interface for WebSocketHttpHeaders
      */
     private final CompletableFuture<SessionManager> future = new CompletableFuture<>();
-    private final PayloadDispatcher payloadDispatcher;
+    private final PayloadHandlerDispatcher payloadHandlerDispatcher;
     private final HeadersFactoryResolver headersFactoryResolver;
+    private final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
 
     private StompSession session;
     private Client client;
@@ -89,6 +89,11 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     }
 
     @Override
+    public void changeClientAvailabilityTo(boolean isAvailable) {
+        client.setIsAvailable(isAvailable);
+    }
+
+    @Override
     public Type getPayloadType(StompHeaders headers) {
         String customContentType = headers.getFirst(Key.HEADER_PAYLOAD_TYPE);
         if (Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD.equalsIgnoreCase(customContentType)) return MessagePayload.class;
@@ -99,8 +104,8 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void handleFrame(StompHeaders headers, Object object) {
-//        this.send(StompHeaderFactory.get(topic, destination), payload); TODO
-        payloadDispatcher.execute(client, object, headers);
+        payloadConfirmationHandlerDispatcher.execute(this, client, client.confirmPayloadReceived(), object);
+        payloadHandlerDispatcher.execute(client, object, headers);
     }
 
     @Override

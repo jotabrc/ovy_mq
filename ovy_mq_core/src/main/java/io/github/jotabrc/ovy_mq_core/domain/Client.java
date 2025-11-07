@@ -45,7 +45,7 @@ public class Client implements Serializable {
     }
 
     @JsonIgnore
-    public String confirmPayloadReceived(MessagePayload messagePayload) {
+    public String confirmPayloadReceived() {
         return WS_REQUEST + WS_MESSAGE + WS_CONFIRM;
     }
 

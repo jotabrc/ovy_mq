@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.registry.provider;
 
 import io.github.jotabrc.ovy_mq_client.handler.ClientNotFoundException;
-import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;

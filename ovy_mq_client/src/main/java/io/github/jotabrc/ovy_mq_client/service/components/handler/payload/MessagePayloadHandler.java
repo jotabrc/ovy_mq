@@ -1,9 +1,9 @@
-package io.github.jotabrc.ovy_mq_client.service.handler.payload;
+package io.github.jotabrc.ovy_mq_client.service.components.handler.payload;
 
-import io.github.jotabrc.ovy_mq_client.service.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.service.ListenerExecutionContextHolder;
-import io.github.jotabrc.ovy_mq_client.service.ListenerInvocator;
-import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_client.service.components.ListenerInvocator;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.payload.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
@@ -47,11 +47,8 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
     }
 
     private void handleAsync(Client client, MessagePayload messagePayload) {
-        clientMessageDispatcher.send(client,client.getTopic(), client.confirmPayloadReceived(messagePayload), messagePayload.cleanDataAndUpdateSuccessTo(true));
-
         long timeout = client.getListenerState().getTimeout();
-        CompletableFuture.runAsync(() -> execute(messagePayload, client),
-                        listenerExecutor)
+        CompletableFuture.runAsync(() -> execute(messagePayload, client), listenerExecutor)
                 .orTimeout(timeout, TimeUnit.MILLISECONDS)
                 .exceptionally(e -> {
                     log.error("Listener task failed: client={} message={} topic={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), e);
@@ -61,12 +58,13 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
     private void execute(MessagePayload messagePayload, Client client) {
         try {
-            listenerExecutionContextHolder.setThreadLocal(client);
             client.setIsAvailable(false);
-            log.info("Executing client={}: message={} topic={} class={} method={}",client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName());
+            listenerExecutionContextHolder.setThreadLocal(client);
+            log.info("Executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName());
             listenerInvocator.invoke(client, messagePayload.getPayload());
         } catch (Throwable e) {
-            log.warn("Error while executing client={}: message={} topic={} class={} method={}",client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName(), e);
+            log.warn("Error while executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName(), e);
+            client.setIsAvailable(true);
             throw new RuntimeException(e);
         }
     }

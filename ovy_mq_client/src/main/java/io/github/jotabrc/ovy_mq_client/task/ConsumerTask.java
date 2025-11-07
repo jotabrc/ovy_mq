@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.service.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

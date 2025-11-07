@@ -1,7 +1,6 @@
-package io.github.jotabrc.ovy_mq_client.service.handler.payload;
+package io.github.jotabrc.ovy_mq_client.service.components.handler.payload;
 
-import io.github.jotabrc.ovy_mq_client.service.handler.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.payload.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.RequiredArgsConstructor;
