@@ -1,6 +1,5 @@
 package io.github.jotabrc.ovy_mq_client.service;
 
-import io.github.jotabrc.ovy_mq_client.domain.factory.StompHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
@@ -31,7 +30,7 @@ public class ClientMessageDispatcher {
     public void send(Client client, String topic, String destination, Object payload, SessionManager session) {
         synchronized (client.getId()) {
             logInfo(client, topic, destination);
-            session.send(StompHeaderFactory.get(topic, destination), payload);
+            session.send(destination, payload);
         }
     }
 

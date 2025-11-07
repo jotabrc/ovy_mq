@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.handler;
 
 import io.github.jotabrc.ovy_mq_client.domain.factory.ObjectMapperFactory;
+import io.github.jotabrc.ovy_mq_client.service.components.HeadersFactoryResolver;
 import io.github.jotabrc.ovy_mq_client.service.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.handler.payload.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
@@ -34,20 +35,24 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     /*
     TODO:
-    Interface SessionManager* for StompSessionHandler
     Interface for WebSocketStompClient
     Interface for WebSocketHttpHeaders
-    Interface for StompHeaders
      */
     private final CompletableFuture<SessionManager> future = new CompletableFuture<>();
     private final PayloadDispatcher payloadDispatcher;
+    private final HeadersFactoryResolver headersFactoryResolver;
 
     private StompSession session;
     private Client client;
 
     @Override
-    public SessionManager send(StompHeaders headers, Object payload) {
-        this.session.send(headers, payload);
+    public SessionManager send(String destination, Object payload) {
+        headersFactoryResolver.getFactory(StompHeaders.class)
+                .ifPresentOrElse(ovyHeaders -> {
+                            StompHeaders headers = (StompHeaders) ovyHeaders.createDefault(destination, client.getTopic());
+                            this.session.send(headers, payload);
+                        },
+                        () -> log.warn("No factory available for class-type={}", payload.getClass()));
         return this;
     }
 
@@ -94,6 +99,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void handleFrame(StompHeaders headers, Object object) {
+//        this.send(StompHeaderFactory.get(topic, destination), payload); TODO
         payloadDispatcher.execute(client, object, headers);
     }
 
