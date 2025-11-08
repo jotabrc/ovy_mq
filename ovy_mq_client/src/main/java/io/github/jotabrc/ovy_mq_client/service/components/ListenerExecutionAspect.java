@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_MESSAGE;
 import static java.util.Objects.nonNull;
 
 @Aspect
@@ -35,7 +36,7 @@ public class ListenerExecutionAspect {
         } finally {
             if (nonNull(client)) client.setIsAvailable(true);
             listenerExecutionContextHolder.clear();
-            clientMessageDispatcher.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
+            clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
         }
     }
 }

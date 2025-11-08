@@ -8,11 +8,10 @@ import java.util.concurrent.CompletableFuture;
 public interface SessionManager {
 
     SessionManager send(String destination, Object payload);
+    CompletableFuture<SessionManager> initialize();
     CompletableFuture<SessionManager> connect(String url, WebSocketHttpHeaders headers);
     SessionManager subscribe(String destination);
-    void setClient(Client client);
-    Client getClient();
-    void disconnect();
+    void reconnectIfNotAlive(boolean reconnect);
     boolean isConnected();
-    void changeClientAvailabilityTo(boolean isAvailable);
+    void setClient(Client client);
 }

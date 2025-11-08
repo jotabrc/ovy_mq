@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_HEALTH_CHECK;
+
 @Slf4j
 @Component
 @ConditionalOnProperty(
@@ -54,13 +56,9 @@ public class HealthCheckTask {
                     log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheck());
                     clientSessionRegistryProvider.getById(client.getId())
                             .ifPresent(session -> {
-                                if (isLastHealthCheckExpired(client) || !session.isConnected()) {
-                                    session.disconnect();
-                                    sessionInitializer.initialize(client);
-                                } else {
-                                    HealthStatus healthStatus = buildHealthStatus();
-                                    clientMessageDispatcher.send(client, client.getTopic(), client.requestHealthCheck(), healthStatus, session);
-                                }
+                                session.reconnectIfNotAlive(isLastHealthCheckExpired(client));
+                                HealthStatus healthStatus = buildHealthStatus();
+                                clientMessageDispatcher.send(client, client.getTopic(), REQUEST_HEALTH_CHECK, healthStatus, session);
                             });
                 });
     }

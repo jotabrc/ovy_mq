@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_MESSAGE;
+
 @Slf4j
 @Component
 @ConditionalOnProperty(
@@ -36,7 +38,7 @@ public class ConsumerTask {
         clientRegistryProvider.getAllAvailableClients()
                 .forEach(client -> {
                     log.info("Requesting message: client={} topic={}", client.getId(), client.getTopic());
-                    clientMessageDispatcher.send(client, client.getTopic(), client.requestMessage(), client.getTopic());
+                    clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
                 });
     }
 }

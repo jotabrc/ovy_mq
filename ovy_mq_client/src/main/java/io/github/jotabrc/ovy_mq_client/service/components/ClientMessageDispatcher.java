@@ -17,18 +17,16 @@ public class ClientMessageDispatcher {
     private final ClientSessionRegistryProvider clientSessionRegistryProvider;
 
     public void send(Client client, String topic, String destination, Object payload) {
-        synchronized (client.getId()) {
-            logInfo(client, topic, destination);
-            clientSessionRegistryProvider.getById(client.getId())
-                    .ifPresent(session -> {
-                        send(client, topic, destination, payload, session);
-                    });
-        }
+        logInfo(client, topic, destination);
+        clientSessionRegistryProvider.getById(client.getId())
+                .ifPresent(session -> {
+                    send(client, topic, destination, payload, session);
+                });
     }
 
     public void send(Client client, String topic, String destination, Object payload, SessionManager session) {
-        synchronized (client.getId()) {
-            if (!session.isConnected()) session = sessionInitializer.initialize(client);
+        synchronized (client) {
+            session.reconnectIfNotAlive(false);
             logInfo(client, topic, destination);
             session.send(destination, payload);
         }

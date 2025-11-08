@@ -1,23 +1,20 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
-import io.github.jotabrc.ovy_mq_client.domain.factory.WebSocketHttpHeaderFactory;
 import io.github.jotabrc.ovy_mq_client.handler.ServerSubscribeException;
+import io.github.jotabrc.ovy_mq_client.service.components.HeadersFactoryResolver;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.WebSocketHttpHeaders;
 
 import java.time.OffsetDateTime;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Getter
@@ -27,8 +24,7 @@ import static java.util.Objects.nonNull;
 public class SessionInitializerImpl implements SessionInitializer {
 
     private final ObjectProvider<SessionManager> sessionManagerProvider;
-    private final WebSocketHttpHeaderFactory webSocketHttpHeaderFactory;
-    private final ClientSessionRegistryProvider clientSessionRegistryProvider;
+    private final HeadersFactoryResolver headersFactoryResolver;
 
     @Override
     public SessionManager initialize(Client client) {
@@ -41,14 +37,18 @@ public class SessionInitializerImpl implements SessionInitializer {
     }
 
     private SessionManager connect(Client client, AtomicLong counter) {
-        WebSocketHttpHeaders headers = webSocketHttpHeaderFactory.get(client.getTopic());
         SessionManager sessionManager = sessionManagerProvider.getObject();
-
         try {
             sessionManager.setClient(client);
             client.setLastHealthCheck(OffsetDateTime.now());
-            SessionManager session = connectToServerAndInitializeSubscription(sessionManager, headers);
-            log.info("Session initialized: client={} topic={}", session.getClient().getId(), client.getTopic());
+            sessionManager.initialize()
+                    .whenComplete((manager, exception) -> {
+                                if (isNull(manager) || !manager.isConnected()) {
+                                    throw new ServerSubscribeException("Server not ready");
+                                }
+                            }
+                    ).get();
+            log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
             return sessionManager;
         } catch (Exception e) {
             log.info("Server is unavailable, retrying connection. Retry-number={} client={} topic={}", counter.getAndIncrement(), client.getId(), client.getTopic());
@@ -59,16 +59,5 @@ public class SessionInitializerImpl implements SessionInitializer {
             }
         }
         return null;
-    }
-
-    private SessionManager connectToServerAndInitializeSubscription(SessionManager sessionManager, WebSocketHttpHeaders headers) throws ExecutionException, InterruptedException {
-        return sessionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers)
-                .whenComplete((manager, exception) -> {
-                    if (nonNull(manager) && manager.isConnected()) {
-                        clientSessionRegistryProvider.addOrReplace(manager.getClient().getId(), sessionManager);
-                    } else {
-                        throw new ServerSubscribeException("Server not ready");
-                    }
-                }).get();
     }
 }

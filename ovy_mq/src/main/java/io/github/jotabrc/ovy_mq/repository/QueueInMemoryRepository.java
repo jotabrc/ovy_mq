@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Profile("dev")
@@ -21,22 +20,20 @@ import static java.util.Objects.nonNull;
 @Service
 public class QueueInMemoryRepository implements MessageRepository{
 
-    private Map<String, Queue<MessagePayload>> messages = new ConcurrentHashMap();
+    private final Map<String, Queue<MessagePayload>> messages = new ConcurrentHashMap<>();
 
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
-        messages.compute(messagePayload.getTopic(), (key, queue) -> {
-            if (isNull(queue)) queue = new ConcurrentLinkedQueue<>();
-            log.info("Saving message={} topic-key={}", messagePayload.getId(), key);
-            queue.offer(messagePayload);
-            return queue;
-        });
+        log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopic());
+        messages.computeIfAbsent(messagePayload.getTopic(), k -> new ConcurrentLinkedQueue<>()).offer(messagePayload);
         return messagePayload;
     }
 
     @Override
-    public synchronized MessagePayload pollFromQueue(String topic) {
-        return messages.get(topic).poll();
+    public MessagePayload pollFromQueue(String topic) {
+        synchronized (topic) {
+            return messages.get(topic).poll();
+        }
     }
 
     @Override
@@ -45,13 +42,15 @@ public class QueueInMemoryRepository implements MessageRepository{
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(s -> nonNull(s.getProcessingStartedAt()))
-                .filter(s -> s.getProcessingStartedAt().minus(ms, ChronoUnit.MILLIS).isAfter(OffsetDateTime.now()))
+                .filter(s -> ChronoUnit.MILLIS.between(s.getProcessingStartedAt(), OffsetDateTime.now()) > ms)
                 .toList();
     }
 
     @Override
-    public synchronized void removeFromQueue(String topic, String messageId) {
-        messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+    public void removeFromQueue(String topic, String messageId) {
+        synchronized (messageId) {
+            messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+        }
     }
 
     @Override
