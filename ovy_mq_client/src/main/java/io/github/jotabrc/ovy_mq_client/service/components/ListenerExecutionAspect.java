@@ -35,7 +35,6 @@ public class ListenerExecutionAspect {
             throw new RuntimeException(e);
         } finally {
             if (nonNull(client)) client.setIsAvailable(true);
-            listenerExecutionContextHolder.clear();
             clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
         }
     }

@@ -21,8 +21,7 @@ public class TaskConfig {
         private long delay;
     }
 
-    @Setter
-    @Getter
+    @Setter @Getter
     public static class Topic {
         private boolean active;
         private long delay;

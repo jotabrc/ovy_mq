@@ -23,8 +23,9 @@ public class ListenerInvocator {
             AopUtils.invokeJoinpointUsingReflection(bean, client.getMethod(), new Object[]{payload});
         } catch (Throwable e) {
             client.setIsAvailable(true);
-            listenerExecutionContextHolder.clear();
             throw new RuntimeException(e);
+        } finally {
+            listenerExecutionContextHolder.clear();
         }
     }
 }

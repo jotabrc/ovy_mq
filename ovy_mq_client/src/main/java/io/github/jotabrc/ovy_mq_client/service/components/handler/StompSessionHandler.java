@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_client.service.components.HeadersFactoryResolver;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistry;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
@@ -30,15 +30,11 @@ import static java.util.Objects.isNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
 
-    /*
-    TODO:
-    Interface for WebSocketStompClient
-     */
     private final CompletableFuture<SessionManager> future = new CompletableFuture<>();
     private final PayloadHandlerDispatcher payloadHandlerDispatcher;
     private final HeadersFactoryResolver headersFactoryResolver;
     private final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
-    private final ClientSessionRegistryProvider clientSessionRegistryProvider;
+    private final ClientSessionRegistry clientSessionRegistry;
     private final WebSocketStompClient webSocketStompClient;
 
     private StompSession session;
@@ -47,20 +43,20 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public SessionManager send(String destination, Object payload) {
         headersFactoryResolver.getFactory(StompHeaders.class)
-                .ifPresentOrElse(ovyHeaders -> {
-                            StompHeaders headers = (StompHeaders) ovyHeaders.createDefault(destination, client.getTopic());
-                            this.session.send(headers, payload);
-                        },
-                        () -> log.warn("No factory available for class-type={}", StompHeaders.class));
+                .ifPresent(ovyHeaders -> {
+                    StompHeaders headers = ovyHeaders.createDefault(destination, client.getTopic());
+                    this.session.send(headers, payload);
+                });
         return this;
     }
 
     @Override
     public CompletableFuture<SessionManager> initialize() {
-        headersFactoryResolver.getFactory(WebSocketHttpHeaders.class).ifPresent(ovyHeaders -> {
-            WebSocketHttpHeaders headers = (WebSocketHttpHeaders) ovyHeaders.createDefault("server", client.getTopic());
-            this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
-        });
+        headersFactoryResolver.getFactory(WebSocketHttpHeaders.class)
+                .ifPresent(ovyHeaders -> {
+                    WebSocketHttpHeaders headers = ovyHeaders.createDefault("server", client.getTopic());
+                    this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
+                });
         return future;
     }
 
@@ -117,7 +113,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         this.session = session;
         this.subscribe(WS_USER + WS_HEALTH)
                 .subscribe(WS_USER + WS_QUEUE + "/" + client.getTopic());
-        clientSessionRegistryProvider.addOrReplace(client.getId(), this);
+        clientSessionRegistry.addOrReplace(client.getId(), this);
         future.complete(this);
     }
 

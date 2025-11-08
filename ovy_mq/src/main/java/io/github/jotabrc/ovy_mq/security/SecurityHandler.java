@@ -61,4 +61,5 @@ public class SecurityHandler {
     public static void main(String[] args) {
         System.out.println(bcryptEncoder.encode("1234"));
     }
+    // TODO remove later
 }

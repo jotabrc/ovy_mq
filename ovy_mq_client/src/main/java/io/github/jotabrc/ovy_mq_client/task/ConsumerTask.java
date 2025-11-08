@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
 import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
-import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,15 +19,15 @@ import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_MESSAGE;
 )
 public class ConsumerTask {
 
-    private final ClientRegistryProvider clientRegistryProvider;
+    private final ClientRegistry clientRegistry;
     private final ClientMessageDispatcher clientMessageDispatcher;
 
     private final String delay;
 
-    public ConsumerTask(ClientRegistryProvider clientRegistryProvider,
+    public ConsumerTask(ClientRegistry clientRegistry,
                         ClientMessageDispatcher clientMessageDispatcher,
                         @Value("${ovymq.task.consumer.delay}") String delay) {
-        this.clientRegistryProvider = clientRegistryProvider;
+        this.clientRegistry = clientRegistry;
         this.clientMessageDispatcher = clientMessageDispatcher;
         this.delay = delay;
     }
@@ -35,7 +35,7 @@ public class ConsumerTask {
     @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
     public void execute() {
         log.info("Consumer task execution started with fixed delay of {} ms", delay);
-        clientRegistryProvider.getAllAvailableClients()
+        clientRegistry.getAllAvailableClients()
                 .forEach(client -> {
                     log.info("Requesting message: client={} topic={}", client.getId(), client.getTopic());
                     clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());

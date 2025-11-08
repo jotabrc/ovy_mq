@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.payload.interfaces.PayloadConfirmationHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.provider.PayloadConfirmationHandlerRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.registry.PayloadConfirmationHandlerRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class PayloadConfirmationHandlerDispatcher {
 
-    private final PayloadConfirmationHandlerRegistryProvider payloadConfirmationHandlerRegistryProvider;
+    private final PayloadConfirmationHandlerRegistry payloadConfirmationHandlerRegistry;
 
     public void execute(SessionManager session,
                         Client client,
                         String destination,
                         Object payload) {
-        payloadConfirmationHandlerRegistryProvider.getHandler(payload.getClass())
+        payloadConfirmationHandlerRegistry.getHandler(payload.getClass())
                 .ifPresentOrElse(handler -> execute(handler, session, client, destination, payload),
                         () -> log.warn("No handler available for payload-class={}", payload.getClass()));
     }

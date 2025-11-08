@@ -9,8 +9,4 @@ public class OvyMqClientApplication {
     public static void main(String[] args) {
         SpringApplication.run(OvyMqClientApplication.class, args);
     }
-    /*
-    TODO:
-    -  
-     */
 }

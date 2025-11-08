@@ -18,7 +18,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class QueueInMemoryRepository implements MessageRepository{
+public class QueueInMemoryRepository implements MessageRepository {
 
     private final Map<String, Queue<MessagePayload>> messages = new ConcurrentHashMap<>();
 
@@ -31,9 +31,7 @@ public class QueueInMemoryRepository implements MessageRepository{
 
     @Override
     public MessagePayload pollFromQueue(String topic) {
-        synchronized (topic) {
-            return messages.get(topic).poll();
-        }
+        return messages.get(topic).poll();
     }
 
     @Override
@@ -48,13 +46,11 @@ public class QueueInMemoryRepository implements MessageRepository{
 
     @Override
     public void removeFromQueue(String topic, String messageId) {
-        synchronized (messageId) {
-            messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
-        }
+        messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
     }
 
     @Override
-    public synchronized void removeAndRequeue(MessagePayload messagePayload) {
+    public void removeAndRequeue(MessagePayload messagePayload) {
         removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
         saveToQueue(messagePayload);
     }

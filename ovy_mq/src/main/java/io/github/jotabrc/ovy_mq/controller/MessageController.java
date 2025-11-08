@@ -1,11 +1,11 @@
 package io.github.jotabrc.ovy_mq.controller;
 
-import io.github.jotabrc.ovy_mq.domain.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.factory.ClientFactory;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;

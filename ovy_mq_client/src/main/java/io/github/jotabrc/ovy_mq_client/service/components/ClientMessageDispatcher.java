@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.components;
 
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientSessionRegistryProvider;
+import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 public class ClientMessageDispatcher {
 
     private final SessionInitializer sessionInitializer;
-    private final ClientSessionRegistryProvider clientSessionRegistryProvider;
+    private final ClientSessionRegistry clientSessionRegistry;
 
     public void send(Client client, String topic, String destination, Object payload) {
         logInfo(client, topic, destination);
-        clientSessionRegistryProvider.getById(client.getId())
+        clientSessionRegistry.getById(client.getId())
                 .ifPresent(session -> {
                     send(client, topic, destination, payload, session);
                 });

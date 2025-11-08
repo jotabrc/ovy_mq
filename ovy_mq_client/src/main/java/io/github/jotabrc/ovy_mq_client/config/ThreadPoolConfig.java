@@ -12,6 +12,11 @@ public class ThreadPoolConfig {
     public static final String SMALL_POOL_EXECUTOR = "smallPoolExecutor";
     public static final String LISTENER_EXECUTOR = "listenerExecutor";
 
+    /*
+    TODO
+    Executor pool properties configuration
+     */
+
     @Bean(name = SMALL_POOL_EXECUTOR)
     public Executor smallPoolExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

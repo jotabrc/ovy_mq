@@ -1,10 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler.payload;
 
-import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.service.ListenerExecutionContextHolder;
 import io.github.jotabrc.ovy_mq_client.service.components.ListenerInvocator;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_client.service.registry.provider.ClientRegistryProvider;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +22,7 @@ import java.util.regex.Pattern;
 @Service
 public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
-    private final ClientRegistryProvider clientRegistryProvider;
     private final Executor listenerExecutor;
-    private final ClientMessageDispatcher clientMessageDispatcher;
     private final ListenerExecutionContextHolder listenerExecutionContextHolder;
     private final ListenerInvocator listenerInvocator;
 

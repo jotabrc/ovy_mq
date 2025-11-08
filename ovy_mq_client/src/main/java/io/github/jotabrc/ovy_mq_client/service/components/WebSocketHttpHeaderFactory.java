@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.components;
 
 import io.github.jotabrc.ovy_mq_client.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_client.service.components.interfaces.OvyHeaders;
+import io.github.jotabrc.ovy_mq_client.service.components.interfaces.OvyHeaderFactory;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class WebSocketHttpHeadersFactory extends WebSocketHttpHeaders implements OvyHeaders<WebSocketHttpHeaders> {
+public class WebSocketHttpHeaderFactory implements OvyHeaderFactory<WebSocketHttpHeaders> {
 
     private final CredentialConfig credentialConfig;
 
@@ -30,7 +30,7 @@ public class WebSocketHttpHeadersFactory extends WebSocketHttpHeaders implements
     }
 
     @Override
-    public Class<?> supports() {
+    public Class<WebSocketHttpHeaders> supports() {
         return WebSocketHttpHeaders.class;
     }
 }

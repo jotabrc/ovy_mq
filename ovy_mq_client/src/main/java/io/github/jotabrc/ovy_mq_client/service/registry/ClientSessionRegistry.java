@@ -21,7 +21,7 @@ public class ClientSessionRegistry {
     }
 
     public Optional<SessionManager> getById(String clientId) {
-        return Optional.of(this.sessions.get(clientId));
+        return Optional.ofNullable(this.sessions.get(clientId));
     }
 
     public void removeById(String clientId) {
