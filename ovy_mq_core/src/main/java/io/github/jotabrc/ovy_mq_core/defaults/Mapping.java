@@ -13,7 +13,8 @@ public class Mapping {
     public static final String WS_MESSAGE = "/message";
     public static final String WS_CONFIRM = "/confirm";
     public static final String WS_HEALTH = "/health";
-    public static final String WS_CONFIG_LISTENER = "/listener/config";
+    public static final String WS_LISTENER = "/listener";
+    public static final String WS_CONFIG = "/config";
 
     public static String CONFIRM_PAYLOAD_RECEIVED = WS_REQUEST + WS_MESSAGE + WS_CONFIRM;
     public static String REQUEST_MESSAGE = WS_REQUEST + WS_MESSAGE;

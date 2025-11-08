@@ -98,6 +98,11 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         String customContentType = headers.getFirst(Key.HEADER_PAYLOAD_TYPE);
         if (Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD.equalsIgnoreCase(customContentType)) return MessagePayload.class;
         if (Key.PAYLOAD_TYPE_HEALTH_STATUS.equalsIgnoreCase(customContentType)) return HealthStatus.class;
+        /*
+        TODO
+        handler for config
+        apply config
+         */
 
         return Void.class;
     }
@@ -112,6 +117,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
         this.session = session;
         this.subscribe(WS_USER + WS_HEALTH)
+                .subscribe(WS_CONFIG)
                 .subscribe(WS_USER + WS_QUEUE + "/" + client.getTopic());
         clientSessionRegistry.addOrReplace(client.getId(), this);
         future.complete(this);
