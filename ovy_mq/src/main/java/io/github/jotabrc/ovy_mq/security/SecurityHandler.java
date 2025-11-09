@@ -59,7 +59,7 @@ public class SecurityHandler {
     }
 
     public static void main(String[] args) {
-        System.out.println(bcryptEncoder.encode("1234"));
+        System.out.println("Basic " + Base64.getEncoder().encodeToString(("$2a$10$FewIB0NHzGc/RexhYkk1eepP0xsUC77UQilUFFz.LbNZFoUQ2N99a").getBytes(StandardCharsets.UTF_8)));
     }
     // TODO remove later
 }

@@ -12,7 +12,7 @@ ovymq:
       delay: 10000
     health-check:
       active: true
-      delay: 60000
+      delay: 10000
       threshold: 65000
   session:
     connection:

@@ -6,5 +6,6 @@ public enum PayloadDispatcherCommand {
     REQUEST,
     REMOVE,
     REAPER,
-    HEALTH_CHECK;
+    HEALTH_CHECK,
+    LISTENER_CONFIG;
 }

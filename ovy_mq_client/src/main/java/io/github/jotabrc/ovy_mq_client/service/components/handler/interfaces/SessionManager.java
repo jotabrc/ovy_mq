@@ -11,7 +11,7 @@ public interface SessionManager {
     CompletableFuture<SessionManager> initialize();
     CompletableFuture<SessionManager> connect(String url, WebSocketHttpHeaders headers);
     SessionManager subscribe(String destination);
-    void reconnectIfNotAlive(boolean force);
+    SessionManager reconnectIfNotAlive(boolean force);
     boolean isConnected();
     void setClient(Client client);
 }

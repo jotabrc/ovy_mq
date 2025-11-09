@@ -33,4 +33,8 @@ public class WebSocketHttpHeaderFactory implements OvyHeaderFactory<WebSocketHtt
     public Class<WebSocketHttpHeaders> supports() {
         return WebSocketHttpHeaders.class;
     }
+
+    public static void main(String[] args) {
+        System.out.println("Basic " + Base64.getEncoder().encodeToString(("1234").getBytes(StandardCharsets.UTF_8)));
+    }
 }

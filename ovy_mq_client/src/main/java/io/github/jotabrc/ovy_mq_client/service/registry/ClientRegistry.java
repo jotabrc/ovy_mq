@@ -1,7 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.registry;
 
 import io.github.jotabrc.ovy_mq_client.handler.ClientNotFoundException;
-import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,9 +50,8 @@ public class ClientRegistry {
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(Client::getIsAvailable)
-                .filter(client -> clientSessionRegistry.getById(client.getId())
-                        .map(SessionManager::isConnected)
-                        .orElse(false))
+                .peek(client -> clientSessionRegistry.getById(client.getId())
+                        .ifPresent(session -> session.reconnectIfNotAlive(false)))
                 .toList();
     }
 

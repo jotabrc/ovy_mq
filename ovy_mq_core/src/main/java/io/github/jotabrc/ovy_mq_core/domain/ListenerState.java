@@ -20,6 +20,6 @@ public class ListenerState implements Serializable {
     private Integer maxReplicas;
     private Integer minReplicas;
     private Integer stepReplicas;
-    private boolean autoManageReplicas;
+    private Boolean autoManageReplicas;
     private Long timeout;
 }

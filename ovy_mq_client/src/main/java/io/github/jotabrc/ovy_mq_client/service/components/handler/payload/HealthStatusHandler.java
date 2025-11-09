@@ -23,7 +23,7 @@ public class HealthStatusHandler implements PayloadHandler<HealthStatus> {
     }
 
     private void handle(Client client, HealthStatus healthStatus) {
-        log.info("Health check response for client={} received, response-time={} ms", client.getId(), healthStatus.responseTime());
+        log.info("Health check completed: client={} received response-time={}ms", client.getId(), healthStatus.responseTime());
         client.setLastHealthCheck(OffsetDateTime.now());
     }
 

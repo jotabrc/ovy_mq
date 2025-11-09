@@ -6,9 +6,11 @@ import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistry;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
+import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -23,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -45,7 +48,12 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         headersFactoryResolver.getFactory(StompHeaders.class)
                 .ifPresent(ovyHeaders -> {
                     StompHeaders headers = ovyHeaders.createDefault(destination, client.getTopic());
-                    this.session.send(headers, payload);
+                    try {
+                        this.session.send(headers, payload);
+                    } catch (NullPointerException e) {
+                        log.error("Session is null cannot send message");
+                        initialize();
+                    }
                 });
         return this;
     }
@@ -73,17 +81,19 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     }
 
     @Override
-    public void reconnectIfNotAlive(boolean force) {
-        if (!session.isConnected() || force) {
-            session.disconnect();
+    public SessionManager reconnectIfNotAlive(boolean force) {
+        if (isNull(session) || !session.isConnected() || force) {
+            log.info("Reconnecting to server");
+            if (nonNull(session) && session.isConnected()) session.disconnect();
             session = null;
             this.initialize();
         }
+        return this;
     }
 
     @Override
     public boolean isConnected() {
-        return this.session.isConnected();
+        return nonNull(session) && this.session.isConnected();
     }
 
     @Override
@@ -93,38 +103,35 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         }
     }
 
+    @NotNull
     @Override
-    public Type getPayloadType(StompHeaders headers) {
-        String customContentType = headers.getFirst(Key.HEADER_PAYLOAD_TYPE);
-        if (Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD.equalsIgnoreCase(customContentType)) return MessagePayload.class;
-        if (Key.PAYLOAD_TYPE_HEALTH_STATUS.equalsIgnoreCase(customContentType)) return HealthStatus.class;
-        /*
-        TODO
-        handler for config
-        apply config
-         */
+    public Type getPayloadType(@NotNull StompHeaders headers) {
+        String contentType = headers.getFirst(Key.HEADER_PAYLOAD_TYPE);
+        if (Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD.equalsIgnoreCase(contentType)) return MessagePayload.class;
+        if (Key.PAYLOAD_TYPE_HEALTH_STATUS.equalsIgnoreCase(contentType)) return HealthStatus.class;
+        if (Key.PAYLOAD_TYPE_LISTENER_CONFIG.equalsIgnoreCase(contentType)) return ListenerConfig.class;
 
         return Void.class;
     }
 
     @Override
-    public void handleFrame(StompHeaders headers, Object object) {
+    public void handleFrame(@NotNull StompHeaders headers, Object object) {
         payloadConfirmationHandlerDispatcher.execute(this, client, CONFIRM_PAYLOAD_RECEIVED, object);
         payloadHandlerDispatcher.execute(client, object, headers);
     }
 
     @Override
-    public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+    public void afterConnected(@NotNull StompSession session, @NotNull StompHeaders connectedHeaders) {
         this.session = session;
         this.subscribe(WS_USER + WS_HEALTH)
-                .subscribe(WS_CONFIG)
-                .subscribe(WS_USER + WS_QUEUE + "/" + client.getTopic());
+                .subscribe(WS_USER + WS_QUEUE + "/" + client.getTopic())
+                .subscribe(WS_CONFIG + "/" + client.getTopic());
         clientSessionRegistry.addOrReplace(client.getId(), this);
         future.complete(this);
     }
 
     @Override
-    public void handleTransportError(StompSession session, Throwable exception) {
+    public void handleTransportError(@NotNull StompSession session, @NotNull Throwable exception) {
         future.completeExceptionally(exception);
     }
 }
