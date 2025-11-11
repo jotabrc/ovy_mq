@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.task;
 
 import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientSessionRegistry;
+import io.github.jotabrc.ovy_mq_client.service.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_HEALTH_CHEC
 public class HealthCheckTask {
 
     private final ClientRegistry clientRegistry;
-    private final ClientSessionRegistry clientSessionRegistry;
+    private final SessionRegistry sessionRegistry;
     private final ClientMessageDispatcher clientMessageDispatcher;
 
     @Value("${ovymq.task.health-check.delay}")
@@ -42,7 +42,7 @@ public class HealthCheckTask {
         clientRegistry.getAllClients()
                 .forEach(client -> {
                     log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheck());
-                    clientSessionRegistry.getById(client.getId())
+                    sessionRegistry.getById(client.getId())
                             .ifPresent(session -> {
                                 session.reconnectIfNotAlive(isLastHealthCheckExpired(client));
                                 HealthStatus healthStatus = buildHealthStatus();

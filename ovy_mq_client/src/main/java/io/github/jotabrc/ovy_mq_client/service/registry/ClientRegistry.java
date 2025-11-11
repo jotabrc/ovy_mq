@@ -18,7 +18,7 @@ import static java.util.Objects.nonNull;
 @Component
 public class ClientRegistry {
 
-    private final ClientSessionRegistry clientSessionRegistry;
+    private final SessionRegistry sessionRegistry;
 
     private final Map<String, Queue<Client>> clients = new ConcurrentHashMap<>();
 
@@ -50,8 +50,6 @@ public class ClientRegistry {
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(Client::getIsAvailable)
-                .peek(client -> clientSessionRegistry.getById(client.getId())
-                        .ifPresent(session -> session.reconnectIfNotAlive(false)))
                 .toList();
     }
 

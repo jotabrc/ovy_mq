@@ -46,7 +46,7 @@ public class ClientListenerInitializer implements BeanPostProcessor {
                             listener.stepReplicas(),
                             listener.autoManageReplicas(),
                             listener.timeout());
-                    sessionInitializer.initialize(client);
+                    sessionInitializer.createSessionAndConnect(client);
                     clientRegistry.save(client);
                 }
             }

@@ -11,12 +11,12 @@ ovymq:
       active: true
       delay: 10000
     health-check:
-      active: true
+      active: false
       delay: 10000
       threshold: 65000
   session:
     connection:
-      timeout: 1000
+      timeout: 30000
       backoff: 10
 
 

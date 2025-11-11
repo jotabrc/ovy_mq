@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ClientSessionRegistry {
+public class SessionRegistry {
 
     private final Map<String, SessionManager> sessions = new ConcurrentHashMap<>();
 
@@ -21,9 +21,11 @@ public class ClientSessionRegistry {
     }
 
     public Optional<SessionManager> getById(String clientId) {
-        Optional<SessionManager> session = Optional.ofNullable(this.sessions.get(clientId));
-        session.ifPresent(s -> s.reconnectIfNotAlive(false));
-        return session;
+        return Optional.ofNullable(this.sessions.get(clientId));
+    }
+
+    public Optional<SessionManager> getByIdAndReconnectIfDisconnected(String clientId) {
+        return Optional.ofNullable(this.sessions.get(clientId)).map(sessionManager -> sessionManager.reconnectIfNotAlive(false));
     }
 
     public void removeById(String clientId) {
