@@ -12,4 +12,12 @@ public class Key {
     public static final String HEADER_PAYLOAD_TYPE = "X-PAYLOAD-TYPE";
     public static final String HEADER_CLIEND_ID = "X-CLIENT_ID";
     public static final String HEADER_TOPIC = "X-SUBSCRIBED-TOPIC";
+    public static final String HEADER_CLIENT_TYPE = "client-type";
+    public static final String HEADER_CLIENT_TYPE_PRODUCER = "producer";
+    public static final String HEADER_CLIENT_TYPE_CONSUMER = "consumer";
+    public static final String HEADER_CLIENT_TYPE_CONFIGURER = "configurer";
+
+    // Factory
+    public static final String FACTORY_DESTINATION = "destination";
+    public static final String FACTORY_CLIENT = "client-object";
 }

@@ -1,11 +1,10 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
-import io.github.jotabrc.ovy_mq_core.factory.ClientFactory;
 import io.github.jotabrc.ovy_mq_client.service.OvyListener;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.ListenerState;
+import io.github.jotabrc.ovy_mq_core.factory.ClientFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -33,10 +32,9 @@ public class ClientListenerInitializer implements BeanPostProcessor {
             OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
 
             if (nonNull(listener)) {
-                ListenerState listenerState = createListenerState(listener);
                 log.info("Listener: topic={} replicas={}", listener.topic(), listener.replicas());
                 for (int i = 0; i < listener.replicas(); i++) {
-                    Client client = ClientFactory.of(listener.topic(), method, beanName, listenerState);
+                    Client client = ClientFactory.of(listener.topic(), method, beanName, listener.timeout());
                     log.info("Creating client: replica={}/{} topic={} config=[maxReplicas={} minReplicas={} stepReplicas={} autoManageReplicas={} timeout={}ms]",
                             i + 1,
                             listener.replicas(),
@@ -52,17 +50,5 @@ public class ClientListenerInitializer implements BeanPostProcessor {
             }
         }
         return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
-    }
-
-    private static ListenerState createListenerState(OvyListener listener) {
-        return ListenerState.builder()
-                .topic(listener.topic())
-                .replicas(listener.replicas())
-                .maxReplicas(listener.maxReplicas())
-                .minReplicas(listener.minReplicas())
-                .stepReplicas(listener.stepReplicas())
-                .autoManageReplicas(listener.autoManageReplicas())
-                .timeout(listener.timeout())
-                .build();
     }
 }

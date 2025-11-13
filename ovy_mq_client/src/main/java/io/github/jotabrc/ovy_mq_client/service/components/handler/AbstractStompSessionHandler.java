@@ -1,28 +1,26 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
-import io.github.jotabrc.ovy_mq_client.service.components.HeadersFactoryResolver;
+import io.github.jotabrc.ovy_mq_client.service.components.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
-import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -34,32 +32,32 @@ import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
+public abstract class AbstractStompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
 
-    private final PayloadHandlerDispatcher payloadHandlerDispatcher;
-    private final HeadersFactoryResolver headersFactoryResolver;
-    private final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
-    private final SessionRegistry sessionRegistry;
-    private final WebSocketStompClient webSocketStompClient;
+    protected final PayloadHandlerDispatcher payloadHandlerDispatcher;
+    protected final AbstractFactoryResolver abstractFactoryResolver;
+    protected final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
+    protected final SessionRegistry sessionRegistry;
+    protected final WebSocketStompClient webSocketStompClient;
 
-    private CompletableFuture<SessionManager> future;
-    private StompSession session;
-    private Client client;
+    protected CompletableFuture<SessionManager> future;
+    protected StompSession session;
+    protected Client client;
 
     @Value("${ovymq.session.connection.timeout}")
-    private Long connectionTimeout;
+    protected Long connectionTimeout;
 
     @Value("${ovymq.session.connection.backoff}")
-    private Integer connectionBackoff;
+    protected Integer connectionBackoff;
 
     @Override
     public SessionManager send(String destination, Object payload) {
         synchronized (this) {
-            headersFactoryResolver.getFactory(StompHeaders.class)
-                    .ifPresent(ovyHeaders -> {
-                        StompHeaders headers = ovyHeaders.createDefault(destination, client.getTopic());
+            abstractFactoryResolver.getFactory(StompHeaders.class, String.class)
+                    .ifPresent(factory -> {
+                        Map<String, String> headerMap = new HashMap<>(Map.of(Key.FACTORY_DESTINATION, destination,
+                                Key.HEADER_TOPIC, this.client.getTopic()));
+                        StompHeaders headers = factory.create(headerMap);
                         try {
                             this.reconnectIfNotAlive(false);
                             this.session.send(headers, payload);
@@ -72,14 +70,18 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         }
     }
 
+    // New Abstract initialize class
     @Override
     public void initialize() {
         synchronized (this) {
             log.info("Initializing-session client={}", client.getId());
-            headersFactoryResolver.getFactory(WebSocketHttpHeaders.class)
+            abstractFactoryResolver.getFactory(WebSocketHttpHeaders.class, String.class)
                     .ifPresent(ovyHeaders -> {
                         Runnable connect = () -> {
-                            WebSocketHttpHeaders headers = ovyHeaders.createDefault("server", this.client.getTopic());
+                            Map<String, String> headerMap = new HashMap<>(Map.of(Key.FACTORY_DESTINATION, "server",
+                                    Key.HEADER_TOPIC, this.client.getTopic(),
+                                    Key.HEADER_CLIENT_TYPE, Key.HEADER_CLIENT_TYPE_CONSUMER));
+                            WebSocketHttpHeaders headers = ovyHeaders.create(headerMap);
                             this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
                             this.client.setLastHealthCheck(OffsetDateTime.now());
                         };
@@ -109,7 +111,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         }
     }
 
-    private void connect(String url, WebSocketHttpHeaders headers) {
+    protected void connect(String url, WebSocketHttpHeaders headers) {
         webSocketStompClient.connectAsync(url, headers, this);
     }
 
@@ -142,7 +144,6 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         String contentType = headers.getFirst(Key.HEADER_PAYLOAD_TYPE);
         if (Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD.equalsIgnoreCase(contentType)) return MessagePayload.class;
         if (Key.PAYLOAD_TYPE_HEALTH_STATUS.equalsIgnoreCase(contentType)) return HealthStatus.class;
-        if (Key.PAYLOAD_TYPE_LISTENER_CONFIG.equalsIgnoreCase(contentType)) return ListenerConfig.class;
 
         return Void.class;
     }
@@ -162,7 +163,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         future.complete(this);
     }
 
-    private void subscribe(String destination) {
+    protected void subscribe(String destination) {
         this.session.subscribe(destination, this);
     }
 

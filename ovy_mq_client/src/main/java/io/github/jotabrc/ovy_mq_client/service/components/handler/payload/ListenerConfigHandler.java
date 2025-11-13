@@ -29,7 +29,7 @@ public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
                 listenerConfig.getListenerState().getStepReplicas(),
                 listenerConfig.getListenerState().getTimeout(),
                 listenerConfig.getListenerState().getAutoManageReplicas());
-        client.updateConfig(listenerConfig);
+        // TODO
     }
 
     @Override

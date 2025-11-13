@@ -1,7 +1,6 @@
 package io.github.jotabrc.ovy_mq_core.factory;
 
 import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.ListenerState;
 
 import java.lang.reflect.Method;
 import java.util.UUID;
@@ -26,14 +25,14 @@ public class ClientFactory {
                 .build();
     }
 
-    public static Client of(String topic, Method method, String beanName, ListenerState listenerState) {
+    public static Client of(String topic, Method method, String beanName, Long timeout) {
         return Client.builder()
                 .id(UUID.randomUUID().toString())
                 .topic(topic)
                 .method(method)
                 .beanName(beanName)
+                .timeout(timeout)
                 .isAvailable(true)
-                .listenerState(listenerState)
                 .build();
     }
 }

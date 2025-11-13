@@ -5,5 +5,5 @@ import io.github.jotabrc.ovy_mq_core.domain.Client;
 
 public interface SessionInitializer {
 
-    SessionManager createSessionAndConnect(Client client);
+    void createSessionAndConnect(Client client);
 }

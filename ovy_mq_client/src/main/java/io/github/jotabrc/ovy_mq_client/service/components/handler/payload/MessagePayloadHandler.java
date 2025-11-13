@@ -43,7 +43,7 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
     }
 
     private void handleAsync(Client client, MessagePayload messagePayload) {
-        long timeout = client.getListenerState().getTimeout();
+        long timeout = client.getTimeout();
         CompletableFuture.runAsync(() -> execute(messagePayload, client), listenerExecutor)
                 .orTimeout(timeout, TimeUnit.MILLISECONDS)
                 .exceptionally(e -> {

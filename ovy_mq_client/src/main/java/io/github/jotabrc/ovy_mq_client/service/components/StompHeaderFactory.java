@@ -1,18 +1,23 @@
 package io.github.jotabrc.ovy_mq_client.service.components;
 
-import io.github.jotabrc.ovy_mq_client.service.components.interfaces.OvyHeaderFactory;
+import io.github.jotabrc.ovy_mq_client.service.components.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+import java.util.Objects;
+
 @Component
-public class StompHeaderFactory implements OvyHeaderFactory<StompHeaders> {
+public class StompHeaderFactory implements AbstractFactory<StompHeaders, String> {
 
     @Override
-    public StompHeaders createDefault(String destination, String topic) {
+    public StompHeaders create(Map<String, String> definitions) {
         StompHeaders headers = new StompHeaders();
-        headers.setDestination(destination);
-        headers.add(Key.HEADER_TOPIC, topic);
+        definitions.forEach((key, value) -> {
+            if (Objects.equals(Key.FACTORY_DESTINATION, key)) headers.setDestination(definitions.get(Key.FACTORY_DESTINATION));
+            headers.add(key, value);
+        });
         return headers;
     }
 
