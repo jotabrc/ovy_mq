@@ -5,6 +5,7 @@ import io.github.jotabrc.ovy_mq.security.SecurityHandler;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
+import io.github.jotabrc.ovy_mq_core.defaults.Value;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq_core.domain.MessageStatus;
@@ -68,7 +69,7 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         accessor.setLeaveMutable(true);
         Map<String, Object> securityHeader = securityHandler.createAuthorizationHeader();
         accessor.setNativeHeader(Key.HEADER_AUTHORIZATION, securityHeader.get(Key.HEADER_AUTHORIZATION).toString());
-        accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Key.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
+        accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
         return accessor.getMessageHeaders();
     }
 

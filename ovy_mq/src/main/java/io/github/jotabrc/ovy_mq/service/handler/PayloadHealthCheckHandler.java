@@ -2,8 +2,8 @@ package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.domain.factory.HeaderFactory;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
+import io.github.jotabrc.ovy_mq_core.defaults.Value;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
         messagingTemplate.convertAndSendToUser(healthStatus.getClientId(),
                 Mapping.WS_HEALTH,
                 healthStatus,
-                HeaderFactory.of(Key.PAYLOAD_TYPE_HEALTH_STATUS));
+                HeaderFactory.of(Value.PAYLOAD_TYPE_HEALTH_STATUS));
     }
 
     @Override

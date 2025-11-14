@@ -22,7 +22,7 @@ public class ThreadPoolConfig {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(3);
-        executor.setQueueCapacity(2);
+        executor.setQueueCapacity(25);
         executor.setThreadNamePrefix("Small-ThreadPool-");
         executor.initialize();
         return executor;

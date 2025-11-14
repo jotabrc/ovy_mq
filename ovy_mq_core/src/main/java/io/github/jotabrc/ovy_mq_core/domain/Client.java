@@ -25,6 +25,7 @@ public class Client implements Serializable {
     private String beanName;
     private Method method;
     private Long timeout;
+    private ClientType type;
     @Builder.Default
     private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
     @Builder.Default

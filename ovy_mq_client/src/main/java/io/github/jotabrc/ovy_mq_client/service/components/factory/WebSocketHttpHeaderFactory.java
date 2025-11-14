@@ -1,8 +1,9 @@
-package io.github.jotabrc.ovy_mq_client.service.components;
+package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
 import io.github.jotabrc.ovy_mq_client.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_client.service.components.interfaces.AbstractFactory;
+import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.WebSocketHttpHeadersDto;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.factories.AbstractFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,22 +17,29 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class WebSocketHttpHeaderFactory implements AbstractFactory<WebSocketHttpHeaders, String> {
+public class WebSocketHttpHeaderFactory implements AbstractFactory<WebSocketHttpHeadersDto, WebSocketHttpHeaders> {
 
     private final CredentialConfig credentialConfig;
 
     @Override
-    public WebSocketHttpHeaders create(Map<String, String> definitions) {
+    public WebSocketHttpHeaders create(WebSocketHttpHeadersDto dto) {
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
         String basic = "Basic " + Base64.getEncoder().encodeToString((credentialConfig.getBcrypt()).getBytes(StandardCharsets.UTF_8));
         headers.put(Key.HEADER_AUTHORIZATION, List.of(basic));
-        definitions.forEach(headers::add);
+        dto.getHeaders().forEach(headers::add);
+        create(dto.getDestination(), dto.getTopic(), dto.getClientType()).forEach(headers::add);
         return headers;
     }
 
     @Override
-    public Class<WebSocketHttpHeaders> supports() {
-        return WebSocketHttpHeaders.class;
+    public Class<WebSocketHttpHeadersDto> supports() {
+        return WebSocketHttpHeadersDto.class;
+    }
+
+    private Map<String, String> create(String destination, String topic, String clientType) {
+        return Map.of(Key.FACTORY_DESTINATION, destination,
+                Key.HEADER_TOPIC, topic,
+                Key.HEADER_CLIENT_TYPE, clientType);
     }
 
     public static void main(String[] args) {

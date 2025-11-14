@@ -4,6 +4,7 @@ import io.github.jotabrc.ovy_mq_client.service.OvyListener;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.ClientType;
 import io.github.jotabrc.ovy_mq_core.factory.ClientFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class ClientListenerInitializer implements BeanPostProcessor {
             if (nonNull(listener)) {
                 log.info("Listener: topic={} replicas={}", listener.topic(), listener.replicas());
                 for (int i = 0; i < listener.replicas(); i++) {
-                    Client client = ClientFactory.of(listener.topic(), method, beanName, listener.timeout());
+                    Client client = ClientFactory.of(listener.topic(), method, beanName, listener.timeout(), ClientType.CONSUMER);
                     log.info("Creating client: replica={}/{} topic={} config=[maxReplicas={} minReplicas={} stepReplicas={} autoManageReplicas={} timeout={}ms]",
                             i + 1,
                             listener.replicas(),
