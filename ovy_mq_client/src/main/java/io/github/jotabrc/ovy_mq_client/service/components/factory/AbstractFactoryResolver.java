@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
-import io.github.jotabrc.ovy_mq_core.factories.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.factories.FactoryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,9 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
-import io.github.jotabrc.ovy_mq_client.security.DefaultSecurityProvider;
+import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.WebSocketHttpHeadersDto;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.factories.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

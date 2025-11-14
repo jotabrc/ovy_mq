@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.factory;
+package io.github.jotabrc.ovy_mq_core.factories;
 
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ClientType;

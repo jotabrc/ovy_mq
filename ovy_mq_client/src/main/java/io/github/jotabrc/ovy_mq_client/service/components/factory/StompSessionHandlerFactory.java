@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompSessionHandlerDto;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.StompSessionHandler;
-import io.github.jotabrc.ovy_mq_core.factories.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;

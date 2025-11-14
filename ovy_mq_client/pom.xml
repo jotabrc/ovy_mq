@@ -67,9 +67,8 @@
             <groupId>io.github.jotabrc</groupId>
             <artifactId>ovy_mq_core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../ovy_mq_core/target/ovy_mq_core-0.0.1-SNAPSHOT.jar</systemPath>
         </dependency>
+
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>

@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.security.interfaces;
+package io.github.jotabrc.ovy_mq_core.security.interfaces;
 
 import java.util.List;
 import java.util.Map;

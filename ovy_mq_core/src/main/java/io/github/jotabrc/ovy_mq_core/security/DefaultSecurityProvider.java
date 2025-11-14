@@ -1,6 +1,6 @@
-package io.github.jotabrc.ovy_mq_client.security;
+package io.github.jotabrc.ovy_mq_core.security;
 
-import io.github.jotabrc.ovy_mq_client.security.interfaces.SecurityResolver;
+import io.github.jotabrc.ovy_mq_core.security.interfaces.SecurityResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

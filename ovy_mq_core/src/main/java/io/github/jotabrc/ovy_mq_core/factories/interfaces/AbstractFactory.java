@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.factories;
+package io.github.jotabrc.ovy_mq_core.factories.interfaces;
 
 public interface AbstractFactory<T, R> {
 

@@ -5,7 +5,7 @@ import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.Ses
 import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ClientType;
-import io.github.jotabrc.ovy_mq_core.factory.ClientFactory;
+import io.github.jotabrc.ovy_mq_core.factories.ClientFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
