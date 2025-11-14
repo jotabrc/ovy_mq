@@ -4,6 +4,7 @@ public class Key {
 
     // HEADER's
     public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String HEADER_ROLES = "X-ROLES";
     public static final String HEADER_PAYLOAD_TYPE = "X-PAYLOAD-TYPE";
     public static final String HEADER_CLIEND_ID = "X-CLIENT_ID";
     public static final String HEADER_TOPIC = "X-SUBSCRIBED-TOPIC";

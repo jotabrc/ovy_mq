@@ -1,23 +1,31 @@
 package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
+import io.github.jotabrc.ovy_mq_client.security.DefaultSecurityProvider;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompHeadersDto;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.factories.AbstractFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@Slf4j
+@RequiredArgsConstructor
 @Component
 public class StompHeadersFactory implements AbstractFactory<StompHeadersDto, StompHeaders> {
 
+    private final DefaultSecurityProvider securityProvider;
+
     @Override
     public StompHeaders create(StompHeadersDto dto) {
-        StompHeaders stompHeaders = new StompHeaders();
-        stompHeaders.setDestination(dto.getDestination());
-        dto.getHeaders().forEach(stompHeaders::add);
-        create(dto.getDestination(), dto.getTopic(), dto.getClientType()).forEach(stompHeaders::add);
-        return stompHeaders;
+        StompHeaders headers = new StompHeaders();
+        headers.setDestination(dto.getDestination());
+        securityProvider.create(dto.getClientType()).forEach(headers::addAll);
+        dto.getHeaders().forEach(headers::add);
+        create(dto.getDestination(), dto.getTopic(), dto.getClientType()).forEach(headers::add);
+        return headers;
     }
 
     @Override
