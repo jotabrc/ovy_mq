@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -20,8 +22,12 @@ public class ClientMessageDispatcher {
     }
 
     public void send(Client client, String topic, String destination, Object payload, SessionManager session) {
-        logInfo(client, topic, destination);
-        session.send(destination, payload);
+        Optional.ofNullable(session)
+                .filter(SessionManager::isConnected)
+                .ifPresent(sessionManager -> {
+                    logInfo(client, topic, destination);
+                    session.send(destination, payload);
+                });
     }
 
     private static void logInfo(Client client, String topic, String destination) {

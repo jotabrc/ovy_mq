@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
+import io.github.jotabrc.ovy_mq_client.service.components.SessionTimeoutManager;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompHeadersDto;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.WebSocketHttpHeadersDto;
@@ -24,11 +25,8 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.CONFIRM_PAYLOAD_RECEIVED;
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_REGISTRY;
@@ -45,18 +43,12 @@ public class StompSessionHandler extends SessionManager {
     protected final AbstractFactoryResolver abstractFactoryResolver;
     protected final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
     protected final WebSocketStompClient webSocketStompClient;
-    private final Executor smallPoolExecutor;
+    private final SessionTimeoutManager sessionTimeoutManager;
 
     protected CompletableFuture<SessionManager> future;
     protected StompSession session;
     protected Client client;
     protected List<String> subscriptions;
-
-    @org.springframework.beans.factory.annotation.Value("${ovymq.session.connection.timeout}")
-    protected Long connectionTimeout;
-
-    @org.springframework.beans.factory.annotation.Value("${ovymq.session.connection.backoff}")
-    protected Integer connectionBackoff;
 
     @Override
     public SessionManager send(String destination, Object payload) {
@@ -68,7 +60,7 @@ public class StompSessionHandler extends SessionManager {
                             this.reconnectIfNotAlive(false);
                             this.session.send(headers, payload);
                         } catch (NullPointerException e) {
-                            log.error("Session is null cannot send message");
+                            log.error("Failed to send message: client={} client-type={}", client.getId(), client.getType(), e);
                             initialize();
                         }
                     });
@@ -78,46 +70,24 @@ public class StompSessionHandler extends SessionManager {
 
     @Override
     public void initialize() {
-        synchronized (this) {
-            smallPoolExecutor.execute(() -> {
-                log.info("Initializing-session client={}", client.getId());
-                WebSocketHttpHeadersDto dto = new WebSocketHttpHeadersDto("server", client.getTopic(), client.getType().name());
-                abstractFactoryResolver.create(dto, dto.getReturns())
-                        .ifPresent(headers -> {
-                            Runnable connect = () -> {
-                                this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
-                                this.client.setLastHealthCheck(OffsetDateTime.now());
-                            };
+        log.info("Initializing-session client={}", client.getId());
+        WebSocketHttpHeadersDto dto = new WebSocketHttpHeadersDto("server", client.getTopic(), client.getType().name());
+        abstractFactoryResolver.create(dto, dto.getReturns())
+                .ifPresent(headers -> {
+                    Runnable connect = () -> {
+                        this.client.setLastHealthCheck(OffsetDateTime.now());
+                        this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
+                    };
+                    Callable<Boolean> isConnected = this::isConnected;
+                    sessionTimeoutManager.manage(this.future, connect, isConnected, client);
+                });
 
-                            AtomicInteger counter = new AtomicInteger(0);
-                            while (counter.getAndIncrement() < connectionBackoff) {
-                                try {
-                                    this.future = new CompletableFuture<>();
-                                    connect.run();
-                                    this.future.get(connectionTimeout, TimeUnit.MILLISECONDS);
-                                } catch (Exception e) {
-                                    log.error("Error while connecting to server client={}", client.getId(), e);
-                                    try {
-                                        Thread.sleep(1000);
-                                    } catch (InterruptedException ex) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                    log.info("Server is unavailable, retrying connection. Retry-number={} client={} topic={}", counter.get(), this.client.getId(), this.client.getTopic());
-                                }
-
-                                if (Objects.equals(counter.get(), connectionBackoff) && isNull(this.session))
-                                    log.warn("Client={} Failed to connect to server after {} tries", client.getId(), counter.get());
-                            }
-                        });
-
-                if (this.isConnected())
-                    log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
-            });
-        }
+        if (this.isConnected())
+            log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
     }
 
-    protected void connect(String url, WebSocketHttpHeaders headers) {
-        webSocketStompClient.connectAsync(url, headers, this);
+    protected CompletableFuture<StompSession> connect(String url, WebSocketHttpHeaders headers) {
+        return webSocketStompClient.connectAsync(url, headers, this);
     }
 
     @Override
@@ -171,7 +141,7 @@ public class StompSessionHandler extends SessionManager {
     public void afterConnected(@NotNull StompSession session, @NotNull StompHeaders connectedHeaders) {
         this.session = session;
         this.subscribe();
-        future.complete(this);
+        this.future.complete(this);
     }
 
     protected void subscribe() {
@@ -180,6 +150,6 @@ public class StompSessionHandler extends SessionManager {
 
     @Override
     public void handleTransportError(@NotNull StompSession session, @NotNull Throwable exception) {
-        future.completeExceptionally(exception);
+        log.error("Error: ", exception);
     }
 }

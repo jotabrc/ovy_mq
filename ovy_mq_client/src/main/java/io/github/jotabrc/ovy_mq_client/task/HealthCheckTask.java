@@ -36,15 +36,15 @@ public class HealthCheckTask {
     @Value("${ovymq.task.health-check.threshold}")
     private Long threshold;
 
-    @Scheduled(fixedDelayString = "${ovymq.task.health-check.delay}")
+    @Scheduled(fixedDelayString = "${ovymq.task.health-check.delay}", initialDelayString = "300000")
     public void execute() {
         log.info("Health check task execution started, delay={} and threshold={}", delay, threshold);
         clientRegistry.getAllClients()
                 .forEach(client -> {
                     log.info("Request health check: client={} topic={} last health check={}", client.getId(), client.getTopic(), client.getLastHealthCheck());
                     sessionRegistry.getById(client.getId())
+                            .map(sessionManager -> sessionManager.reconnectIfNotAlive(isLastHealthCheckExpired(client)))
                             .ifPresent(session -> {
-                                session.reconnectIfNotAlive(isLastHealthCheckExpired(client));
                                 HealthStatus healthStatus = buildHealthStatus();
                                 clientMessageDispatcher.send(client, client.getTopic(), REQUEST_HEALTH_CHECK, healthStatus, session);
                             });

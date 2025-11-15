@@ -19,9 +19,9 @@ public class SessionInitializerImpl implements SessionInitializer {
     private final AbstractFactoryResolver abstractFactoryResolver;
     private final SessionRegistry sessionRegistry;
 
-
     @Override
     public void createSessionAndConnect(Client client) {
+        log.info("Creating SessionManager and initializing: client={}", client.getId());
         StompSessionHandlerDto dto = new StompSessionHandlerDto(client);
         abstractFactoryResolver.create(dto, dto.getReturns())
                 .ifPresent(sessionManager -> {

@@ -11,7 +11,7 @@ ovymq:
       active: true
       delay: 10000
     health-check:
-      active: false
+      active: true
       delay: 10000
       threshold: 65000
   session:

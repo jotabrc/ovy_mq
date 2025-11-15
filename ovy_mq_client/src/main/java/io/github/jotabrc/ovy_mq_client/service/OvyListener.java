@@ -6,12 +6,12 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OvyListener {
     String topic();
-    int replicas() default 10;
+    int replicas() default 1;
     int maxReplicas() default 3;
     int minReplicas() default 0;
     int stepReplicas() default 1;
     boolean autoManageReplicas() default false;
-    long timeout() default 120000;
+    long timeout() default 10000;
     // TODO:
     /*
     1- keep state of client replicas for step up/down with configuration

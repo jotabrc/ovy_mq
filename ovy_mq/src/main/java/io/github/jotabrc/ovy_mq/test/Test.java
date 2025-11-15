@@ -18,11 +18,19 @@ public class Test implements CommandLineRunner {
     @Override
     public void run(String... args) {
         AtomicInteger counter = new AtomicInteger(0);
-        while (counter.getAndIncrement() < 1000) {
+        while (counter.getAndIncrement() < 1) {
             payloadDispatcher.execute(MessagePayload.builder()
-                    .topic("teste")
-                    .payload("" + counter.get())
-                    .build(),
+                            .topic("bar")
+                            .payload("" + counter.get())
+                            .build(),
+                    PayloadDispatcherCommand.SAVE);
+        }
+
+        while (counter.getAndIncrement() < 1) {
+            payloadDispatcher.execute(MessagePayload.builder()
+                            .topic("foo")
+                            .payload("" + counter.get())
+                            .build(),
                     PayloadDispatcherCommand.SAVE);
         }
     }

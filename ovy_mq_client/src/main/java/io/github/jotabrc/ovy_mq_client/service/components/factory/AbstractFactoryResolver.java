@@ -1,7 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
 import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
-import io.github.jotabrc.ovy_mq_core.factories.FactoryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,11 +32,5 @@ public class AbstractFactoryResolver {
                 .map(f -> ((AbstractFactory<T, R>) f).create(dto))
                 .stream()
                 .findFirst();
-    }
-
-    public Optional<AbstractFactory<?, ?>> getFactory(FactoryDto dto) {
-        Optional<AbstractFactory<?, ?>> factory = Optional.ofNullable(factories.get(dto.getType()));
-        if (factory.isEmpty()) log.warn("No factory available for class-type={}", dto.getType());
-        return factory;
     }
 }

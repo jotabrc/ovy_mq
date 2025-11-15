@@ -32,7 +32,7 @@ public class ConsumerTask {
         this.delay = delay;
     }
 
-    @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}")
+    @Scheduled(fixedDelayString = "${ovymq.task.consumer.delay}", initialDelayString = "10000")
     public void execute() {
         log.info("Consumer task execution started with fixed delay of {} ms", delay);
         clientRegistry.getAllAvailableClients()

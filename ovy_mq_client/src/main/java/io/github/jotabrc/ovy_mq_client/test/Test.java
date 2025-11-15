@@ -10,8 +10,18 @@ public class Test {
 
     private final TestRepo repo;
 
-    @OvyListener(topic = "teste", replicas = 3)
-    public void listener(Object object) {
+    @OvyListener(topic = "bar", replicas = 1)
+    public void bar(Object object) {
+//        try {
+//            Thread.sleep(Random.from(new Random()).nextInt(1, 29000));
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+        repo.save(TestObj.builder().objeto(object.toString()).build());
+    }
+
+    @OvyListener(topic = "foo", replicas = 1)
+    public void foo(Object object) {
 //        try {
 //            Thread.sleep(Random.from(new Random()).nextInt(1, 29000));
 //        } catch (InterruptedException e) {
