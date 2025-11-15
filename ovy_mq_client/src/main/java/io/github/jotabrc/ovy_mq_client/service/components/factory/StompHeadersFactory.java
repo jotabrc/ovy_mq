@@ -22,9 +22,9 @@ public class StompHeadersFactory implements AbstractFactory<StompHeadersDto, Sto
     public StompHeaders create(StompHeadersDto dto) {
         StompHeaders headers = new StompHeaders();
         headers.setDestination(dto.getDestination());
-        securityProvider.create(dto.getClientType()).forEach(headers::addAll);
+        securityProvider.createSimple(dto.getClientType()).forEach(headers::add);
         dto.getHeaders().forEach(headers::add);
-        create(dto.getDestination(), dto.getTopic(), dto.getClientType()).forEach(headers::add);
+        create(dto.getDestination(), dto.getTopic(), dto.getClientType(), dto.getClientId()).forEach(headers::add);
         return headers;
     }
 
@@ -33,9 +33,10 @@ public class StompHeadersFactory implements AbstractFactory<StompHeadersDto, Sto
         return StompHeadersDto.class;
     }
 
-    private Map<String, String> create(String destination, String topic, String clientType) {
+    private Map<String, String> create(String destination, String topic, String clientType, String clientId) {
         return Map.of(Key.FACTORY_DESTINATION, destination,
                 Key.HEADER_TOPIC, topic,
-                Key.HEADER_CLIENT_TYPE, clientType);
+                Key.HEADER_CLIENT_TYPE, clientType,
+                Key.HEADER_CLIEND_ID, clientId);
     }
 }

@@ -18,6 +18,8 @@ ovymq:
     connection:
       timeout: 30000
       backoff: 10
+      config-client:
+        timeout: 30000
 
 
 spring:

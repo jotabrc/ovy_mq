@@ -11,6 +11,7 @@ public abstract class FactoryHeadersDto<T, R> extends FactoryDto<T, R> {
     private final String destination;
     private final String topic;
     private final String clientType;
+    private final String clientId;
     private final Map<String, String> headers = new HashMap<>();
 
     public FactoryHeadersDto(Class<T> type,
@@ -18,11 +19,13 @@ public abstract class FactoryHeadersDto<T, R> extends FactoryDto<T, R> {
                              String destination,
                              String topic,
                              String clientType,
+                             String clientId,
                              Map<String, String> headers) {
         super(type, returns);
         this.destination = destination;
         this.topic = topic;
         this.clientType = clientType;
+        this.clientId = clientId;
         this.headers.putAll(headers);
     }
 }

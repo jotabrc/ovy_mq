@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_client.service.components.SessionTimeoutManager;
-import io.github.jotabrc.ovy_mq_client.service.components.factory.AbstractFactoryResolver;
+import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompHeadersDto;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.WebSocketHttpHeadersDto;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
@@ -53,7 +53,7 @@ public class StompSessionHandler extends SessionManager {
     @Override
     public SessionManager send(String destination, Object payload) {
         synchronized (this) {
-            StompHeadersDto dto = new StompHeadersDto(destination, client.getTopic(), client.getType().name());
+            StompHeadersDto dto = new StompHeadersDto(destination, client.getTopic(), client.getType().name(), client.getId());
             abstractFactoryResolver.create(dto, dto.getReturns())
                     .ifPresent(headers -> {
                         try {
@@ -71,7 +71,7 @@ public class StompSessionHandler extends SessionManager {
     @Override
     public void initialize() {
         log.info("Initializing-session client={}", client.getId());
-        WebSocketHttpHeadersDto dto = new WebSocketHttpHeadersDto("server", client.getTopic(), client.getType().name());
+        WebSocketHttpHeadersDto dto = new WebSocketHttpHeadersDto("server", client.getTopic(), client.getType().name(), client.getId());
         abstractFactoryResolver.create(dto, dto.getReturns())
                 .ifPresent(headers -> {
                     Runnable connect = () -> {
@@ -79,7 +79,7 @@ public class StompSessionHandler extends SessionManager {
                         this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
                     };
                     Callable<Boolean> isConnected = this::isConnected;
-                    sessionTimeoutManager.manage(this.future, connect, isConnected, client);
+                    future = sessionTimeoutManager.manage(this.future, connect, isConnected, client);
                 });
 
         if (this.isConnected())

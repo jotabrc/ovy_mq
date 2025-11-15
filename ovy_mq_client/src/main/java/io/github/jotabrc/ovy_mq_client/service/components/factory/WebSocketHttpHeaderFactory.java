@@ -23,9 +23,9 @@ public class WebSocketHttpHeaderFactory implements AbstractFactory<WebSocketHttp
     @Override
     public WebSocketHttpHeaders create(WebSocketHttpHeadersDto dto) {
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-        headers.putAll(securityProvider.create(dto.getClientType()));
+        securityProvider.createSimple(dto.getClientType()).forEach(headers::add);
         dto.getHeaders().forEach(headers::add);
-        create(dto.getDestination(), dto.getTopic(), dto.getClientType()).forEach(headers::add);
+        create(dto.getDestination(), dto.getTopic(), dto.getClientType(), dto.getClientId()).forEach(headers::add);
         return headers;
     }
 
@@ -34,10 +34,11 @@ public class WebSocketHttpHeaderFactory implements AbstractFactory<WebSocketHttp
         return WebSocketHttpHeadersDto.class;
     }
 
-    private Map<String, String> create(String destination, String topic, String clientType) {
+    private Map<String, String> create(String destination, String topic, String clientType, String clientId) {
         return Map.of(Key.FACTORY_DESTINATION, destination,
                 Key.HEADER_TOPIC, topic,
-                Key.HEADER_CLIENT_TYPE, clientType);
+                Key.HEADER_CLIENT_TYPE, clientType,
+                Key.HEADER_CLIEND_ID, clientId);
     }
 
     public static void main(String[] args) {

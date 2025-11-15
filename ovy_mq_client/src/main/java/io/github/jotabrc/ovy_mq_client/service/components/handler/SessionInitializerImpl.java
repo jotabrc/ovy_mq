@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
-import io.github.jotabrc.ovy_mq_client.service.components.factory.AbstractFactoryResolver;
+import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompSessionHandlerDto;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.SessionRegistry;

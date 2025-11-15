@@ -13,13 +13,15 @@ public class WebSocketHttpHeadersDto extends FactoryHeadersDto<WebSocketHttpHead
     public WebSocketHttpHeadersDto(String destination,
                                    String topic,
                                    String clientType,
+                                   String clientId,
                                    Map<String, String> headers) {
-        super(WebSocketHttpHeadersDto.class, WebSocketHttpHeaders.class, destination, topic, clientType, headers);
+        super(WebSocketHttpHeadersDto.class, WebSocketHttpHeaders.class, destination, topic, clientType, clientId, headers);
     }
 
     public WebSocketHttpHeadersDto(String destination,
                                    String topic,
-                                   String clientType) {
-        super(WebSocketHttpHeadersDto.class, WebSocketHttpHeaders.class, destination, topic, clientType, Collections.emptyMap());
+                                   String clientType,
+                                   String clientId) {
+        super(WebSocketHttpHeadersDto.class, WebSocketHttpHeaders.class, destination, topic, clientType, clientId, Collections.emptyMap());
     }
 }

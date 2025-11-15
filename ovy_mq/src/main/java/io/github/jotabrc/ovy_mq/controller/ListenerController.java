@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_CONFIG;
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_LISTENER;
+import static java.util.Objects.nonNull;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +22,8 @@ public class ListenerController {
 
     @PostMapping(WS_CONFIG)
     public void configureListener(@RequestBody ListenerConfig listenerConfig) {
-        payloadDispatcher.execute(listenerConfig, PayloadDispatcherCommand.LISTENER_CONFIG);
+        if (nonNull(listenerConfig)) {
+            payloadDispatcher.execute(listenerConfig, PayloadDispatcherCommand.LISTENER_CONFIG);
+        }
     }
 }

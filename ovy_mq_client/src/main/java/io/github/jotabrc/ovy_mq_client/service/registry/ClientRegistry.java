@@ -2,6 +2,7 @@ package io.github.jotabrc.ovy_mq_client.service.registry;
 
 import io.github.jotabrc.ovy_mq_client.handler.ClientNotFoundException;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.ClientType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -49,6 +50,7 @@ public class ClientRegistry {
         return clients.values()
                 .stream()
                 .flatMap(Collection::stream)
+                .filter(client -> Objects.equals(ClientType.CONSUMER, client.getType()))
                 .filter(Client::getIsAvailable)
                 .toList();
     }

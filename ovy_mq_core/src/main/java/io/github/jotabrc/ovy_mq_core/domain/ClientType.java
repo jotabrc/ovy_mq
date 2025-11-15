@@ -7,5 +7,6 @@ public enum ClientType {
 
     CONSUMER,
     PRODUCER,
-    CONFIGURER;
+    CONFIGURER,
+    SERVER;
 }

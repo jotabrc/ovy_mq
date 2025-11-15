@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.service.components.factory;
+package io.github.jotabrc.ovy_mq_core.factories;
 
 import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
 import lombok.extern.slf4j.Slf4j;

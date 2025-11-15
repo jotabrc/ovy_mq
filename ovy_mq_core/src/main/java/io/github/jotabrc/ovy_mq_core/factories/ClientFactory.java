@@ -10,6 +10,15 @@ public class ClientFactory {
 
     private ClientFactory() {}
 
+    public static Client configClientOf(ClientType type, Long timeout) {
+        return Client.builder()
+                .id(UUID.randomUUID().toString())
+                .type(type)
+                .topic(type.name() + ":" + type.name())
+                .timeout(timeout)
+                .build();
+    }
+
     public static Client of(String clientId, String topic) {
         return Client.builder()
                 .id(clientId)

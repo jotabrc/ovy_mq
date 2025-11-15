@@ -24,7 +24,7 @@ public class SessionTimeoutManager {
     @Value("${ovymq.session.connection.backoff}")
     protected Integer connectionBackoff;
 
-    public void manage(CompletableFuture<SessionManager> future, Runnable connect, Callable<Boolean> isConnected, Client client) {
+    public CompletableFuture<SessionManager> manage(CompletableFuture<SessionManager> future, Runnable connect, Callable<Boolean> isConnected, Client client) {
         int counter = 1;
         while (counter++ < connectionBackoff) {
             try {
@@ -47,5 +47,6 @@ public class SessionTimeoutManager {
         } catch (Exception e) {
             log.warn("Failed to confirm session connection: client={}", client.getId());
         }
+        return future;
     }
 }

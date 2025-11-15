@@ -26,6 +26,7 @@ public class Test implements CommandLineRunner {
                     PayloadDispatcherCommand.SAVE);
         }
 
+        counter = new AtomicInteger(0);
         while (counter.getAndIncrement() < 1) {
             payloadDispatcher.execute(MessagePayload.builder()
                             .topic("foo")

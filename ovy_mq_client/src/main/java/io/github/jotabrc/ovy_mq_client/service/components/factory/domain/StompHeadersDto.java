@@ -13,13 +13,15 @@ public class StompHeadersDto extends FactoryHeadersDto<StompHeadersDto, StompHea
     public StompHeadersDto(String destination,
                            String topic,
                            String clientType,
+                           String clientId,
                            Map<String, String> headers) {
-        super(StompHeadersDto.class, StompHeaders.class, destination, topic, clientType, headers);
+        super(StompHeadersDto.class, StompHeaders.class, destination, topic, clientType, clientId, headers);
     }
 
     public StompHeadersDto(String destination,
                            String topic,
-                           String clientType) {
-        super(StompHeadersDto.class, StompHeaders.class, destination, topic, clientType, Collections.emptyMap());
+                           String clientType,
+                           String clientId) {
+        super(StompHeadersDto.class, StompHeaders.class, destination, topic, clientType, clientId, Collections.emptyMap());
     }
 }

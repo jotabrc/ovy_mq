@@ -18,4 +18,8 @@ public class DefaultSecurityProvider {
     public Map<String, List<String>> create(String clientType) {
         return basicSecurityResolver.create(clientType);
     }
+
+    public Map<String, String> createSimple(String clientType) {
+        return basicSecurityResolver.createSimple(clientType);
+    }
 }

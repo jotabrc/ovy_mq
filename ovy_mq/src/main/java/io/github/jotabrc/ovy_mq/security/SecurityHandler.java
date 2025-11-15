@@ -29,7 +29,7 @@ public class SecurityHandler {
         this.basic = "Basic " + Base64.getEncoder().encodeToString(credential.getBcrypt().getBytes(StandardCharsets.UTF_8));
     }
 
-    String retrieveCredentials(String basic) {
+    public String retrieveCredentials(String basic) {
         if (isNull(basic) || basic.isBlank()) return null;
         return getString(basic);
     }

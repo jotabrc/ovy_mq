@@ -1,6 +1,9 @@
 package io.github.jotabrc.ovy_mq.security;
 
+import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.domain.ClientType;
+import io.github.jotabrc.ovy_mq_core.domain.ConfigClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,29 +22,28 @@ import static java.util.Objects.nonNull;
 @Component
 public class AuthInterceptor implements HandshakeInterceptor {
 
+    private final ConfigClientContextHolder configClientContextHolder;
+
     @Override
     public boolean beforeHandshake(ServerHttpRequest request,
                                    ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) {
         log.info("Request to registry received");
-        Object clientIdAttribute = request.getAttributes().get(Key.HEADER_CLIEND_ID);
-        Object topicAttribute = request.getAttributes().get(Key.HEADER_TOPIC);
+        Object clientId = request.getAttributes().get(Key.HEADER_CLIEND_ID);
+        Object topic = request.getAttributes().get(Key.HEADER_TOPIC);
+        Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
 
-        if (nonNull(clientIdAttribute) && nonNull(topicAttribute)) {
-            String clientId = (String) clientIdAttribute;
-            String topic = (String) topicAttribute;
-            if (!clientId.isBlank() && !topic.isBlank()) {
-                attributes.put(Key.HEADER_CLIEND_ID, clientId);
-                attributes.put(Key.HEADER_TOPIC, topic);
-                log.info("Registry: client={} successful", clientId);
-                log.info("Topic subscription: client={} topic={}", clientId, topic);
-                return true;
-            }
+        if (nonNull(clientId) && nonNull(topic) && nonNull(clientType)) {
+            attributes.put(Key.HEADER_CLIEND_ID, clientId);
+            attributes.put(Key.HEADER_TOPIC, topic);
+            attributes.put(Key.HEADER_CLIENT_TYPE, clientType);
+            log.info("Registry successful: client={} topic={} clientType={} successful", clientId, topic, clientType);
+            return true;
         }
 
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        log.info("Registration failed - missing fields: clientId={} topic={}", clientIdAttribute, topicAttribute);
+        log.info("Registration client={} topic={} clientType={} successful", clientId, topic, clientType);
         return false;
     }
 
@@ -50,7 +52,11 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                ServerHttpResponse response,
                                WebSocketHandler wsHandler,
                                Exception exception) {
-        Object clientIdAttribute = request.getAttributes().get(Key.HEADER_CLIEND_ID);
-
+        Object clientId = request.getAttributes().get(Key.HEADER_CLIEND_ID);
+        Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
+        configClientContextHolder.add(ConfigClient.builder()
+                .id(clientId.toString())
+                .type(ClientType.valueOf(clientType.toString()))
+                .build());
     }
 }

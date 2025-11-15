@@ -5,5 +5,6 @@ import java.util.Map;
 
 public interface SecurityResolver {
 
-    <T> Map<String, List<String>> create(String clientType);
+    Map<String, List<String>> create(String clientType);
+    Map<String, String> createSimple(String clientType);
 }
