@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.components;
 
-import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;

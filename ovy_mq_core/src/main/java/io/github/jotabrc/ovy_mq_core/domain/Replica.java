@@ -10,12 +10,14 @@ import java.io.Serializable;
 @Setter
 @Getter
 @Builder
-public class ListenerState implements Serializable {
+public class Replica implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private String topic;
-    private Long timeout;
-    private Replica replica;
+    private Integer quantity;
+    private Integer max;
+    private Integer min;
+    private Integer step;
+    private Boolean autoManage;
 }

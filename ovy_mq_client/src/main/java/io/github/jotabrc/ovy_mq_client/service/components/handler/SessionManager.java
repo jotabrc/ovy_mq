@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces;
+package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;

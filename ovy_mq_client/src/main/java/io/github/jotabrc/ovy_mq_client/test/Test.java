@@ -10,7 +10,7 @@ public class Test {
 
     private final TestRepo repo;
 
-    @OvyListener(topic = "bar", replicas = 1)
+    @OvyListener(topic = "bar", quantity = 1)
     public void bar(Object object) {
 //        try {
 //            Thread.sleep(Random.from(new Random()).nextInt(1, 29000));
@@ -20,7 +20,7 @@ public class Test {
         repo.save(TestObj.builder().objeto(object.toString()).build());
     }
 
-    @OvyListener(topic = "foo", replicas = 1)
+    @OvyListener(topic = "foo", quantity = 0)
     public void foo(Object object) {
 //        try {
 //            Thread.sleep(Random.from(new Random()).nextInt(1, 29000));

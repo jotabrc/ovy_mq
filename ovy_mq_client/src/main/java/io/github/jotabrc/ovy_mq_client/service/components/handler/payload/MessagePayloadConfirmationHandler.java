@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler.payload;
 
 import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
-import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.SessionManager;
 import io.github.jotabrc.ovy_mq_client.service.components.handler.payload.interfaces.PayloadConfirmationHandler;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;

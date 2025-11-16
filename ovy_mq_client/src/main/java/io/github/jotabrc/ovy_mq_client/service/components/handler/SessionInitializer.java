@@ -1,29 +1,29 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
-import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
-import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompSessionHandlerDto;
-import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.SessionRegistry;
+import io.github.jotabrc.ovy_mq_core.components.MapCreator;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Getter
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SessionInitializerImpl implements SessionInitializer {
+public class SessionInitializer {
 
     private final AbstractFactoryResolver abstractFactoryResolver;
     private final SessionRegistry sessionRegistry;
+    private final MapCreator mapCreator;
 
-    @Override
-    public void createSessionAndConnect(Client client) {
+    public void createSessionAndConnect(Client client, Map<String, Object> sessionManagerDefinitions) {
         log.info("Creating SessionManager and initializing: client={}", client.getId());
-        StompSessionHandlerDto dto = new StompSessionHandlerDto(client);
-        abstractFactoryResolver.create(dto, dto.getReturns())
+        abstractFactoryResolver.create(sessionManagerDefinitions, StompSessionHandler.class)
                 .ifPresent(sessionManager -> {
                     sessionRegistry.addOrReplace(client.getId(), sessionManager);
                     sessionManager.initialize();

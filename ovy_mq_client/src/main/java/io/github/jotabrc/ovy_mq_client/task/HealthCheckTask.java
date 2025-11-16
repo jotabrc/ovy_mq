@@ -36,7 +36,7 @@ public class HealthCheckTask {
     @Value("${ovymq.task.health-check.threshold}")
     private Long threshold;
 
-    @Scheduled(fixedDelayString = "${ovymq.task.health-check.delay}", initialDelayString = "300000")
+    @Scheduled(fixedDelayString = "${ovymq.task.health-check.delay}", initialDelayString = "10000")
     public void execute() {
         log.info("Health check task execution started, delay={} and threshold={}", delay, threshold);
         clientRegistry.getAllClients()

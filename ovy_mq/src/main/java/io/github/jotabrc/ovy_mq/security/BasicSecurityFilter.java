@@ -24,7 +24,7 @@ public class BasicSecurityFilter implements Filter {
         log.info("Authentication request received: {}", servletRequest.getRequestId());
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         String auth = req.getHeader(Key.HEADER_AUTHORIZATION);
-        String clientId = req.getHeader(Key.HEADER_CLIEND_ID);
+        String clientId = req.getHeader(Key.HEADER_CLIENT_ID);
         String topic = req.getHeader(Key.HEADER_TOPIC);
         String clientType = req.getHeader(Key.HEADER_CLIENT_TYPE);
 
@@ -34,7 +34,7 @@ public class BasicSecurityFilter implements Filter {
                 if (securityHandler.validate(credential)) {
                     log.info("Authorized: client={} topic={} type={}", clientId, topic, clientType);
 
-                    servletRequest.setAttribute(Key.HEADER_CLIEND_ID, clientId);
+                    servletRequest.setAttribute(Key.HEADER_CLIENT_ID, clientId);
                     servletRequest.setAttribute(Key.HEADER_TOPIC, topic);
                     servletRequest.setAttribute(Key.HEADER_CLIENT_TYPE, clientType);
                     filterChain.doFilter(servletRequest, servletResponse);
@@ -43,7 +43,6 @@ public class BasicSecurityFilter implements Filter {
             }
         }
 
-        log.info("Authentication: denied-request={}", servletRequest.getRequestId());
         throw new AuthorizationRequestDeniedException("Request for authorization is denied");
     }
 }

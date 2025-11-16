@@ -1,16 +1,14 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
 import io.github.jotabrc.ovy_mq_client.service.components.SessionTimeoutManager;
-import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
-import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompHeadersDto;
-import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.WebSocketHttpHeadersDto;
-import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_core.components.MapCreator;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Value;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -39,22 +37,26 @@ import static java.util.Objects.nonNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class StompSessionHandler extends SessionManager {
 
-    protected final PayloadHandlerDispatcher payloadHandlerDispatcher;
-    protected final AbstractFactoryResolver abstractFactoryResolver;
-    protected final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
-    protected final WebSocketStompClient webSocketStompClient;
+    private final PayloadHandlerDispatcher payloadHandlerDispatcher;
+    private final AbstractFactoryResolver abstractFactoryResolver;
+    private final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
+    private final WebSocketStompClient webSocketStompClient;
     private final SessionTimeoutManager sessionTimeoutManager;
+    private final MapCreator mapCreator;
 
-    protected CompletableFuture<SessionManager> future;
-    protected StompSession session;
-    protected Client client;
-    protected List<String> subscriptions;
+    private CompletableFuture<SessionManager> future;
+    private StompSession session;
+    private Client client;
+    private List<String> subscriptions;
 
     @Override
     public SessionManager send(String destination, Object payload) {
         synchronized (this) {
-            StompHeadersDto dto = new StompHeadersDto(destination, client.getTopic(), client.getType().name(), client.getId());
-            abstractFactoryResolver.create(dto, dto.getReturns())
+            var definitions = mapCreator.create(mapCreator.createDto(Key.HEADER_DESTINATION, destination),
+                    mapCreator.createDto(Key.HEADER_TOPIC, client.getTopic()),
+                    mapCreator.createDto(Key.HEADER_CLIENT_TYPE, client.getType().name()),
+                    mapCreator.createDto(Key.HEADER_CLIENT_ID, client.getId()));
+            abstractFactoryResolver.create(definitions, StompHeaders.class)
                     .ifPresent(headers -> {
                         try {
                             this.reconnectIfNotAlive(false);
@@ -71,8 +73,11 @@ public class StompSessionHandler extends SessionManager {
     @Override
     public void initialize() {
         log.info("Initializing-session client={}", client.getId());
-        WebSocketHttpHeadersDto dto = new WebSocketHttpHeadersDto("server", client.getTopic(), client.getType().name(), client.getId());
-        abstractFactoryResolver.create(dto, dto.getReturns())
+        var definitions = mapCreator.create(mapCreator.createDto(Key.HEADER_DESTINATION, Value.DESTINATION_SERVER),
+                mapCreator.createDto(Key.HEADER_TOPIC, client.getTopic()),
+                mapCreator.createDto(Key.HEADER_CLIENT_TYPE, client.getType().name()),
+                mapCreator.createDto(Key.HEADER_CLIENT_ID, client.getId()));
+        abstractFactoryResolver.create(definitions, WebSocketHttpHeaders.class)
                 .ifPresent(headers -> {
                     Runnable connect = () -> {
                         this.client.setLastHealthCheck(OffsetDateTime.now());

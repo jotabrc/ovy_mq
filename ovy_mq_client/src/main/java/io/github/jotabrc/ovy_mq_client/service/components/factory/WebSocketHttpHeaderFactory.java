@@ -1,9 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
-import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
-import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.WebSocketHttpHeadersDto;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,29 +15,22 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class WebSocketHttpHeaderFactory implements AbstractFactory<WebSocketHttpHeadersDto, WebSocketHttpHeaders> {
+public class WebSocketHttpHeaderFactory implements AbstractFactory<WebSocketHttpHeaders> {
 
     private final DefaultSecurityProvider securityProvider;
 
     @Override
-    public WebSocketHttpHeaders create(WebSocketHttpHeadersDto dto) {
+    public WebSocketHttpHeaders create(Map<String, Object> definitions) {
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-        securityProvider.createSimple(dto.getClientType()).forEach(headers::add);
-        dto.getHeaders().forEach(headers::add);
-        create(dto.getDestination(), dto.getTopic(), dto.getClientType(), dto.getClientId()).forEach(headers::add);
+        Key.convert(definitions, String.class).forEach(headers::add);
+        securityProvider.createSimple(Key.extract(definitions, Key.HEADER_CLIENT_TYPE, String.class))
+                .forEach(headers::add);
         return headers;
     }
 
     @Override
-    public Class<WebSocketHttpHeadersDto> supports() {
-        return WebSocketHttpHeadersDto.class;
-    }
-
-    private Map<String, String> create(String destination, String topic, String clientType, String clientId) {
-        return Map.of(Key.FACTORY_DESTINATION, destination,
-                Key.HEADER_TOPIC, topic,
-                Key.HEADER_CLIENT_TYPE, clientType,
-                Key.HEADER_CLIEND_ID, clientId);
+    public Class<WebSocketHttpHeaders> supports() {
+        return WebSocketHttpHeaders.class;
     }
 
     public static void main(String[] args) {

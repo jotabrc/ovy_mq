@@ -1,10 +1,12 @@
 package io.github.jotabrc.ovy_mq_client.service.components.handler;
 
-import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_core.components.MapCreator;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.defaults.Subscribe;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ClientType;
-import io.github.jotabrc.ovy_mq_core.factories.ClientFactory;
+import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +21,8 @@ public class ConfigClientInitializer implements ApplicationRunner {
 
     private final ClientRegistry clientRegistry;
     private final SessionInitializer sessionInitializer;
+    private final AbstractFactoryResolver factoryResolver;
+    private final MapCreator mapCreator;
 
     @Value("${ovymq.session.connection.config-client.timeout}")
     private Long timeout;
@@ -29,8 +33,15 @@ public class ConfigClientInitializer implements ApplicationRunner {
     }
 
     private void initialize() {
-        Client client = ClientFactory.configClientOf(ClientType.CONFIGURER, timeout);
-        sessionInitializer.createSessionAndConnect(client);
-        clientRegistry.save(client);
+        var definitions = mapCreator.create(mapCreator.createDto(Key.HEADER_CLIENT_TYPE, ClientType.CONFIGURER),
+                mapCreator.createDto(Key.FACTORY_CLIENT_TIMEOUT, timeout),
+                mapCreator.createDto(Key.HEADER_TOPIC, io.github.jotabrc.ovy_mq_core.defaults.Value.ROLE_SERVER));
+        factoryResolver.create(definitions, Client.class)
+                .ifPresent(client -> {
+                    var sessionManagerDefinitions = mapCreator.create(mapCreator.createDto(Key.FACTORY_CLIENT_OBJECT, client),
+                            mapCreator.createDto(Key.FACTORY_SUBSCRIPTIONS, Subscribe.CONFIGURER_SUBSCRIPTION));
+                    sessionInitializer.createSessionAndConnect(client, sessionManagerDefinitions);
+                    clientRegistry.save(client);
+                });
     }
 }

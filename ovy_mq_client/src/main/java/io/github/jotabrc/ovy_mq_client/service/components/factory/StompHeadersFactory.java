@@ -1,6 +1,5 @@
 package io.github.jotabrc.ovy_mq_client.service.components.factory;
 
-import io.github.jotabrc.ovy_mq_client.service.components.factory.domain.StompHeadersDto;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
@@ -14,29 +13,29 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class StompHeadersFactory implements AbstractFactory<StompHeadersDto, StompHeaders> {
+public class StompHeadersFactory implements AbstractFactory<StompHeaders> {
 
     private final DefaultSecurityProvider securityProvider;
 
     @Override
-    public StompHeaders create(StompHeadersDto dto) {
+    public StompHeaders create(Map<String, Object> definitions) {
         StompHeaders headers = new StompHeaders();
-        headers.setDestination(dto.getDestination());
-        securityProvider.createSimple(dto.getClientType()).forEach(headers::add);
-        dto.getHeaders().forEach(headers::add);
-        create(dto.getDestination(), dto.getTopic(), dto.getClientType(), dto.getClientId()).forEach(headers::add);
+        Key.convert(definitions, String.class).forEach(headers::add);
+        headers.setDestination(Key.extract(definitions, Key.HEADER_DESTINATION, String.class));
+        securityProvider.createSimple(Key.extract(definitions, Key.HEADER_CLIENT_TYPE, String.class))
+                .forEach(headers::add);
         return headers;
     }
 
     @Override
-    public Class<StompHeadersDto> supports() {
-        return StompHeadersDto.class;
+    public Class<StompHeaders> supports() {
+        return StompHeaders.class;
     }
 
     private Map<String, String> create(String destination, String topic, String clientType, String clientId) {
-        return Map.of(Key.FACTORY_DESTINATION, destination,
+        return Map.of(Key.HEADER_DESTINATION, destination,
                 Key.HEADER_TOPIC, topic,
                 Key.HEADER_CLIENT_TYPE, clientType,
-                Key.HEADER_CLIEND_ID, clientId);
+                Key.HEADER_CLIENT_ID, clientId);
     }
 }

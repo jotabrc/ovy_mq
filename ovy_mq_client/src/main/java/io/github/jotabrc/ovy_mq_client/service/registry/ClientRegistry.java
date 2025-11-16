@@ -19,8 +19,6 @@ import static java.util.Objects.nonNull;
 @Component
 public class ClientRegistry {
 
-    private final SessionRegistry sessionRegistry;
-
     private final Map<String, Queue<Client>> clients = new ConcurrentHashMap<>();
 
     public void save(Client client) {

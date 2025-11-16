@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.service.components;
 
-import io.github.jotabrc.ovy_mq_client.service.components.handler.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.service.components.handler.SessionManager;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,19 +31,8 @@ public class SessionTimeoutManager {
                 connect.run();
                 future.orTimeout(client.getTimeout(), TimeUnit.MILLISECONDS);
             } catch (Exception e) {
-                log.info("Server is unavailable, retrying connection. Retry-number={} client={} topic={}", counter, client.getId(), client.getTopic(), e);
+                log.info("Server is unavailable, retrying connection: client={} topic={}", client.getId(), client.getTopic(), e);
             }
-        }
-
-        try {
-            if (!isConnected.call()) {
-                log.warn("Client={} failed to connect to server after {} tries", client.getId(), counter);
-                if (nonNull(future)) future.cancel(true);
-            } else {
-                log.info("Client={} connected to server after {} tries", client.getId(), counter);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to confirm session connection: client={}", client.getId());
         }
         return future;
     }

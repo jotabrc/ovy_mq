@@ -1,13 +1,16 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.factory.domain.MessageHeadersDto;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.components.MapCreator;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
 import io.github.jotabrc.ovy_mq_core.defaults.Value;
+import io.github.jotabrc.ovy_mq_core.domain.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
 
     private final AbstractFactoryResolver factoryResolver;
     private final SimpMessagingTemplate messagingTemplate;
+    private final MapCreator mapCreator;
 
     @Override
     public void handle(HealthStatus healthStatus) {
@@ -30,9 +34,10 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
     }
 
     private void sendHealthCheckResponse(HealthStatus healthStatus) {
-        MessageHeadersDto dto = new MessageHeadersDto(healthStatus.getClientId(),
-                Value.PAYLOAD_TYPE_HEALTH_STATUS);
-        factoryResolver.create(dto, dto.getReturns())
+        var definitions = mapCreator.create(mapCreator.createDto(Key.HEADER_CLIENT_ID, healthStatus.getClientId()),
+                mapCreator.createDto(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_HEALTH_STATUS),
+                mapCreator.createDto(Key.HEADER_CLIENT_TYPE, ClientType.SERVER.name()));
+        factoryResolver.create(definitions, MessageHeaders.class)
                 .ifPresent(headers -> messagingTemplate.convertAndSendToUser(healthStatus.getClientId(),
                         Mapping.WS_HEALTH,
                         healthStatus,

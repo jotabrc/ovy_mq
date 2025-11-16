@@ -21,14 +21,14 @@ public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
     }
 
     private void handle(Client client, ListenerConfig listenerConfig) {
-        log.info("Configuring listener with topic={}: config=[replicas={} maxReplicas={} minReplicas={} stepReplicas={} timeout={} autoManageReplicas={}]",
+        log.info("Configuring listener with topic={}: config=[quantity={} max={} min={} step={} autoManage={} timeout={}ms]",
                 listenerConfig.getListenerState().getTopic(),
-                listenerConfig.getListenerState().getReplicas(),
-                listenerConfig.getListenerState().getMaxReplicas(),
-                listenerConfig.getListenerState().getMinReplicas(),
-                listenerConfig.getListenerState().getStepReplicas(),
-                listenerConfig.getListenerState().getTimeout(),
-                listenerConfig.getListenerState().getAutoManageReplicas());
+                listenerConfig.getListenerState().getReplica().getQuantity(),
+                listenerConfig.getListenerState().getReplica().getMax(),
+                listenerConfig.getListenerState().getReplica().getMin(),
+                listenerConfig.getListenerState().getReplica().getMin(),
+                listenerConfig.getListenerState().getReplica().getAutoManage(),
+                listenerConfig.getListenerState().getTimeout());
         // TODO
     }
 

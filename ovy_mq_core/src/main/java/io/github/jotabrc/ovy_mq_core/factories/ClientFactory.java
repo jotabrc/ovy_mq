@@ -1,49 +1,44 @@
 package io.github.jotabrc.ovy_mq_core.factories;
 
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ClientType;
+import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.UUID;
 
-public class ClientFactory {
+import static java.util.Objects.isNull;
 
-    private ClientFactory() {}
+@RequiredArgsConstructor
+@Component
+public class ClientFactory implements AbstractFactory<Client> {
 
-    public static Client configClientOf(ClientType type, Long timeout) {
+    @Override
+    public Client create(Map<String, Object> definitions) {
         return Client.builder()
-                .id(UUID.randomUUID().toString())
-                .type(type)
-                .topic(type.name() + ":" + type.name())
-                .timeout(timeout)
+                .id(getDefaultOrCreate(definitions, Key.HEADER_CLIENT_ID, UUID.randomUUID().toString()))
+                .topic(Key.extract(definitions, Key.HEADER_TOPIC, String.class))
+                .method(Key.extract(definitions, Key.FACTORY_CLIENT_METHOD, Method.class))
+                .beanName(Key.extract(definitions, Key.FACTORY_CLIENT_BEAN_NAME, String.class))
+                .timeout(Key.extract(definitions, Key.FACTORY_CLIENT_TIMEOUT, Long.class))
+                .isAvailable(Key.extract(definitions, Key.FACTORY_CLIENT_IS_AVAILABLE, Boolean.class))
+                .type(Key.extract(definitions, Key.HEADER_CLIENT_TYPE, ClientType.class))
                 .build();
     }
 
-    public static Client of(String clientId, String topic) {
-        return Client.builder()
-                .id(clientId)
-                .topic(topic)
-                .build();
+    @Override
+    public Class<Client> supports() {
+        return Client.class;
     }
 
-    public static Client of(String topic, Method method) {
-        return Client.builder()
-                .id(UUID.randomUUID().toString())
-                .topic(topic)
-                .method(method)
-                .isAvailable(true)
-                .build();
-    }
-
-    public static Client of(String topic, Method method, String beanName, Long timeout, ClientType type) {
-        return Client.builder()
-                .id(UUID.randomUUID().toString())
-                .topic(topic)
-                .method(method)
-                .beanName(beanName)
-                .timeout(timeout)
-                .isAvailable(true)
-                .type(type)
-                .build();
+    private <T> T getDefaultOrCreate(Map<String, Object> map, String key, T orDefault) {
+        var result = Key.extract(map, key, orDefault.getClass());
+        return isNull(result)
+                ? orDefault
+                : (T) result;
     }
 }

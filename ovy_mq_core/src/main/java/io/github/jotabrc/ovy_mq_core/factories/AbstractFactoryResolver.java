@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 @Component
 public class AbstractFactoryResolver {
 
-    private final Map<Class<?>, AbstractFactory<?, ?>> factories;
+    private final Map<Class<?>, AbstractFactory<?>> factories;
 
     @Autowired
-    public AbstractFactoryResolver(List<AbstractFactory<?, ?>> factories) {
+    public AbstractFactoryResolver(List<AbstractFactory<?>> factories) {
         this.factories = factories.stream()
                 .collect(Collectors.toMap(
                         AbstractFactory::supports,
@@ -25,11 +25,11 @@ public class AbstractFactoryResolver {
                 ));
     }
 
-    public <T, R> Optional<R> create(T dto, Class<R> type) {
-        AbstractFactory<?, ?> factory = factories.get(dto.getClass());
+    public <R> Optional<R> create(Map<String, Object> definitions, Class<R> returningType) {
+        AbstractFactory<?> factory = factories.get(returningType);
 
         return Optional.ofNullable(factory)
-                .map(f -> ((AbstractFactory<T, R>) f).create(dto))
+                .map(f -> ((AbstractFactory<R>) f).create(definitions))
                 .stream()
                 .findFirst();
     }
