@@ -16,6 +16,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
@@ -35,7 +36,7 @@ import static java.util.Objects.nonNull;
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class StompSessionHandler extends SessionManager {
+public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
 
     private final PayloadHandlerDispatcher payloadHandlerDispatcher;
     private final AbstractFactoryResolver abstractFactoryResolver;
