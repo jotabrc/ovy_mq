@@ -1,9 +1,9 @@
-package io.github.jotabrc.ovy_mq_core.factories;
+package io.github.jotabrc.ovy_mq_core.components.factories;
 
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ClientType;
-import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

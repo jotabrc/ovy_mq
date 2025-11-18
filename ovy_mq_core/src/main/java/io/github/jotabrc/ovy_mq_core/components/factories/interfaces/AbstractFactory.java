@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.factories.interfaces;
+package io.github.jotabrc.ovy_mq_core.components.factories.interfaces;
 
 import java.util.Map;
 

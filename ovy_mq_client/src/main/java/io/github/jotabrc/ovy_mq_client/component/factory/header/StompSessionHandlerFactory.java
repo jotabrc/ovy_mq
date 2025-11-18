@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq_client.component.factory.header;
 import io.github.jotabrc.ovy_mq_client.component.session.StompSessionHandler;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;

@@ -1,10 +1,10 @@
-package io.github.jotabrc.ovy_mq_core.factories;
+package io.github.jotabrc.ovy_mq_core.components.factories;
 
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerState;
 import io.github.jotabrc.ovy_mq_core.domain.Replica;
-import io.github.jotabrc.ovy_mq_core.factories.interfaces.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

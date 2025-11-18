@@ -10,7 +10,7 @@ import io.github.jotabrc.ovy_mq_core.defaults.Value;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
-import io.github.jotabrc.ovy_mq_core.factories.AbstractFactoryResolver;
+import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
