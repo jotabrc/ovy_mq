@@ -18,10 +18,10 @@ import org.springframework.stereotype.Component;
 public class MessageQueueReaperTask {
 
     private final PayloadDispatcher payloadDispatcher;
-    private final String delay;
+    private final Long delay;
 
     public MessageQueueReaperTask(PayloadDispatcher payloadDispatcher,
-                                  @Value("${ovymq.task.reaper.delay}") String delay) {
+                                  @Value("${ovymq.task.reaper.delay}") Long delay) {
         this.payloadDispatcher = payloadDispatcher;
         this.delay = delay;
     }
@@ -29,6 +29,6 @@ public class MessageQueueReaperTask {
     @Scheduled(fixedDelayString = "${ovymq.task.reaper.delay}")
     public void execute() {
         log.info("Reaper task execution started with fixed delay of {} ms", delay);
-        payloadDispatcher.execute(Long.parseLong(delay), PayloadDispatcherCommand.REAPER);
+        payloadDispatcher.execute(delay, PayloadDispatcherCommand.REAPER);
     }
 }

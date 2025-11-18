@@ -18,7 +18,7 @@ public class Test implements CommandLineRunner {
     @Override
     public void run(String... args) {
         AtomicInteger counter = new AtomicInteger(0);
-        while (counter.getAndIncrement() < 1000) {
+        while (counter.getAndIncrement() < 100000) {
             payloadDispatcher.execute(MessagePayload.builder()
                             .topic("bar")
                             .payload("" + counter.get())
@@ -27,7 +27,7 @@ public class Test implements CommandLineRunner {
         }
 
         counter = new AtomicInteger(0);
-        while (counter.getAndIncrement() < 1000) {
+        while (counter.getAndIncrement() < 100000) {
             payloadDispatcher.execute(MessagePayload.builder()
                             .topic("foo")
                             .payload("" + counter.get())

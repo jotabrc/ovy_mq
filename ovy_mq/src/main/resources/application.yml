@@ -14,7 +14,7 @@ ovymq:
   task:
     reaper:
       active: true
-      delay: 5000
+      delay: 60000
 
 logging:
   level:
