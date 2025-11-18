@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
-import io.github.jotabrc.ovy_mq_client.service.registry.SessionRegistry;
+import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.component.initialize.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.component.initialize.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.task;
 
-import io.github.jotabrc.ovy_mq_client.service.components.ClientMessageDispatcher;
-import io.github.jotabrc.ovy_mq_client.service.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.component.initialize.registry.ClientRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
