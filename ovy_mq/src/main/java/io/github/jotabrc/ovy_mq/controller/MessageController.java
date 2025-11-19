@@ -2,13 +2,14 @@ package io.github.jotabrc.ovy_mq.controller;
 
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
-import io.github.jotabrc.ovy_mq_core.components.MapCreator;
+import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -25,7 +26,7 @@ public class MessageController {
 
     private final PayloadDispatcher payloadDispatcher;
     private final AbstractFactoryResolver factoryResolver;
-    private final MapCreator mapCreator;
+    private final ObjectProvider<DefinitionMap> definitionProvider;
 
     @MessageMapping(WS_SAVE)
     public void saveMessage(@Payload MessagePayload messagePayload) {
@@ -37,9 +38,10 @@ public class MessageController {
     @MessageMapping(WS_MESSAGE)
     public void requestMessage(@Payload String topic, Principal principal) {
         if (nonNull(topic) && !topic.isBlank() && nonNull(principal)) {
-            var definitions = mapCreator.create(mapCreator.createDto(Key.HEADER_CLIENT_ID, principal.getName()),
-                    mapCreator.createDto(Key.HEADER_TOPIC, topic));
-            factoryResolver.create(definitions, Client.class)
+            DefinitionMap definition = definitionProvider.getObject()
+                    .add(Key.HEADER_CLIENT_ID, principal.getName())
+                    .add(Key.HEADER_TOPIC, topic);
+            factoryResolver.create(definition, Client.class)
                             .ifPresent(client ->
                                     payloadDispatcher.execute(client, PayloadDispatcherCommand.REQUEST));
         }

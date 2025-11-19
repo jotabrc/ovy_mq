@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_core.components.factories;
 
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,11 +26,11 @@ public class AbstractFactoryResolver {
                 ));
     }
 
-    public <R> Optional<R> create(Map<String, Object> definitions, Class<R> returningType) {
+    public <R> Optional<R> create(DefinitionMap definition, Class<R> returningType) {
         AbstractFactory<?> factory = factories.get(returningType);
 
         return Optional.ofNullable(factory)
-                .map(f -> ((AbstractFactory<R>) f).create(definitions))
+                .map(f -> ((AbstractFactory<R>) f).create(definition))
                 .stream()
                 .findFirst();
     }

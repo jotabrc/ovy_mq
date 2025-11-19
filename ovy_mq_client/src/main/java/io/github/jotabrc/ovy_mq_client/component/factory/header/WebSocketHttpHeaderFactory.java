@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.component.factory.header;
 
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
@@ -10,7 +11,6 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,10 +20,10 @@ public class WebSocketHttpHeaderFactory implements AbstractFactory<WebSocketHttp
     private final DefaultSecurityProvider securityProvider;
 
     @Override
-    public WebSocketHttpHeaders create(Map<String, Object> definitions) {
+    public WebSocketHttpHeaders create(DefinitionMap definition) {
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-        Key.convert(definitions, String.class).forEach(headers::add);
-        securityProvider.createSimple(Key.extract(definitions, Key.HEADER_CLIENT_TYPE, String.class))
+        definition.convert(String.class).forEach(headers::add);
+        securityProvider.createSimple(definition.extract(Key.HEADER_CLIENT_TYPE, String.class))
                 .forEach(headers::add);
         return headers;
     }

@@ -1,12 +1,5 @@
 package io.github.jotabrc.ovy_mq_core.defaults;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.nonNull;
-
 public class Key {
 
     // HEADER's
@@ -33,28 +26,4 @@ public class Key {
     public static final String FACTORY_REPLICA_MIN = "replica-min";
     public static final String FACTORY_REPLICA_STEP = "replica-step";
     public static final String FACTORY_REPLICA_AUTO_MANAGE = "replica-auto-manage";
-
-    public static <R> R extract(Map<String, Object> map, String key, Class<R> returningType) {
-        Object value = map.remove(key);
-        return nonNull(value)
-                ? returningType.cast(value)
-                : null;
-    }
-
-    public static <R> List<R> extractToList(Map<String, Object> map, String key, Class<R> returningType) {
-        Object value = map.remove(key);
-        if (value instanceof List<?> list) {
-            return list.stream()
-                    .map(returningType::cast)
-                    .collect(Collectors.toList());
-        }
-        return new ArrayList<>();
-    }
-
-    public static <R> Map<String, R> convert(Map<String, Object> map, Class<R> returningType) {
-        return map.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> returningType.cast(entry.getValue())));
-    }
 }

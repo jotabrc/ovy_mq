@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq.factory;
 
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
@@ -11,8 +12,6 @@ import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
 
-import java.util.Map;
-
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -21,12 +20,12 @@ public class MessageHeadersFactory implements AbstractFactory<MessageHeaders> {
     private final DefaultSecurityProvider securityProvider;
 
     @Override
-    public MessageHeaders create(Map<String, Object> definitions) {
+    public MessageHeaders create(DefinitionMap definition) {
         SimpMessageHeaderAccessor headers = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
         headers.setLeaveMutable(true);
         headers.setContentType(MimeTypeUtils.APPLICATION_JSON);
-        Key.convert(definitions, String.class).forEach(headers::addNativeHeader);
-        securityProvider.createSimple(Key.extract(definitions, Key.HEADER_CLIENT_TYPE, String.class))
+        definition.convert(String.class).forEach(headers::addNativeHeader);
+        securityProvider.createSimple(definition.extract(Key.HEADER_CLIENT_TYPE, String.class))
                 .forEach(headers::addNativeHeader);
         return headers.getMessageHeaders();
     }

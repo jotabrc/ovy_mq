@@ -3,17 +3,18 @@ package io.github.jotabrc.ovy_mq_client.component.session;
 import io.github.jotabrc.ovy_mq_client.component.payload.PayloadConfirmationHandlerDispatcher;
 import io.github.jotabrc.ovy_mq_client.component.payload.PayloadHandlerDispatcher;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_core.components.MapCreator;
+import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Value;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
-import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -45,7 +46,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     private final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
     private final WebSocketStompClient webSocketStompClient;
     private final SessionTimeoutManager sessionTimeoutManager;
-    private final MapCreator mapCreator;
+    private final ObjectProvider<DefinitionMap> definitionProvider;
 
     private CompletableFuture<SessionManager> future;
     private StompSession session;
@@ -55,11 +56,12 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public SessionManager send(String destination, Object payload) {
         synchronized (this) {
-            var definitions = mapCreator.create(mapCreator.createDto(Key.HEADER_DESTINATION, destination),
-                    mapCreator.createDto(Key.HEADER_TOPIC, client.getTopic()),
-                    mapCreator.createDto(Key.HEADER_CLIENT_TYPE, client.getType().name()),
-                    mapCreator.createDto(Key.HEADER_CLIENT_ID, client.getId()));
-            abstractFactoryResolver.create(definitions, StompHeaders.class)
+            DefinitionMap definition = definitionProvider.getObject()
+                    .add(Key.HEADER_DESTINATION, destination)
+                    .add(Key.HEADER_TOPIC, client.getTopic())
+                    .add(Key.HEADER_CLIENT_TYPE, client.getType().name())
+                    .add(Key.HEADER_CLIENT_ID, client.getId());
+            abstractFactoryResolver.create(definition, StompHeaders.class)
                     .ifPresent(headers -> {
                         try {
                             this.reconnectIfNotAlive(false);
@@ -76,11 +78,12 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public void initialize() {
         log.info("Initializing-session client={}", client.getId());
-        var definitions = mapCreator.create(mapCreator.createDto(Key.HEADER_DESTINATION, Value.DESTINATION_SERVER),
-                mapCreator.createDto(Key.HEADER_TOPIC, client.getTopic()),
-                mapCreator.createDto(Key.HEADER_CLIENT_TYPE, client.getType().name()),
-                mapCreator.createDto(Key.HEADER_CLIENT_ID, client.getId()));
-        abstractFactoryResolver.create(definitions, WebSocketHttpHeaders.class)
+        DefinitionMap definition = definitionProvider.getObject()
+                .add(Key.HEADER_DESTINATION, Value.DESTINATION_SERVER)
+                .add(Key.HEADER_TOPIC, client.getTopic())
+                .add(Key.HEADER_CLIENT_TYPE, client.getType().name())
+                .add(Key.HEADER_CLIENT_ID, client.getId());
+        abstractFactoryResolver.create(definition, WebSocketHttpHeaders.class)
                 .ifPresent(headers -> {
                     Runnable connect = () -> {
                         this.client.setLastHealthCheck(OffsetDateTime.now());

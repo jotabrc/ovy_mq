@@ -1,9 +1,9 @@
 package io.github.jotabrc.ovy_mq_core.components.factories.interfaces;
 
-import java.util.Map;
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 
 public interface AbstractFactory<R> {
 
-    R create(Map<String, Object> definitions);
+    R create(DefinitionMap definition);
     Class<R> supports();
 }
