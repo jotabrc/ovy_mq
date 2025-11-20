@@ -5,6 +5,7 @@ import io.github.jotabrc.ovy_mq_client.component.listener.ListenerInvocator;
 import io.github.jotabrc.ovy_mq_client.component.payload.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -61,7 +62,7 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
         } catch (Throwable e) {
             log.warn("Error while executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName(), e);
             client.setIsAvailable(true);
-            throw new RuntimeException(e);
+            throw new OvyException.ListenerInvocationExecution("Error while executing client=%s: message=%s topic=%s class=%s method=%s".formatted(client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName()));
         }
     }
 

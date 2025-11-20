@@ -26,4 +26,9 @@ public class Key {
     public static final String FACTORY_REPLICA_MIN = "replica-min";
     public static final String FACTORY_REPLICA_STEP = "replica-step";
     public static final String FACTORY_REPLICA_AUTO_MANAGE = "replica-auto-manage";
+
+    // Filter
+    public static final String FILTER_SERVLET_REQUEST = "filter-servlet-request";
+    public static final String FILTER_SERVLET_RESPONSE = "filter-servlet-response";
+    public static final String FILTER_CHAIN = "filter-chain";
 }

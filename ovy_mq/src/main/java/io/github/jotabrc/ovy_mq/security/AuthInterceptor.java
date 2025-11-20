@@ -30,7 +30,6 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                    ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) {
-        log.info("Request to registry received");
         Object clientId = request.getAttributes().get(Key.HEADER_CLIENT_ID);
         Object topic = request.getAttributes().get(Key.HEADER_TOPIC);
         Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
@@ -39,12 +38,12 @@ public class AuthInterceptor implements HandshakeInterceptor {
             attributes.put(Key.HEADER_CLIENT_ID, clientId);
             attributes.put(Key.HEADER_TOPIC, topic);
             attributes.put(Key.HEADER_CLIENT_TYPE, clientType);
-            log.info("Registry successful: client={} topic={} clientType={}", clientId, topic, clientType);
+            log.info("Handshake received: client={} topic={} clientType={}", clientId, topic, clientType);
             return true;
         }
 
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        log.info("Registry failed: client={} topic={} clientType={}", clientId, topic, clientType);
+        log.info("Handshake failed: client={} topic={} clientType={}", clientId, topic, clientType);
         return false;
     }
 

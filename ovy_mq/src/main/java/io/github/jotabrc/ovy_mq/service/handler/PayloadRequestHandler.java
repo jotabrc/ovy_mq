@@ -1,7 +1,8 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
-import io.github.jotabrc.ovy_mq.security.SecurityHandler;
+import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
@@ -18,8 +19,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 
-import java.util.Map;
-
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -29,7 +28,7 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
 
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final SecurityHandler securityHandler;
+    private final AuthHandlerResolver authHandlerResolver;
 
     @Override
     public void handle(Client client) {
@@ -67,9 +66,11 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
         accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
         accessor.setLeaveMutable(true);
-        Map<String, Object> securityHeader = securityHandler.createAuthorizationHeader();
-        accessor.setNativeHeader(Key.HEADER_AUTHORIZATION, securityHeader.get(Key.HEADER_AUTHORIZATION).toString());
-        accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
+        authHandlerResolver.get(SecurityChainType.AUTH_BASE64)
+                .ifPresent( authHandler -> {
+                    accessor.setNativeHeader(Key.HEADER_AUTHORIZATION, authHandler.createAuthorizationHeader().get(Key.HEADER_AUTHORIZATION).toString());
+                    accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
+                });
         return accessor.getMessageHeaders();
     }
 

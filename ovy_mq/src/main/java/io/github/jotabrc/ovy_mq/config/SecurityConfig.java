@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.config;
 
-import io.github.jotabrc.ovy_mq.security.BasicSecurityFilter;
+import io.github.jotabrc.ovy_mq.security.filter.interfaces.SecurityFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final BasicSecurityFilter basicSecurityFilter;
+    private final SecurityFilter securityFilter;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/registry").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(basicSecurityFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(HttpBasicConfigurer::disable);
         return http.build();

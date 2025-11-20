@@ -12,13 +12,4 @@ public @interface OvyListener {
     int step() default 1;
     boolean autoManage() default false;
     long timeout() default 10000;
-    // TODO:
-    /*
-    1- keep state of client quantity for step up/down with configuration
-    2- clients subscription to broadcast with each with it's own topic
-        broadcast will be sent to all clients with topic X
-    3- new Payload/type configuration
-    4- new configuration handler
-    5- (Server) new Mapping for configuration (HTTP) for runtime usage
-     */
 }

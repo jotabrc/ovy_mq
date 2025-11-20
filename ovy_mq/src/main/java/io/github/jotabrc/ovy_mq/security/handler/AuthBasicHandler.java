@@ -1,6 +1,8 @@
-package io.github.jotabrc.ovy_mq.security;
+package io.github.jotabrc.ovy_mq.security.handler;
 
 import io.github.jotabrc.ovy_mq.config.CredentialConfig;
+import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq.security.handler.interfaces.AuthHandler;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import jakarta.annotation.PostConstruct;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,13 +16,13 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Component
-public class SecurityHandler {
+public class AuthBasicHandler implements AuthHandler {
 
     private final CredentialConfig credential;
     private static final BCryptPasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
     private String basic;
 
-    public SecurityHandler(CredentialConfig credential) {
+    public AuthBasicHandler(CredentialConfig credential) {
         this.credential = credential;
     }
 
@@ -29,6 +31,7 @@ public class SecurityHandler {
         this.basic = "Basic " + Base64.getEncoder().encodeToString(credential.getBcrypt().getBytes(StandardCharsets.UTF_8));
     }
 
+    @Override
     public String retrieveCredentials(String basic) {
         if (isNull(basic) || basic.isBlank()) return null;
         return getString(basic);
@@ -42,20 +45,28 @@ public class SecurityHandler {
         return Base64.getDecoder().decode(basic.replace("Basic ", ""));
     }
 
-    boolean hasCredentials(String credential) {
+    @Override
+    public boolean hasCredentials(String credential) {
         return nonNull(credential) && !credential.isBlank();
     }
 
-    boolean validate(String password) {
+    @Override
+    public boolean validate(String password) {
         return bcryptEncoder.matches(password, credential.getBcrypt());
     }
 
+    @Override
     public Map<String, Object> createAuthorizationHeader() {
         return Map.of(Key.HEADER_AUTHORIZATION, getBasic());
     }
 
     private String getBasic() {
         return this.basic;
+    }
+
+    @Override
+    public SecurityChainType supports() {
+        return SecurityChainType.AUTH_BASE64;
     }
 
     public static void main(String[] args) {
