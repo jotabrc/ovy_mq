@@ -32,4 +32,11 @@ public class OvyException extends RuntimeException {
             super(message);
         }
     }
+
+    public static class AuthorizationDenied extends OvyException {
+
+        public AuthorizationDenied(String message) {
+            super(message);
+        }
+    }
 }

@@ -4,6 +4,7 @@ public class Key {
 
     // HEADER's
     public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String HEADER_AUTHORIZATION_TYPE = "OVY-AUTHORIZATION-TYPE";
     public static final String HEADER_ROLES = "OVY-ROLES";
     public static final String HEADER_PAYLOAD_TYPE = "OVY-PAYLOAD-TYPE";
     public static final String HEADER_CLIENT_ID = "OVY-CLIENT-ID";

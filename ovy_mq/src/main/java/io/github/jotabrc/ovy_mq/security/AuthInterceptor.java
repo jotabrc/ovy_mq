@@ -16,8 +16,6 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import java.util.Map;
 import java.util.Objects;
 
-import static java.util.Objects.nonNull;
-
 @Slf4j
 @AllArgsConstructor
 @Component
@@ -30,20 +28,33 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                    ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) {
-        Object clientId = request.getAttributes().get(Key.HEADER_CLIENT_ID);
-        Object topic = request.getAttributes().get(Key.HEADER_TOPIC);
-        Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
+        Object clientIdAtt = request.getAttributes().get(Key.HEADER_CLIENT_ID);
+        Object topicAtt = request.getAttributes().get(Key.HEADER_TOPIC);
+        Object clientTypeAtt = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
 
-        if (nonNull(clientId) && nonNull(topic) && nonNull(clientType)) {
-            attributes.put(Key.HEADER_CLIENT_ID, clientId);
-            attributes.put(Key.HEADER_TOPIC, topic);
-            attributes.put(Key.HEADER_CLIENT_TYPE, clientType);
-            log.info("Handshake received: client={} topic={} clientType={}", clientId, topic, clientType);
-            return true;
+        /* TODO
+        Validate attributes, for desired format
+         */
+
+        try {
+            if (clientIdAtt instanceof String clientId
+                    && topicAtt instanceof String topic
+                    && clientTypeAtt instanceof String clientType) {
+                if (!clientId.isBlank() && !topic.isBlank() && !clientType.isBlank()) {
+                    ClientType type = ClientType.valueOf(clientType);
+                    attributes.put(Key.HEADER_CLIENT_ID, clientId);
+                    attributes.put(Key.HEADER_TOPIC, topic);
+                    attributes.put(Key.HEADER_CLIENT_TYPE, type);
+                    log.info("Handshake received: client={} topic={} clientType={}", clientId, topic, clientType);
+                    return true;
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            log.info("ClientType not supported clientType={}", clientTypeAtt);
         }
 
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        log.info("Handshake failed: client={} topic={} clientType={}", clientId, topic, clientType);
+        log.info("Handshake failed: client={} topic={} clientType={}", clientIdAtt, topicAtt, clientTypeAtt);
         return false;
     }
 
@@ -54,11 +65,14 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                Exception exception) {
         Object clientId = request.getAttributes().get(Key.HEADER_CLIENT_ID);
         Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
-        if (Objects.equals(ClientType.CONFIGURER.name(), clientType)) {
-            configClientContextHolder.add(ConfigClient.builder()
-                    .id(clientId.toString())
-                    .type(ClientType.valueOf(clientType.toString()))
-                    .build());
+        if (clientType instanceof ClientType && clientId instanceof String id) {
+            if (Objects.equals(ClientType.CONFIGURER, clientType)
+                    && !id.isBlank()) {
+                configClientContextHolder.add(ConfigClient.builder()
+                        .id(id)
+                        .type(ClientType.valueOf(clientType.toString()))
+                        .build());
+            }
         }
     }
 }
