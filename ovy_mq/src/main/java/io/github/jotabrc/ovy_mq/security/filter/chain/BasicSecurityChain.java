@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.security.filter;
+package io.github.jotabrc.ovy_mq.security.filter.chain;
 
 import io.github.jotabrc.ovy_mq.security.SecurityChainType;
 import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
