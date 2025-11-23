@@ -20,7 +20,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Objects.nonNull;
@@ -36,26 +35,21 @@ public class ClientListenerInitializer implements BeanPostProcessor {
     private final AbstractFactoryResolver factoryResolver;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
-    private final Executor smallPoolExecutor;
-
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        smallPoolExecutor.execute(() -> {
-            log.info("Bean post-processing: bean={}", beanName);
             Class<?> beanClass = bean.getClass();
 
             for (Method method : beanClass.getMethods()) {
                 OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
                 if (nonNull(listener)) {
                     log.info("Listener: topic={} quantity={}", listener.topic(), listener.quantity());
-                    AtomicInteger i = new AtomicInteger(1);
-                    while (i.getAndIncrement() <= listener.quantity()) {
+                    AtomicInteger i = new AtomicInteger(0);
+                    while (i.incrementAndGet() <= listener.quantity()) {
                         createClient(beanName, method, listener, i);
                     }
                     createListenerConfig(listener);
                 }
             }
-        });
         return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
     }
 
@@ -77,7 +71,7 @@ public class ClientListenerInitializer implements BeanPostProcessor {
 
     private void logClientCreation(AtomicInteger i, OvyListener listener) {
         log.info("Creating client: replica={}/{} topic={} replica-config=[quantity={} max={} min={} step={} autoManage={} timeout={}ms]",
-                i.get() + 1,
+                i.get(),
                 listener.quantity(),
                 listener.topic(),
                 listener.quantity(),
