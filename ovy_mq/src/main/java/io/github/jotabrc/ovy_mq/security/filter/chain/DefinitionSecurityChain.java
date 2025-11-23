@@ -29,6 +29,7 @@ public class DefinitionSecurityChain extends AbstractSecurityChain {
         String clientId = req.getHeader(Key.HEADER_CLIENT_ID);
         String topic = req.getHeader(Key.HEADER_TOPIC);
         String clientType = req.getHeader(Key.HEADER_CLIENT_TYPE);
+        String role = req.getHeader(Key.HEADER_ROLE);
 
         if (nonNull(topic) && !topic.isBlank()
                 && nonNull(clientType) && !clientType.isBlank()
@@ -38,7 +39,8 @@ public class DefinitionSecurityChain extends AbstractSecurityChain {
                     .add(Key.HEADER_AUTHORIZATION, auth)
                     .add(Key.HEADER_CLIENT_ID, clientId)
                     .add(Key.HEADER_TOPIC, topic)
-                    .add(Key.HEADER_CLIENT_TYPE, clientType);
+                    .add(Key.HEADER_CLIENT_TYPE, clientType)
+                    .add(Key.HEADER_ROLE, role);
             return super.handleNext(definition);
         }
 

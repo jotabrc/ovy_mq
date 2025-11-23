@@ -40,7 +40,7 @@ public class BasicSecurityResolver implements SecurityResolver {
     }
 
     private Map<String, String> createClientTypeRole(String clientType) {
-        return Map.of(Key.HEADER_ROLES, clientType);
+        return Map.of(Key.HEADER_ROLE, clientType);
     }
 
     private void addToList(Map<String, List<String>> headers, Map<String, String> map) {

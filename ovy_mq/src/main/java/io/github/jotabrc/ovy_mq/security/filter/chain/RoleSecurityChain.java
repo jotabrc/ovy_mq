@@ -1,6 +1,5 @@
 package io.github.jotabrc.ovy_mq.security.filter.chain;
 
-import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
 import io.github.jotabrc.ovy_mq.security.SecurityChainType;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
@@ -18,15 +17,13 @@ import static java.util.Objects.isNull;
 @Component
 public class RoleSecurityChain extends AbstractSecurityChain {
 
-    private final ConfigClientContextHolder configClientContextHolder;
-
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
-        List<String> roles = definition.extractToList(Key.FILTER_ROLES, String.class);
-        if (isNull(roles) || roles.isEmpty()) {
-            String clientType = definition.extract(Key.HEADER_CLIENT_TYPE, String.class);
-            definition.add(Key.FILTER_ROLES, new ArrayList<>(List.of(clientType)));
+        String role = definition.extract(Key.HEADER_ROLE, String.class);
+        if (isNull(role) || role.isBlank()) {
+            role = definition.extract(Key.HEADER_CLIENT_TYPE, String.class);
         }
+        definition.add(Key.FILTER_ROLES, new ArrayList<>(List.of(role)));
         return handleNext(definition);
     }
 

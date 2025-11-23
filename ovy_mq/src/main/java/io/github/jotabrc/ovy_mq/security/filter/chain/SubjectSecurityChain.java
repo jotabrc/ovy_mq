@@ -27,8 +27,8 @@ public class SubjectSecurityChain extends AbstractSecurityChain {
         String subject = definition.extract(Key.HEADER_CLIENT_ID, String.class);
         String clientType = definition.extract(Key.HEADER_CLIENT_TYPE, String.class);
 
-        if (isNull(subject) || subject.isBlank()
-        && nonNull(clientType) && Objects.equals(ClientType.CONFIGURER.name(), clientType)) {
+        if ((isNull(subject) || subject.isBlank())
+                && nonNull(clientType) && Objects.equals(ClientType.CONFIGURER.name(), clientType)) {
             subject = configClientContextHolder.getId()
                     .orElseThrow(() -> new OvyException.SecurityFilterFailure("Config client not available"));
         }
