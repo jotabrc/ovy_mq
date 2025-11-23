@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq.repository;
 
+import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ public class QueueInMemoryRepository implements MessageRepository {
 
     private final Map<String, Queue<MessagePayload>> messages = new ConcurrentHashMap<>();
 
+    private final LockProcessor lockProcessor;
+
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
         log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopic());
@@ -31,7 +34,9 @@ public class QueueInMemoryRepository implements MessageRepository {
 
     @Override
     public MessagePayload pollFromQueue(String topic) {
-        return messages.get(topic).poll();
+        synchronized (lockProcessor.getLockByTopic(topic)) {
+            return messages.get(topic).poll();
+        }
     }
 
     @Override
@@ -46,12 +51,16 @@ public class QueueInMemoryRepository implements MessageRepository {
 
     @Override
     public void removeFromQueue(String topic, String messageId) {
-        messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+        synchronized (lockProcessor.getLockByTopicAndMessageId(topic, messageId)) {
+            messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+        }
     }
 
     @Override
     public void removeAndRequeue(MessagePayload messagePayload) {
-        removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
-        saveToQueue(messagePayload);
+        synchronized (lockProcessor.getLockByTopicAndMessageId(messagePayload.getTopic(), messagePayload.getId())) {
+            removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
+            saveToQueue(messagePayload);
+        }
     }
 }

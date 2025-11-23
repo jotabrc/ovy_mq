@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.component.initialize.registry;
 
+import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.ClientType;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
@@ -21,6 +22,8 @@ public class ClientRegistry {
 
     private final Map<String, Queue<Client>> clients = new ConcurrentHashMap<>();
 
+    private final LockProcessor lockProcessor;
+
     public void save(Client client) {
         if (nonNull(client) && nonNull(client.getTopic())) {
             clients.compute(client.getTopic(), (key, queue) -> {
@@ -36,12 +39,14 @@ public class ClientRegistry {
 
     @Deprecated
     public Client getByClientIdOrThrow(String clientId) {
-        return clients.values()
-                .stream()
-                .flatMap(Collection::stream)
-                .filter(client -> Objects.equals(clientId, client.getId()))
-                .findFirst()
-                .orElseThrow(() -> new OvyException.NotFound("Client %s not found".formatted(clientId)));
+        synchronized (lockProcessor.getLockByClientId(clientId)) {
+            return clients.values()
+                    .stream()
+                    .flatMap(Collection::stream)
+                    .filter(client -> Objects.equals(clientId, client.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new OvyException.NotFound("Client %s not found".formatted(clientId)));
+        }
     }
 
     public List<Client> getAllAvailableClients() {

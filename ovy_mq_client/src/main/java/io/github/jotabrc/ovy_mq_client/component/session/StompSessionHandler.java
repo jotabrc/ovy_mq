@@ -86,8 +86,10 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         abstractFactoryResolver.create(definition, WebSocketHttpHeaders.class)
                 .ifPresent(headers -> {
                     Runnable connect = () -> {
-                        this.client.setLastHealthCheck(OffsetDateTime.now());
-                        this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
+                        if (!this.isConnected()) {
+                            this.client.setLastHealthCheck(OffsetDateTime.now());
+                            this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
+                        }
                     };
                     Callable<Boolean> isConnected = this::isConnected;
                     future = sessionTimeoutManager.manage(this.future, connect, isConnected, client);

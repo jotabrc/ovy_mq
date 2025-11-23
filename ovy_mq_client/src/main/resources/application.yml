@@ -9,11 +9,11 @@ ovymq:
   task:
     consumer:
       active: true
-      delay: 10000
+      delay: 35000
     health-check:
       active: true
-      delay: 10000
-      threshold: 65000
+      delay: 60000
+      threshold: 120000
   session:
     connection:
       timeout: 30000

@@ -32,10 +32,6 @@ public class AuthInterceptor implements HandshakeInterceptor {
         Object topicAtt = request.getAttributes().get(Key.HEADER_TOPIC);
         Object clientTypeAtt = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
 
-        /* TODO
-        Validate attributes, for desired format
-         */
-
         try {
             if (clientIdAtt instanceof String clientId
                     && topicAtt instanceof String topic
@@ -66,8 +62,7 @@ public class AuthInterceptor implements HandshakeInterceptor {
         Object clientId = request.getAttributes().get(Key.HEADER_CLIENT_ID);
         Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
         if (clientType instanceof String type && clientId instanceof String id) {
-            if (Objects.equals(ClientType.CONFIGURER, ClientType.valueOf(type))
-                    && !id.isBlank()) {
+            if (Objects.equals(ClientType.CONFIGURER, ClientType.valueOf(type)) && !id.isBlank()) {
                 configClientContextHolder.add(ConfigClient.builder()
                         .id(id)
                         .type(ClientType.valueOf(clientType.toString()))
