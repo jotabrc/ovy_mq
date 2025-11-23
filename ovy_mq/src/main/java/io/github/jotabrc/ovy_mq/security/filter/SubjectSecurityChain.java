@@ -1,0 +1,48 @@
+package io.github.jotabrc.ovy_mq.security.filter;
+
+import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
+import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.domain.ClientType;
+import io.github.jotabrc.ovy_mq_core.exception.OvyException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class SubjectSecurityChain extends AbstractSecurityChain {
+
+    private final ConfigClientContextHolder configClientContextHolder;
+
+    @Override
+    public DefinitionMap handle(DefinitionMap definition) {
+        String subject = definition.extract(Key.HEADER_CLIENT_ID, String.class);
+        String clientType = definition.extract(Key.HEADER_CLIENT_TYPE, String.class);
+
+        if (isNull(subject) || subject.isBlank()
+        && nonNull(clientType) && Objects.equals(ClientType.CONFIGURER.name(), clientType)) {
+            subject = configClientContextHolder.getId()
+                    .orElseThrow(() -> new OvyException.SecurityFilterFailure("Config client not available"));
+        }
+
+        if (nonNull(subject) && !subject.isBlank()) {
+            definition.add(Key.FILTER_SUBJECT, subject);
+            return handleNext(definition);
+        }
+
+        throw new OvyException.AuthorizationDenied("Authorization denied");
+    }
+
+    @Override
+    public SecurityChainType type() {
+        return SecurityChainType.SUBJECT_IDENTIFIER;
+    }
+}

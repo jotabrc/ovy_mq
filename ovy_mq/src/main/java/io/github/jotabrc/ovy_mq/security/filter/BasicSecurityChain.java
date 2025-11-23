@@ -1,7 +1,6 @@
 package io.github.jotabrc.ovy_mq.security.filter;
 
 import io.github.jotabrc.ovy_mq.security.SecurityChainType;
-import io.github.jotabrc.ovy_mq.security.filter.interfaces.SecurityChain;
 import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.security.handler.interfaces.AuthHandler;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
@@ -19,12 +18,6 @@ import static java.util.Objects.nonNull;
 public class BasicSecurityChain extends AbstractSecurityChain {
 
     private final AuthHandlerResolver authHandlerResolver;
-
-    @Override
-    public SecurityChain setNext(SecurityChain next) {
-        super.next = next;
-        return this;
-    }
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {

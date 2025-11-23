@@ -65,8 +65,8 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                Exception exception) {
         Object clientId = request.getAttributes().get(Key.HEADER_CLIENT_ID);
         Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
-        if (clientType instanceof ClientType && clientId instanceof String id) {
-            if (Objects.equals(ClientType.CONFIGURER, clientType)
+        if (clientType instanceof String type && clientId instanceof String id) {
+            if (Objects.equals(ClientType.CONFIGURER, ClientType.valueOf(type))
                     && !id.isBlank()) {
                 configClientContextHolder.add(ConfigClient.builder()
                         .id(id)

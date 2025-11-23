@@ -32,4 +32,7 @@ public class Key {
     public static final String FILTER_SERVLET_REQUEST = "filter-servlet-request";
     public static final String FILTER_SERVLET_RESPONSE = "filter-servlet-response";
     public static final String FILTER_CHAIN = "filter-chain";
+    public static final String FILTER_SUBJECT = "filter-subject";
+    public static final String FILTER_ROLES = "filter-roles";
+    public static final String FILTER_AUTHENTICATION = "filter-authentication";
 }

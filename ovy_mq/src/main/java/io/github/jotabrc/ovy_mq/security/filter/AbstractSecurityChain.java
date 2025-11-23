@@ -10,9 +10,15 @@ public abstract class AbstractSecurityChain implements SecurityChain {
     protected SecurityChain next;
 
     @Override
+    public SecurityChain setNext(SecurityChain next) {
+        this.next = next;
+        return next;
+    }
+
+    @Override
     public DefinitionMap handleNext(DefinitionMap definition) {
         return nonNull(this.next)
-                ? this.next.handleNext(definition)
+                ? this.next.handle(definition)
                 : definition;
     }
 }

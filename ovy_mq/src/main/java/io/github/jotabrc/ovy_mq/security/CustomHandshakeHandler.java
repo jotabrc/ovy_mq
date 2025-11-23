@@ -23,7 +23,7 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
                     && clientId instanceof String client
                     && !client.isBlank()
                     ? client
-                    : Value.PRINCIPAL_IS_MISSING;
+                    : Value.PRINCIPAL_IS_MISSING;//todo
         };
     }
 }

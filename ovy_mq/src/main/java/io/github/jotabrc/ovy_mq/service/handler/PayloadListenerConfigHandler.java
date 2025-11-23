@@ -7,6 +7,7 @@ import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
 import io.github.jotabrc.ovy_mq_core.defaults.Value;
+import io.github.jotabrc.ovy_mq_core.domain.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
                 .ifPresentOrElse(clientId -> {
                     DefinitionMap definition = definitionProvider.getObject()
                             .add(Key.HEADER_CLIENT_ID, clientId)
+                            .add(Key.HEADER_CLIENT_TYPE, ClientType.CONFIGURER.name())
                             .add(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_LISTENER_CONFIG);
                             factoryResolver.create(definition, MessageHeaders.class)
                                     .ifPresent(headers -> messagingTemplate.convertAndSendToUser(clientId,

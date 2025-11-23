@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+
 @Slf4j
 @Component
 public class SecurityChainResolver {
@@ -23,10 +25,11 @@ public class SecurityChainResolver {
     }
 
     public Optional<SecurityChain> getByAuth(String auth) {
+        if (isNull(auth) || auth.isBlank()) return Optional.empty();
         if (auth.trim().toLowerCase().startsWith("basic "))
             return getByType(SecurityChainType.AUTH_BASE64);
 
-        return getByType(SecurityChainType.UNSUPPORTED);
+        return Optional.empty();
     }
 
     public Optional<SecurityChain> getByType(SecurityChainType type) {
