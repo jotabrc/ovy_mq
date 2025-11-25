@@ -33,8 +33,10 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
     @Override
     public void handle(Client client) {
         log.info("Message request: client={}", client.getId());
-        MessagePayload messagePayload = messageRepository.pollFromQueue(client.getTopicForAwaitingProcessingQueue());
-        if (nonNull(messagePayload) && nonNull(client.getId())) sendMessageToClient(client, messagePayload);
+        if (nonNull(client.getId())) {
+            messageRepository.pollFromQueue(client.getTopicForAwaitingProcessingQueue())
+                    .ifPresent(messagePayload -> sendMessageToClient(client, messagePayload));
+        }
     }
 
     private void sendMessageToClient(Client client, MessagePayload messagePayload) {
@@ -67,7 +69,7 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
         accessor.setLeaveMutable(true);
         authHandlerResolver.get(SecurityChainType.AUTH_BASE64)
-                .ifPresent( authHandler -> {
+                .ifPresent(authHandler -> {
                     accessor.setNativeHeader(Key.HEADER_AUTHORIZATION, authHandler.createAuthorizationHeader().get(Key.HEADER_AUTHORIZATION).toString());
                     accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
                 });

@@ -33,9 +33,10 @@ public class QueueInMemoryRepository implements MessageRepository {
     }
 
     @Override
-    public MessagePayload pollFromQueue(String topic) {
+    public Optional<MessagePayload> pollFromQueue(String topic) {
         synchronized (lockProcessor.getLockByTopic(topic)) {
-            return messages.get(topic).poll();
+            if (!messages.isEmpty()) return Optional.ofNullable(messages.get(topic).poll());
+            else return Optional.empty();
         }
     }
 
@@ -52,7 +53,8 @@ public class QueueInMemoryRepository implements MessageRepository {
     @Override
     public void removeFromQueue(String topic, String messageId) {
         synchronized (lockProcessor.getLockByTopicAndMessageId(topic, messageId)) {
-            messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+            if (!messages.isEmpty())
+                messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
         }
     }
 
