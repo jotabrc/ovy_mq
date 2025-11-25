@@ -25,6 +25,8 @@ public class ClientFactory implements AbstractFactory<Client> {
                 .timeout(definition.extract(Key.FACTORY_CLIENT_TIMEOUT, Long.class))
                 .isAvailable(definition.extract(Key.FACTORY_CLIENT_IS_AVAILABLE, Boolean.class))
                 .type(definition.extract(Key.HEADER_CLIENT_TYPE, ClientType.class))
+                .pollInitialDelay(definition.extract(Key.FACTORY_REPLICA_POLL_INITIAL_DELAY, Long.class))
+                .pollFixedDelay(definition.extract(Key.FACTORY_REPLICA_POLL_FIXED_DELAY, Long.class))
                 .build();
     }
 

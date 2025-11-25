@@ -26,6 +26,8 @@ public class Client implements Serializable {
     private Method method;
     private Long timeout;
     private ClientType type;
+    private Long pollInitialDelay;
+    private Long pollFixedDelay;
     @Builder.Default
     private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
     @Builder.Default
@@ -33,6 +35,18 @@ public class Client implements Serializable {
 
     public String getTopicForAwaitingProcessingQueue() {
         return TopicUtil.createTopicKey(this.topic, MessageStatus.AWAITING_PROCESSING);
+    }
+
+    public void setLastHealthCheck(OffsetDateTime lastHealthCheck) {
+        synchronized (this) {
+            this.lastHealthCheck = lastHealthCheck;
+        }
+    }
+
+    public void setAvailable(Boolean available) {
+        synchronized (this) {
+            isAvailable = available;
+        }
     }
 
     @Override

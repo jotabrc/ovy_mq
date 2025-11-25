@@ -39,4 +39,11 @@ public class OvyException extends RuntimeException {
             super(message);
         }
     }
+
+    public static class ConfigurationError extends OvyException {
+
+        public ConfigurationError(String message) {
+            super(message);
+        }
+    }
 }

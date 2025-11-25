@@ -25,8 +25,12 @@ public class ConfigClientInitializer implements ApplicationRunner {
     private final AbstractFactoryResolver factoryResolver;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
-    @Value("${ovymq.session.connection.config-client.timeout}")
+    @Value("${ovymq.task.config-client.timeout}")
     private Long timeout;
+    @Value("${ovymq.task.config-client.initial-fixedDelay:10000}")
+    private Long initialDelay;
+    @Value("${ovymq.task.config-client.fixedDelay:35000}")
+    private Long fixedDelay;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -37,7 +41,9 @@ public class ConfigClientInitializer implements ApplicationRunner {
         DefinitionMap definition = definitionProvider.getObject()
                 .add(Key.HEADER_CLIENT_TYPE, ClientType.CONFIGURER)
                 .add(Key.FACTORY_CLIENT_TIMEOUT, timeout)
-                .add(Key.HEADER_TOPIC, io.github.jotabrc.ovy_mq_core.defaults.Value.ROLE_SERVER);
+                .add(Key.HEADER_TOPIC, io.github.jotabrc.ovy_mq_core.defaults.Value.ROLE_SERVER)
+                .add(Key.FACTORY_REPLICA_POLL_INITIAL_DELAY, initialDelay)
+                .add(Key.FACTORY_REPLICA_POLL_FIXED_DELAY, fixedDelay);
         factoryResolver.create(definition, Client.class)
                 .ifPresent(client -> {
                     DefinitionMap sessionDefinition = definitionProvider.getObject()

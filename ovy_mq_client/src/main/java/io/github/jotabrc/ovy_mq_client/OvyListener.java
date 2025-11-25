@@ -12,4 +12,6 @@ public @interface OvyListener {
     int step() default 1;
     boolean autoManage() default false;
     long timeout() default 10000;
+    long pollInitialDelay() default 10000;
+    long pollFixedDelay() default 35000;
 }

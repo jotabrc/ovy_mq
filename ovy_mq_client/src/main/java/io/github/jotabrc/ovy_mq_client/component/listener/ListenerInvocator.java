@@ -22,9 +22,9 @@ public class ListenerInvocator {
             Object bean = ApplicationContextHolder.getContextBean(client.getBeanName());
             AopUtils.invokeJoinpointUsingReflection(bean, client.getMethod(), new Object[]{payload});
         } catch (Throwable e) {
-            client.setIsAvailable(true);
             throw new OvyException.ListenerExecution("Error while invoking listener: client=%s topic=%s".formatted(client.getId(), client.getTopic()));
         } finally {
+            client.setIsAvailable(true);
             listenerExecutionContextHolder.clear();
         }
     }

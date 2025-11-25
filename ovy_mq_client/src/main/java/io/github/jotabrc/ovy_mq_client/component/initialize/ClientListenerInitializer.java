@@ -70,7 +70,7 @@ public class ClientListenerInitializer implements BeanPostProcessor {
     }
 
     private void logClientCreation(AtomicInteger i, OvyListener listener) {
-        log.info("Creating client: replica={}/{} topic={} replica-config=[quantity={} max={} min={} step={} autoManage={} timeout={}ms]",
+        log.info("Creating client: replica={}/{} topic={} replica-config=[quantity={} max={} min={} step={} autoManage={} timeout={}ms pollInitialDelay={} pollFixedDelay={}]",
                 i.get(),
                 listener.quantity(),
                 listener.topic(),
@@ -79,7 +79,9 @@ public class ClientListenerInitializer implements BeanPostProcessor {
                 listener.min(),
                 listener.step(),
                 listener.autoManage(),
-                listener.timeout());
+                listener.timeout(),
+                listener.pollInitialDelay(),
+                listener.pollFixedDelay());
     }
 
     private void createClientSessionManager(Client client) {
@@ -97,7 +99,9 @@ public class ClientListenerInitializer implements BeanPostProcessor {
                 .add(Key.FACTORY_REPLICA_MAX, listener.max())
                 .add(Key.FACTORY_REPLICA_MIN, listener.min())
                 .add(Key.FACTORY_REPLICA_STEP, listener.step())
-                .add(Key.FACTORY_REPLICA_AUTO_MANAGE, listener.autoManage());
+                .add(Key.FACTORY_REPLICA_AUTO_MANAGE, listener.autoManage())
+                .add(Key.FACTORY_REPLICA_POLL_INITIAL_DELAY, listener.pollInitialDelay())
+                .add(Key.FACTORY_REPLICA_POLL_FIXED_DELAY, listener.pollFixedDelay());
         factoryResolver.create(definition, ListenerConfig.class).ifPresent(listenerConfigRegistry::save);
     }
 }

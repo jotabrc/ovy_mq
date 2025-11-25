@@ -8,18 +8,20 @@ logging:
 ovymq:
   task:
     consumer:
-      active: true
-      delay: 35000
+      initial-delay: 10000
+      fixed-delay: 35000
+    config-client:
+      initial-delay: 10000
+      fixed-delay: 35000
+      timeout: 30000
     health-check:
-      active: true
-      delay: 60000
+      initial-delay: 60000
+      fixed-delay: 60000
       threshold: 120000
   session:
     connection:
       timeout: 30000
       backoff: 10
-      config-client:
-        timeout: 30000
 
 
 spring:

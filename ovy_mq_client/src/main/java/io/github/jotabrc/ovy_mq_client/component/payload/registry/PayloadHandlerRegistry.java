@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.component.payload.registry;
 
 import io.github.jotabrc.ovy_mq_client.component.payload.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ public class PayloadHandlerRegistry {
     public PayloadHandlerRegistry(List<PayloadHandler<?>> availableHandlers) {
         this.handlers = new HashMap<>();
         for (PayloadHandler<?> h : availableHandlers) {
+            if (this.handlers.containsKey(h.supports())) throw new OvyException.ConfigurationError("Handler supporting=%s already exists".formatted(h.supports()));
             handlers.putIfAbsent(h.supports(), h);
         }
     }

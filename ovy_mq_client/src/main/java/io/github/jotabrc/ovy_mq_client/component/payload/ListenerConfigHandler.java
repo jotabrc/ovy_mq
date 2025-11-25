@@ -26,7 +26,7 @@ public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
                 listenerConfig.getListenerState().getReplica().getQuantity(),
                 listenerConfig.getListenerState().getReplica().getMax(),
                 listenerConfig.getListenerState().getReplica().getMin(),
-                listenerConfig.getListenerState().getReplica().getMin(),
+                listenerConfig.getListenerState().getReplica().getStep(),
                 listenerConfig.getListenerState().getReplica().getAutoManage(),
                 listenerConfig.getListenerState().getTimeout());
         // TODO

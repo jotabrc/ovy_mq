@@ -25,8 +25,7 @@ public class SessionRegistry {
     }
 
     public Optional<SessionManager> getByIdAndReconnectIfDisconnected(String clientId) {
-        return Optional.ofNullable(this.sessions.get(clientId))
-                .map(sessionManager -> sessionManager.reconnectIfNotAlive(false));
+        return Optional.ofNullable(this.sessions.get(clientId));
     }
 
     public void removeById(String clientId) {

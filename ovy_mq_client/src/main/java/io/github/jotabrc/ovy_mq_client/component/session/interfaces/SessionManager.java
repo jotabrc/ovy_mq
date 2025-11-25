@@ -8,8 +8,8 @@ public interface SessionManager {
 
     SessionManager send(String destination, Object payload);
     void initialize();
-    SessionManager reconnectIfNotAlive(boolean force);
     boolean isConnected();
+    void disconnect();
     void setClient(Client client);
     void setSubscriptions(List<String> subscriptions);
 }

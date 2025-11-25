@@ -27,8 +27,8 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.CONFIRM_PAYLOAD_RECEIVED;
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_REGISTRY;
@@ -47,11 +47,28 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     private final WebSocketStompClient webSocketStompClient;
     private final SessionTimeoutManager sessionTimeoutManager;
     private final ObjectProvider<DefinitionMap> definitionProvider;
+    private final ObjectProvider<HealthCheckManager> healthCheckManagerObjectProvider;
+    private final ObjectProvider<ListenerPollManager> listenerPollManagerObjectProvider;
 
-    private CompletableFuture<SessionManager> future;
+    private HealthCheckManager healthCheckManager;
+    private ListenerPollManager listenerPollManager;
     private StompSession session;
     private Client client;
     private List<String> subscriptions;
+
+    private void initializeHealthCheckManager() {
+        this.healthCheckManager = healthCheckManagerObjectProvider.getObject();
+        healthCheckManager.setSession(this);
+        healthCheckManager.setClient(this.client);
+        healthCheckManager.execute();
+    }
+
+    private void initializeListenerPollManager() {
+        this.listenerPollManager = listenerPollManagerObjectProvider.getObject();
+        listenerPollManager.setSession(this);
+        listenerPollManager.setClient(this.client);
+        listenerPollManager.execute();
+    }
 
     @Override
     public SessionManager send(String destination, Object payload) {
@@ -64,7 +81,6 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
             abstractFactoryResolver.create(definition, StompHeaders.class)
                     .ifPresent(headers -> {
                         try {
-                            this.reconnectIfNotAlive(false);
                             this.session.send(headers, payload);
                         } catch (NullPointerException e) {
                             log.error("Failed to send message: client={} client-type={}", client.getId(), client.getType(), e);
@@ -85,38 +101,35 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
                 .add(Key.HEADER_CLIENT_ID, client.getId());
         abstractFactoryResolver.create(definition, WebSocketHttpHeaders.class)
                 .ifPresent(headers -> {
-                    Runnable connect = () -> {
+                    Supplier<CompletableFuture<SessionManager>> connect = () -> {
                         if (!this.isConnected()) {
                             this.client.setLastHealthCheck(OffsetDateTime.now());
                             this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
                         }
+                        return new CompletableFuture<>();
                     };
-                    Callable<Boolean> isConnected = this::isConnected;
-                    future = sessionTimeoutManager.manage(this.future, connect, isConnected, client);
+                    sessionTimeoutManager.manage(connect, client);
                 });
 
         if (this.isConnected())
             log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
+
+        if (isNull(this.healthCheckManager)) initializeHealthCheckManager();
+        if (isNull(this.listenerPollManager)) initializeListenerPollManager();
     }
 
-    protected CompletableFuture<StompSession> connect(String url, WebSocketHttpHeaders headers) {
+    private CompletableFuture<StompSession> connect(String url, WebSocketHttpHeaders headers) {
         return webSocketStompClient.connectAsync(url, headers, this);
-    }
-
-    @Override
-    public SessionManager reconnectIfNotAlive(boolean force) {
-        log.info("Session connection status: alive={}", nonNull(session) && session.isConnected());
-        if (isNull(session) || !session.isConnected() || force) {
-            if (nonNull(session) && session.isConnected()) session.disconnect();
-            session = null;
-            this.initialize();
-        }
-        return this;
     }
 
     @Override
     public boolean isConnected() {
         return nonNull(session) && this.session.isConnected();
+    }
+
+    @Override
+    public void disconnect() {
+        if (nonNull(this.session) && this.isConnected()) this.session.disconnect();
     }
 
     @Override
@@ -154,10 +167,9 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     public void afterConnected(@NotNull StompSession session, @NotNull StompHeaders connectedHeaders) {
         this.session = session;
         this.subscribe();
-        this.future.complete(this);
     }
 
-    protected void subscribe() {
+    private void subscribe() {
         subscriptions.forEach(destination -> this.session.subscribe(destination, this));
     }
 
