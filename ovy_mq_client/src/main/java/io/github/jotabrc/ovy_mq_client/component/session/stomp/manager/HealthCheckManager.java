@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.component.session;
+package io.github.jotabrc.ovy_mq_client.component.session.stomp.manager;
 
 import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
@@ -33,7 +33,7 @@ public class HealthCheckManager {
     @Setter
     private Client client;
 
-    @Value("${ovymq.task.health-check.initial.delay:60000}")
+    @Value("${ovymq.task.health-check.initial.delay:10000}")
     private Long initialDelay;
     @Value("${ovymq.task.health-check.fixed-delay:60000}")
     private Long fixedDelay;
@@ -53,7 +53,7 @@ public class HealthCheckManager {
         log.info("Session connection status: alive={} client={}", this.session.isConnected(), client.getId());
         if (!session.isConnected() || force) {
             this.session.disconnect();
-            this.session.initialize();
+            this.session.initializeSession();
         }
     }
 

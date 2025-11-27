@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.component.factory.header;
 
-import io.github.jotabrc.ovy_mq_client.component.session.StompSessionHandler;
+import io.github.jotabrc.ovy_mq_client.component.session.stomp.StompSessionHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;

@@ -15,7 +15,7 @@ ovymq:
       fixed-delay: 35000
       timeout: 30000
     health-check:
-      initial-delay: 60000
+      initial-delay: 10000
       fixed-delay: 60000
       threshold: 120000
   session:

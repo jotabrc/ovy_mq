@@ -1,0 +1,103 @@
+package io.github.jotabrc.ovy_mq_client.component.session.stomp.manager;
+
+import io.github.jotabrc.ovy_mq_client.component.ObjectProviderFacade;
+import io.github.jotabrc.ovy_mq_client.component.session.SessionType;
+import io.github.jotabrc.ovy_mq_client.component.session.interfaces.ConnectionManager;
+import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionTimeoutManager;
+import io.github.jotabrc.ovy_mq_client.component.session.stomp.StompSessionHandler;
+import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.domain.Client;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+
+import java.time.OffsetDateTime;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+
+import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_REGISTRY;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
+
+    @Value("${ovymq.session.connection.backoff}")
+    protected Integer maxRetries;
+
+    private final ObjectProviderFacade objectProviderFacade;
+    private final AbstractFactoryResolver abstractFactoryResolver;
+    private final ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler> stompConnectionManager;
+    private final ScheduledExecutorService scheduledExecutor;
+
+    @Override
+    public CompletableFuture<SessionManager> manage(SessionManager session, Client client, CompletableFuture<SessionManager> finalFuture) {
+        DefinitionMap definition = objectProviderFacade.getDefinitionMap()
+                .add(Key.HEADER_DESTINATION, io.github.jotabrc.ovy_mq_core.defaults.Value.DESTINATION_SERVER)
+                .add(Key.HEADER_TOPIC, client.getTopic())
+                .add(Key.HEADER_CLIENT_TYPE, client.getType().name())
+                .add(Key.HEADER_CLIENT_ID, client.getId());
+
+        var headers = abstractFactoryResolver.create(definition, WebSocketHttpHeaders.class);
+
+        if (headers.isPresent()) {
+            Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect = stompConnectionManager -> {
+                if (!session.isConnected()) {
+                    client.setLastHealthCheck(OffsetDateTime.now());
+                    return stompConnectionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers.get(), (StompSessionHandler) session)
+                            .thenApply(stompSession -> session);
+                }
+                return CompletableFuture.completedFuture(session);
+            };
+
+            return manage(connect, client, finalFuture);
+        }
+        return CompletableFuture.failedFuture(new IllegalStateException("Headers factory is not present"));
+    }
+
+    private CompletableFuture<SessionManager> manage(Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect, Client client, CompletableFuture<SessionManager> finalFuture) {
+        connect(finalFuture, connect, client, 1);
+        return finalFuture;
+    }
+
+    @Override
+    public SessionType supports() {
+        return SessionType.STOMP;
+    }
+
+    private void connect(CompletableFuture<SessionManager> finalFuture,
+                         Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect,
+                         Client client,
+                         int attempt) {
+        if (attempt > maxRetries) {
+            finalFuture.completeExceptionally(new TimeoutException("Connection failed attempt=%d".formatted(attempt)));
+            return;
+        }
+        connect.apply(stompConnectionManager)
+                .whenComplete((sessionManager, throwable) -> {
+                    if (isNull(throwable) && nonNull(sessionManager) && sessionManager.isConnected()) {
+                        finalFuture.complete(sessionManager);
+                        log.info("Connected to server: client={} topic={}", client.getId(), client.getTopic());
+                    } else {
+                        log.info("Connection attempt failed: client={} topic={}", client.getId(), client.getTopic(), throwable);
+                    }
+                });
+
+        if (finalFuture.isDone()) return;
+
+        scheduledExecutor.schedule(() -> connect(finalFuture, connect, client, attempt + 1),
+                client.getTimeout(),
+                TimeUnit.MILLISECONDS);
+    }
+}

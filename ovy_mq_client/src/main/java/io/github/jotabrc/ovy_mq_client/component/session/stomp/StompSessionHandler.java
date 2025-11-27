@@ -1,7 +1,10 @@
-package io.github.jotabrc.ovy_mq_client.component.session;
+package io.github.jotabrc.ovy_mq_client.component.session.stomp;
 
-import io.github.jotabrc.ovy_mq_client.component.payload.PayloadConfirmationHandlerDispatcher;
-import io.github.jotabrc.ovy_mq_client.component.payload.PayloadHandlerDispatcher;
+import io.github.jotabrc.ovy_mq_client.component.DispatcherFacade;
+import io.github.jotabrc.ovy_mq_client.component.ManagerInitializer;
+import io.github.jotabrc.ovy_mq_client.component.ObjectProviderFacade;
+import io.github.jotabrc.ovy_mq_client.component.session.SessionTimeoutManagerResolver;
+import io.github.jotabrc.ovy_mq_client.component.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
@@ -14,24 +17,18 @@ import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.CONFIRM_PAYLOAD_RECEIVED;
-import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_REGISTRY;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -41,50 +38,31 @@ import static java.util.Objects.nonNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
 
-    private final PayloadHandlerDispatcher payloadHandlerDispatcher;
+    private final ManagerInitializer managerInitializer;
+    private final DispatcherFacade dispatcherFacade;
+    private final ObjectProviderFacade objectProviderFacade;
     private final AbstractFactoryResolver abstractFactoryResolver;
-    private final PayloadConfirmationHandlerDispatcher payloadConfirmationHandlerDispatcher;
-    private final WebSocketStompClient webSocketStompClient;
-    private final SessionTimeoutManager sessionTimeoutManager;
-    private final ObjectProvider<DefinitionMap> definitionProvider;
-    private final ObjectProvider<HealthCheckManager> healthCheckManagerObjectProvider;
-    private final ObjectProvider<ListenerPollManager> listenerPollManagerObjectProvider;
+    private final SessionTimeoutManagerResolver sessionTimeoutManagerResolver;
 
-    private HealthCheckManager healthCheckManager;
-    private ListenerPollManager listenerPollManager;
     private StompSession session;
     private Client client;
     private List<String> subscriptions;
-
-    private void initializeHealthCheckManager() {
-        this.healthCheckManager = healthCheckManagerObjectProvider.getObject();
-        healthCheckManager.setSession(this);
-        healthCheckManager.setClient(this.client);
-        healthCheckManager.execute();
-    }
-
-    private void initializeListenerPollManager() {
-        this.listenerPollManager = listenerPollManagerObjectProvider.getObject();
-        listenerPollManager.setSession(this);
-        listenerPollManager.setClient(this.client);
-        listenerPollManager.execute();
-    }
+    private CompletableFuture<SessionManager> connectionFuture;
 
     @Override
     public SessionManager send(String destination, Object payload) {
         synchronized (this) {
-            DefinitionMap definition = definitionProvider.getObject()
+            DefinitionMap definition = objectProviderFacade.getDefinitionMap()
                     .add(Key.HEADER_DESTINATION, destination)
                     .add(Key.HEADER_TOPIC, client.getTopic())
                     .add(Key.HEADER_CLIENT_TYPE, client.getType().name())
                     .add(Key.HEADER_CLIENT_ID, client.getId());
             abstractFactoryResolver.create(definition, StompHeaders.class)
                     .ifPresent(headers -> {
-                        try {
+                        if (this.isConnected()) {
                             this.session.send(headers, payload);
-                        } catch (NullPointerException e) {
-                            log.error("Failed to send message: client={} client-type={}", client.getId(), client.getType(), e);
-                            initialize();
+                        } else {
+                            log.error("Failed to send message: client={} client-type={} session-connected={}", client.getId(), client.getType(), this.isConnected());
                         }
                     });
             return this;
@@ -92,34 +70,23 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     }
 
     @Override
-    public void initialize() {
-        log.info("Initializing-session client={}", client.getId());
-        DefinitionMap definition = definitionProvider.getObject()
-                .add(Key.HEADER_DESTINATION, Value.DESTINATION_SERVER)
-                .add(Key.HEADER_TOPIC, client.getTopic())
-                .add(Key.HEADER_CLIENT_TYPE, client.getType().name())
-                .add(Key.HEADER_CLIENT_ID, client.getId());
-        abstractFactoryResolver.create(definition, WebSocketHttpHeaders.class)
-                .ifPresent(headers -> {
-                    Supplier<CompletableFuture<SessionManager>> connect = () -> {
-                        if (!this.isConnected()) {
-                            this.client.setLastHealthCheck(OffsetDateTime.now());
-                            this.connect("ws://localhost:9090/" + WS_REGISTRY, headers);
-                        }
-                        return new CompletableFuture<>();
-                    };
-                    sessionTimeoutManager.manage(connect, client);
-                });
-
-        if (this.isConnected())
-            log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
-
-        if (isNull(this.healthCheckManager)) initializeHealthCheckManager();
-        if (isNull(this.listenerPollManager)) initializeListenerPollManager();
+    public void initializeHandler() {
+        if (nonNull(this.client)) managerInitializer.initialize(this, client);
+        else throw new IllegalStateException("SessionManager initialize without a Client");
     }
 
-    private CompletableFuture<StompSession> connect(String url, WebSocketHttpHeaders headers) {
-        return webSocketStompClient.connectAsync(url, headers, this);
+    @Override
+    public void initializeSession() {
+        log.info("Initializing-session client={}", client.getId());
+        connectionFuture = new CompletableFuture<>();
+        sessionTimeoutManagerResolver.get(SessionType.STOMP)
+                .ifPresent(sessionTimeoutManager -> sessionTimeoutManager.manage(this, client, connectionFuture)
+                        .whenComplete(((sessionManager, throwable) -> {
+                            if (nonNull(sessionManager) && sessionManager.isConnected() && isNull(throwable))
+                                log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
+                            else
+                                log.info("Session failed to initialize: client={} topic={}", client.getId(), client.getTopic());
+                        })));
     }
 
     @Override
@@ -159,14 +126,17 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void handleFrame(@NotNull StompHeaders headers, Object object) {
-        payloadConfirmationHandlerDispatcher.execute(this, client, CONFIRM_PAYLOAD_RECEIVED, object);
-        payloadHandlerDispatcher.execute(client, object, headers);
+        dispatcherFacade.acknowledgePayload(this, client, CONFIRM_PAYLOAD_RECEIVED, object);
+        dispatcherFacade.handlePayload(client, object, headers);
     }
 
     @Override
     public void afterConnected(@NotNull StompSession session, @NotNull StompHeaders connectedHeaders) {
         this.session = session;
         this.subscribe();
+        if (nonNull(this.connectionFuture) && !this.connectionFuture.isDone()) {
+            this.connectionFuture.complete(this);
+        }
     }
 
     private void subscribe() {
