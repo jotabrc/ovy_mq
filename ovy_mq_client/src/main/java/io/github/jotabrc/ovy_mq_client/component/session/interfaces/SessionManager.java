@@ -13,4 +13,5 @@ public interface SessionManager {
     void disconnect();
     void setClient(Client client);
     void setSubscriptions(List<String> subscriptions);
+    void destroy();
 }

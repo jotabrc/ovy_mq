@@ -1,11 +1,12 @@
 package io.github.jotabrc.ovy_mq_client.component.session.stomp;
 
 import io.github.jotabrc.ovy_mq_client.component.DispatcherFacade;
-import io.github.jotabrc.ovy_mq_client.component.ManagerInitializer;
 import io.github.jotabrc.ovy_mq_client.component.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.component.session.SessionTimeoutManagerResolver;
 import io.github.jotabrc.ovy_mq_client.component.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.ManagerFactory;
+import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.ManagerHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
@@ -38,7 +39,7 @@ import static java.util.Objects.nonNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
 
-    private final ManagerInitializer managerInitializer;
+    private final ManagerHandler managerHandler;
     private final DispatcherFacade dispatcherFacade;
     private final ObjectProviderFacade objectProviderFacade;
     private final AbstractFactoryResolver abstractFactoryResolver;
@@ -71,8 +72,11 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void initializeHandler() {
-        if (nonNull(this.client)) managerInitializer.initialize(this, client);
-        else throw new IllegalStateException("SessionManager initialize without a Client");
+        if (nonNull(this.client)) {
+            managerHandler.initialize(client, this,
+                    ManagerFactory.HEALTH_CHECK,
+                    ManagerFactory.LISTENER_POLL);
+        } else throw new IllegalStateException("SessionManager initialized without a Client");
     }
 
     @Override
@@ -111,6 +115,13 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         if (isNull(this.subscriptions) || this.subscriptions.isEmpty()) {
             this.subscriptions = subscriptions;
         }
+    }
+
+    @Override
+    public void destroy() {
+        // todo wait in-flight processing
+        this.disconnect();
+        managerHandler.destroy(this.client.getId());
     }
 
     @NotNull

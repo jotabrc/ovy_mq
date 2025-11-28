@@ -15,15 +15,17 @@ import org.springframework.stereotype.Component;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_HEALTH_CHECK;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class HealthCheckManager {
+public class HealthCheckManager implements AbstractManager {
 
     private final ClientMessageDispatcher clientMessageDispatcher;
     private final ScheduledExecutorService scheduledExecutor;
@@ -32,6 +34,7 @@ public class HealthCheckManager {
     private SessionManager session;
     @Setter
     private Client client;
+    private ScheduledFuture<?> taskFuture;
 
     @Value("${ovymq.task.health-check.initial.delay:10000}")
     private Long initialDelay;
@@ -40,13 +43,15 @@ public class HealthCheckManager {
     @Value("${ovymq.task.health-check.threshold:120000}")
     private Long threshold;
 
-    public void execute() {
-        scheduledExecutor.scheduleWithFixedDelay(() -> {
+    @Override
+    public ScheduledFuture<?> execute() {
+        taskFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
             log.info("Executing health check: {}", client.getId());
             reconnectIfNeeded(isLastHealthCheckExpired(this.client));
             HealthStatus healthStatus = buildHealthStatus();
             clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_HEALTH_CHECK, healthStatus, this.session);
         }, this.initialDelay, this.fixedDelay, TimeUnit.MILLISECONDS);
+        return taskFuture;
     }
 
     public void reconnectIfNeeded(boolean force) {
@@ -66,5 +71,12 @@ public class HealthCheckManager {
                 .requestedAt(OffsetDateTime.now())
                 .alive(false)
                 .build();
+    }
+
+    @Override
+    public void destroy() {
+        if (nonNull(taskFuture) && !taskFuture.isDone() && !taskFuture.isCancelled()) {
+            taskFuture.cancel(true);
+        }
     }
 }

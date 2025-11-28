@@ -12,7 +12,7 @@ public class Test {
 
     private final TestRepo repo;
 
-    @OvyListener(topic = "bar", quantity = 10, timeout = 180000)
+    @OvyListener(topic = "bar", quantity = 1000, timeout = 180000)
     public void bar(Object object) {
         try {
             Thread.sleep(Random.from(new Random()).nextInt(100, 29000));

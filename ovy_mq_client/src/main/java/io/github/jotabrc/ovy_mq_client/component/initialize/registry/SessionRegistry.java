@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +29,11 @@ public class SessionRegistry {
         return Optional.ofNullable(this.sessions.get(clientId));
     }
 
-    public void removeById(String clientId) {
-        this.sessions.remove(clientId);
+    public Optional<SessionManager> removeById(String clientId) {
+        return Optional.ofNullable(this.sessions.remove(clientId));
+    }
+
+    public Map<String, SessionManager> getAll() {
+        return new HashMap<>(sessions);
     }
 }

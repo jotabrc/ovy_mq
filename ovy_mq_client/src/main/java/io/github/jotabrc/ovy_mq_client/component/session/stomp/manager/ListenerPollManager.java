@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_MESSAGE;
@@ -21,7 +22,7 @@ import static java.util.Objects.nonNull;
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ListenerPollManager {
+public class ListenerPollManager implements AbstractManager {
 
     private final ClientMessageDispatcher clientMessageDispatcher;
     private final ScheduledExecutorService scheduledExecutor;
@@ -30,14 +31,16 @@ public class ListenerPollManager {
     private SessionManager session;
     @Setter
     private Client client;
+    private ScheduledFuture<?> taskFuture;
 
     @Value("${ovymq.task.consumer.initial-delay:10000}")
     private Long initialDelay;
     @Value("${ovymq.task.consumer.fixed-delay:35000}")
     private Long fixedDelay;
 
-    public void execute() {
-        scheduledExecutor.scheduleWithFixedDelay(() -> {
+    @Override
+    public ScheduledFuture<?> execute() {
+        taskFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
                     if (client.getIsAvailable()) {
                         log.info("Requesting message: client={} topic={}", client.getId(), client.getTopic());
                         clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
@@ -45,11 +48,19 @@ public class ListenerPollManager {
                 }, getDelay(client.getPollInitialDelay(), this.initialDelay),
                 getDelay(client.getPollFixedDelay(), this.fixedDelay),
                 TimeUnit.MILLISECONDS);
+        return taskFuture;
     }
 
     private Long getDelay(Long value, Long defaultValue) {
         return nonNull(value)
                 ? value
                 : defaultValue;
+    }
+
+    @Override
+    public void destroy() {
+        if (nonNull(taskFuture) && !taskFuture.isDone() && !taskFuture.isCancelled()) {
+            taskFuture.cancel(true);
+        }
     }
 }
