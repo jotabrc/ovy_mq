@@ -8,7 +8,7 @@ public @interface OvyListener {
     String topic();
     int quantity() default 1;
     int max() default 3;
-    int min() default 0;
+    int min() default 1;
     int step() default 1;
     boolean autoManage() default false;
     long processingTimeout() default 150000;

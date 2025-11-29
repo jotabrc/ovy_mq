@@ -6,16 +6,16 @@ public class ValueUtil {
 
     private ValueUtil() {}
 
-    public static Long get(Long value, Long defaultValue, Boolean useGlobalValues) {
-        return nonNull(value) && !useGlobalValues
+    public static Long get(Long value, Long globalValue, Boolean useGlobalValue) {
+        return nonNull(value) && !useGlobalValue
                 ? value
-                : defaultValue;
+                : globalValue;
     }
 
-    public static Integer get(Integer value, Integer defaultValue, Boolean useGlobalValues) {
-        return nonNull(value) && !useGlobalValues
+    public static Integer get(Integer value, Integer globalValue, Boolean useGlobalValue) {
+        return nonNull(value) && !useGlobalValue
                 ? value
-                : defaultValue;
+                : globalValue;
     }
 
 }

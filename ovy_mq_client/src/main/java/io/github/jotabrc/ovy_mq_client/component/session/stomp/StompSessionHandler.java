@@ -49,6 +49,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     private Client client;
     private List<String> subscriptions;
     private CompletableFuture<SessionManager> connectionFuture;
+    // todo Lst with scheduled task to use in the destroy method
 
     @Override
     public SessionManager send(String destination, Object payload) {
@@ -73,6 +74,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public void initializeHandler() {
         if (nonNull(this.client)) {
+            // todo return ScheduledTask
             managerHandler.initialize(client, this,
                     ManagerFactory.HEALTH_CHECK,
                     ManagerFactory.LISTENER_POLL);

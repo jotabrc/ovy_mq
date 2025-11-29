@@ -59,9 +59,9 @@ public class ClientListenerInitializer implements BeanPostProcessor {
                 .add(Key.HEADER_TOPIC, listener.topic())
                 .add(Key.FACTORY_CLIENT_METHOD, method)
                 .add(Key.FACTORY_CLIENT_BEAN_NAME, beanName)
-                .add(Key.FACTORY_CLIENT_TIMEOUT, listener.processingTimeout())
                 .add(Key.HEADER_CLIENT_TYPE, ClientType.CONSUMER)
                 .add(Key.FACTORY_CLIENT_IS_AVAILABLE, true)
+                //todo replica config quantity, min, max, ....
                 .add(Key.FACTORY_PROCESSING_TIMEOUT, listener.processingTimeout())
                 .add(Key.FACTORY_CLIENT_CONFIG_POLL_INITIAL_DELAY, listener.pollInitialDelay())
                 .add(Key.FACTORY_CLIENT_CONFIG_POLL_FIXED_DELAY, listener.pollFixedDelay())
