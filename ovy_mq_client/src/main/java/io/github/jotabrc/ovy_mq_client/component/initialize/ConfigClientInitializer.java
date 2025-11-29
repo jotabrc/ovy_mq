@@ -10,7 +10,6 @@ import io.github.jotabrc.ovy_mq_core.domain.ClientType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -25,13 +24,6 @@ public class ConfigClientInitializer implements ApplicationRunner {
     private final AbstractFactoryResolver factoryResolver;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
-    @Value("${ovymq.task.config-client.timeout}")
-    private Long timeout;
-    @Value("${ovymq.task.config-client.initial-fixedDelay:10000}")
-    private Long initialDelay;
-    @Value("${ovymq.task.config-client.fixedDelay:35000}")
-    private Long fixedDelay;
-
     @Override
     public void run(ApplicationArguments args) throws Exception {
         initialize();
@@ -40,10 +32,7 @@ public class ConfigClientInitializer implements ApplicationRunner {
     private void initialize() {
         DefinitionMap definition = definitionProvider.getObject()
                 .add(Key.HEADER_CLIENT_TYPE, ClientType.CONFIGURER)
-                .add(Key.FACTORY_CLIENT_TIMEOUT, timeout)
-                .add(Key.HEADER_TOPIC, io.github.jotabrc.ovy_mq_core.defaults.Value.ROLE_SERVER)
-                .add(Key.FACTORY_REPLICA_POLL_INITIAL_DELAY, initialDelay)
-                .add(Key.FACTORY_REPLICA_POLL_FIXED_DELAY, fixedDelay);
+                .add(Key.HEADER_TOPIC, io.github.jotabrc.ovy_mq_core.defaults.Value.ROLE_SERVER);
         factoryResolver.create(definition, Client.class)
                 .ifPresent(client -> {
                     DefinitionMap sessionDefinition = definitionProvider.getObject()

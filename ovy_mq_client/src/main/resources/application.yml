@@ -5,23 +5,25 @@ logging:
   pattern:
     console: "%date [%thread] [%-5level] %logger{40} - %message%n"
 
-ovymq:
-  task:
-    consumer:
-      initial-delay: 10000
-      fixed-delay: 35000
-    config-client:
-      initial-delay: 10000
-      fixed-delay: 35000
-      timeout: 30000
-    health-check:
-      initial-delay: 10000
-      fixed-delay: 60000
-      threshold: 120000
-  session:
-    connection:
-      timeout: 30000
-      backoff: 10
+# Global values
+ovymq.client.processing.timeout: 150000
+
+ovymq.task.session-destroy.initial-delay: 10000
+ovymq.task.session-destroy.fixed-delay: 35000
+
+ovymq.task.listener-poll.initial-delay: 10000
+ovymq.task.listener-poll.fixed-delay: 35000
+
+ovymq.task.health-check.initial.delay: 10000
+ovymq.task.health-check.fixed-delay: 60000
+ovymq.task.health-check.expiration-time: 120000
+
+ovymq.session-manager.connection.max-retries: 50
+ovymq.session-manager.connection.timeout: 150000
+
+ovymq.config-client.timeout: 150000
+ovymq.config-client.initial-delay: 10000
+ovymq.config-client.fixed-delay: 35000
 
 
 spring:

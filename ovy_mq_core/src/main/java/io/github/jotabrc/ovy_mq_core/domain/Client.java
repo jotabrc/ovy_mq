@@ -24,10 +24,8 @@ public class Client implements Serializable {
     private Boolean isAvailable;
     private String beanName;
     private Method method;
-    private Long timeout;
     private ClientType type;
-    private Long pollInitialDelay;
-    private Long pollFixedDelay;
+    private ClientConfig config;
     @Builder.Default
     private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
     @Builder.Default

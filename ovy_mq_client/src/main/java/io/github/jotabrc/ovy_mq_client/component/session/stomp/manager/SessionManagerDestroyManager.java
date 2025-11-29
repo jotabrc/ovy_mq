@@ -1,9 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.component.session.stomp.manager;
 
-import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,38 +14,36 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_MESSAGE;
 import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ListenerPollManager implements AbstractManager {
+public class SessionManagerDestroyManager implements AbstractManager {
 
-    private final ClientMessageDispatcher clientMessageDispatcher;
     private final ScheduledExecutorService scheduledExecutor;
 
     @Setter
-    private SessionManager session;
+    private SessionManager sessionManager;
     @Setter
     private Client client;
     private ScheduledFuture<?> taskFuture;
 
-    @Value("${ovymq.task.listener-poll.initial-delay:10000}")
+    @Value("${ovymq.task.session-destroy.initial-delay:1000}")
     private Long initialDelay;
-    @Value("${ovymq.task.listener-poll.fixed-delay:35000}")
+    @Value("${ovymq.task.session-destroy.fixed-delay:35000}")
     private Long fixedDelay;
 
     @Override
     public ScheduledFuture<?> execute() {
         taskFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
                     if (client.getIsAvailable()) {
-                        log.info("Requesting message: client={} topic={}", this.client.getId(), this.client.getTopic());
-                        clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_MESSAGE, this.client.getTopic());
+                        sessionManager.disconnect();
+                        this.destroy();
                     }
-                }, ValueUtil.get(this.client.getConfig().getPollInitialDelay(), this.initialDelay, this.client.getConfig().getUseGlobalValues()),
-                ValueUtil.get(this.client.getConfig().getPollFixedDelay(), this.fixedDelay, this.client.getConfig().getUseGlobalValues()),
+                }, this.initialDelay,
+                this.fixedDelay,
                 TimeUnit.MILLISECONDS);
         return taskFuture;
     }

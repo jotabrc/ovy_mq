@@ -21,14 +21,21 @@ public class Key {
     public static final String FACTORY_CLIENT_TIMEOUT = "client-timeout";
     public static final String FACTORY_CLIENT_IS_AVAILABLE = "client-is-available";
 
-    // Factory replica
+    // Factory ClientConfig
     public static final String FACTORY_REPLICA_QUANTITY = "replica-quantity";
     public static final String FACTORY_REPLICA_MAX = "replica-max";
     public static final String FACTORY_REPLICA_MIN = "replica-min";
     public static final String FACTORY_REPLICA_STEP = "replica-step";
     public static final String FACTORY_REPLICA_AUTO_MANAGE = "replica-auto-manage";
-    public static final String FACTORY_REPLICA_POLL_INITIAL_DELAY = "replica-poll-initial-delay";
-    public static final String FACTORY_REPLICA_POLL_FIXED_DELAY = "replica-poll-fixed-delay";
+    public static final String FACTORY_PROCESSING_TIMEOUT = "replica-processing-timeout";
+    public static final String FACTORY_CLIENT_CONFIG_POLL_INITIAL_DELAY = "client-config-poll-initial-delay";
+    public static final String FACTORY_CLIENT_CONFIG_POLL_FIXED_DELAY = "client-config-poll-fixed-delay";
+    public static final String FACTORY_CLIENT_CONFIG_HEALTH_CHECK_INITIAL_DELAY = "client-config-health-check-initial-delay";
+    public static final String FACTORY_CLIENT_CONFIG_HEALTH_CHECK_FIXED_DELAY = "client-config-health-check-fixed-delay";
+    public static final String FACTORY_CLIENT_CONFIG_HEALTH_CHECK_EXPIRATION_TIME = "client-config-health-check-expiration-time";
+    public static final String FACTORY_CLIENT_CONFIG_CONNECTION_MAX_RETRIES = "client-config-connection-max-retires";
+    public static final String FACTORY_CLIENT_CONFIG_CONNECTION_TIMEOUT = "client-config-connection-timeout";
+    public static final String FACTORY_CLIENT_CONFIG_USE_GLOBAL_VALUES = "client-config-use-global-values";
 
     // Filter
     public static final String FILTER_SERVLET_REQUEST = "filter-servlet-request";

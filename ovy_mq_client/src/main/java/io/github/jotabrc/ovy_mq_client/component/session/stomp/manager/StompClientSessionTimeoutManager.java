@@ -10,6 +10,7 @@ import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolve
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,8 +34,11 @@ import static java.util.Objects.nonNull;
 @Component
 public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
 
-    @Value("${ovymq.session.connection.backoff}")
+    @Value("${ovymq.session-manager.connection.max-retries:10}")
     protected Integer maxRetries;
+
+    @Value("${ovymq.session-manager.connection.timeout:150000}")
+    protected Long timeout;
 
     private final ObjectProviderFacade objectProviderFacade;
     private final AbstractFactoryResolver abstractFactoryResolver;
@@ -42,7 +46,7 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
     private final ScheduledExecutorService scheduledExecutor;
 
     @Override
-    public CompletableFuture<SessionManager> manage(SessionManager session, Client client, CompletableFuture<SessionManager> finalFuture) {
+    public CompletableFuture<SessionManager> execute(SessionManager sessionManager, Client client, CompletableFuture<SessionManager> finalFuture) {
         DefinitionMap definition = objectProviderFacade.getDefinitionMap()
                 .add(Key.HEADER_DESTINATION, io.github.jotabrc.ovy_mq_core.defaults.Value.DESTINATION_SERVER)
                 .add(Key.HEADER_TOPIC, client.getTopic())
@@ -53,20 +57,20 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
 
         if (headers.isPresent()) {
             Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect = stompConnectionManager -> {
-                if (!session.isConnected()) {
+                if (!sessionManager.isConnected()) {
                     client.setLastHealthCheck(OffsetDateTime.now());
-                    return stompConnectionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers.get(), (StompSessionHandler) session)
-                            .thenApply(stompSession -> session);
+                    return stompConnectionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers.get(), (StompSessionHandler) sessionManager)
+                            .thenApply(stompSession -> sessionManager);
                 }
-                return CompletableFuture.completedFuture(session);
+                return CompletableFuture.completedFuture(sessionManager);
             };
 
-            return manage(connect, client, finalFuture);
+            return execute(connect, client, finalFuture);
         }
         return CompletableFuture.failedFuture(new IllegalStateException("Headers factory is not present"));
     }
 
-    private CompletableFuture<SessionManager> manage(Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect, Client client, CompletableFuture<SessionManager> finalFuture) {
+    private CompletableFuture<SessionManager> execute(Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect, Client client, CompletableFuture<SessionManager> finalFuture) {
         connect(finalFuture, connect, client, 1);
         return finalFuture;
     }
@@ -80,10 +84,11 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
                          Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect,
                          Client client,
                          int attempt) {
-        if (attempt > maxRetries) {
+        if (attempt > ValueUtil.get(client.getConfig().getConnectionMaxRetries(), this.maxRetries, client.getConfig().getUseGlobalValues())) {
             finalFuture.completeExceptionally(new TimeoutException("Connection failed attempt=%d".formatted(attempt)));
             return;
         }
+
         connect.apply(stompConnectionManager)
                 .whenComplete((sessionManager, throwable) -> {
                     if (isNull(throwable) && nonNull(sessionManager) && sessionManager.isConnected()) {
@@ -97,7 +102,7 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
         if (finalFuture.isDone()) return;
 
         scheduledExecutor.schedule(() -> connect(finalFuture, connect, client, attempt + 1),
-                client.getTimeout(),
+                ValueUtil.get(client.getConfig().getConnectionTimeout(), this.timeout, client.getConfig().getUseGlobalValues()),
                 TimeUnit.MILLISECONDS);
     }
 }

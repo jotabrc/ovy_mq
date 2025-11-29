@@ -11,7 +11,13 @@ public @interface OvyListener {
     int min() default 0;
     int step() default 1;
     boolean autoManage() default false;
-    long timeout() default 10000;
+    long processingTimeout() default 150000;
     long pollInitialDelay() default 10000;
     long pollFixedDelay() default 35000;
+    long healthCheckInitialDelay() default 10000;
+    long healthCheckFixedDelay() default 35000;
+    long healthCheckExpirationTime() default 120000;
+    int connectionMaxRetries() default 50;
+    long connectionTimeout() default 150000;
+    boolean useGlobalValues() default false;
 }

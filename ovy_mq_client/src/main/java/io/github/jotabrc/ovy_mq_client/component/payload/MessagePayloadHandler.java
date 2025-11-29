@@ -8,6 +8,7 @@ import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,9 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
     private final ListenerExecutionContextHolder listenerExecutionContextHolder;
     private final ListenerInvocator listenerInvocator;
 
+    @Value("${ovymq.client.processing.timeout:150000}")
+    private Long timeout;
+
     private static final Pattern PATTERN_EXTRACT_TOPIC = Pattern.compile("/user/queue/(.*)");
 
     @Override
@@ -44,7 +48,6 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
     }
 
     private void handleAsync(Client client, MessagePayload messagePayload) {
-        long timeout = client.getTimeout();
         CompletableFuture.runAsync(() -> execute(messagePayload, client), listenerExecutor)
                 .orTimeout(timeout, TimeUnit.MILLISECONDS)
                 .exceptionally(e -> {

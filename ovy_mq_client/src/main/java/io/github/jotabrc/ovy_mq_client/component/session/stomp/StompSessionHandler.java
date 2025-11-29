@@ -63,7 +63,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
                         if (this.isConnected()) {
                             this.session.send(headers, payload);
                         } else {
-                            log.error("Failed to send message: client={} client-type={} session-connected={}", client.getId(), client.getType(), this.isConnected());
+                            log.error("Failed to send message: client={} client-type={} sessionManager-connected={}", client.getId(), client.getType(), this.isConnected());
                         }
                     });
             return this;
@@ -81,10 +81,10 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void initializeSession() {
-        log.info("Initializing-session client={}", client.getId());
+        log.info("Initializing-sessionManager client={}", client.getId());
         connectionFuture = new CompletableFuture<>();
         sessionTimeoutManagerResolver.get(SessionType.STOMP)
-                .ifPresent(sessionTimeoutManager -> sessionTimeoutManager.manage(this, client, connectionFuture)
+                .ifPresent(sessionTimeoutManager -> sessionTimeoutManager.execute(this, client, connectionFuture)
                         .whenComplete(((sessionManager, throwable) -> {
                             if (nonNull(sessionManager) && sessionManager.isConnected() && isNull(throwable))
                                 log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
@@ -119,8 +119,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void destroy() {
-        // todo wait in-flight processing
-        this.disconnect();
+        managerHandler.initialize(this.client, this, ManagerFactory.SESSION_MANAGER_DESTROY);
         managerHandler.destroy(this.client.getId());
     }
 

@@ -4,6 +4,7 @@ import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
+import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,17 +41,19 @@ public class HealthCheckManager implements AbstractManager {
     private Long initialDelay;
     @Value("${ovymq.task.health-check.fixed-delay:60000}")
     private Long fixedDelay;
-    @Value("${ovymq.task.health-check.threshold:120000}")
-    private Long threshold;
+    @Value("${ovymq.task.health-check.expiration-time:120000}")
+    private Long expirationTime;
 
     @Override
     public ScheduledFuture<?> execute() {
         taskFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
-            log.info("Executing health check: {}", client.getId());
-            reconnectIfNeeded(isLastHealthCheckExpired(this.client));
-            HealthStatus healthStatus = buildHealthStatus();
-            clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_HEALTH_CHECK, healthStatus, this.session);
-        }, this.initialDelay, this.fixedDelay, TimeUnit.MILLISECONDS);
+                    log.info("Executing health check: {}", client.getId());
+                    reconnectIfNeeded(isLastHealthCheckExpired(this.client));
+                    HealthStatus healthStatus = buildHealthStatus();
+                    clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_HEALTH_CHECK, healthStatus, this.session);
+                }, ValueUtil.get(client.getConfig().getHealthCheckInitialDelay(), this.initialDelay, client.getConfig().getUseGlobalValues()),
+                ValueUtil.get(client.getConfig().getHealthCheckFixedDelay(), this.fixedDelay, client.getConfig().getUseGlobalValues()),
+                TimeUnit.MILLISECONDS);
         return taskFuture;
     }
 
@@ -63,7 +66,9 @@ public class HealthCheckManager implements AbstractManager {
     }
 
     private boolean isLastHealthCheckExpired(Client client) {
-        return OffsetDateTime.now().minus(this.threshold, ChronoUnit.MILLIS).isAfter(client.getLastHealthCheck());
+        return OffsetDateTime.now().minus(ValueUtil.get(client.getConfig().getHealthCheckExpirationTime(), this.expirationTime, client.getConfig().getUseGlobalValues()),
+                        ChronoUnit.MILLIS)
+                .isAfter(client.getLastHealthCheck());
     }
 
     private static HealthStatus buildHealthStatus() {

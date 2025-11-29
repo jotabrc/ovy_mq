@@ -42,7 +42,7 @@ public class ClientListenerInitializer implements BeanPostProcessor {
             for (Method method : beanClass.getMethods()) {
                 OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
                 if (nonNull(listener)) {
-                    log.info("Listener: topic={} quantity={}", listener.topic(), listener.quantity());
+                    log.info("Listener found: topic={} replicas={}", listener.topic(), listener.quantity());
                     AtomicInteger i = new AtomicInteger(0);
                     while (i.incrementAndGet() <= listener.quantity()) {
                         createClient(beanName, method, listener, i);
@@ -54,34 +54,29 @@ public class ClientListenerInitializer implements BeanPostProcessor {
     }
 
     private void createClient(String beanName, Method method, OvyListener listener, AtomicInteger i) {
+        // todo simplify client creating inserting OvyListener instead of each value individually
         DefinitionMap definition = definitionProvider.getObject()
                 .add(Key.HEADER_TOPIC, listener.topic())
                 .add(Key.FACTORY_CLIENT_METHOD, method)
                 .add(Key.FACTORY_CLIENT_BEAN_NAME, beanName)
-                .add(Key.FACTORY_CLIENT_TIMEOUT, listener.timeout())
+                .add(Key.FACTORY_CLIENT_TIMEOUT, listener.processingTimeout())
                 .add(Key.HEADER_CLIENT_TYPE, ClientType.CONSUMER)
-                .add(Key.FACTORY_CLIENT_IS_AVAILABLE, true);
+                .add(Key.FACTORY_CLIENT_IS_AVAILABLE, true)
+                .add(Key.FACTORY_PROCESSING_TIMEOUT, listener.processingTimeout())
+                .add(Key.FACTORY_CLIENT_CONFIG_POLL_INITIAL_DELAY, listener.pollInitialDelay())
+                .add(Key.FACTORY_CLIENT_CONFIG_POLL_FIXED_DELAY, listener.pollFixedDelay())
+                .add(Key.FACTORY_CLIENT_CONFIG_HEALTH_CHECK_INITIAL_DELAY, listener.healthCheckInitialDelay())
+                .add(Key.FACTORY_CLIENT_CONFIG_HEALTH_CHECK_FIXED_DELAY, listener.healthCheckFixedDelay())
+                .add(Key.FACTORY_CLIENT_CONFIG_HEALTH_CHECK_EXPIRATION_TIME, listener.healthCheckExpirationTime())
+                .add(Key.FACTORY_CLIENT_CONFIG_CONNECTION_MAX_RETRIES, listener.connectionMaxRetries())
+                .add(Key.FACTORY_CLIENT_CONFIG_CONNECTION_TIMEOUT, listener.connectionTimeout())
+                .add(Key.FACTORY_CLIENT_CONFIG_USE_GLOBAL_VALUES, listener.useGlobalValues());
         factoryResolver.create(definition, Client.class)
                 .ifPresent(client -> {
-                    logClientCreation(i, listener);
+                    log.info("Creating client: replica={}/{} topic={}", i.get(), listener.quantity(), listener.topic());
                     createClientSessionManager(client);
                     clientRegistry.save(client);
                 });
-    }
-
-    private void logClientCreation(AtomicInteger i, OvyListener listener) {
-        log.info("Creating client: replica={}/{} topic={} replica-config=[quantity={} max={} min={} step={} autoManage={} timeout={}ms pollInitialDelay={} pollFixedDelay={}]",
-                i.get(),
-                listener.quantity(),
-                listener.topic(),
-                listener.quantity(),
-                listener.max(),
-                listener.min(),
-                listener.step(),
-                listener.autoManage(),
-                listener.timeout(),
-                listener.pollInitialDelay(),
-                listener.pollFixedDelay());
     }
 
     private void createClientSessionManager(Client client) {
@@ -92,16 +87,17 @@ public class ClientListenerInitializer implements BeanPostProcessor {
     }
 
     private void createListenerConfig(OvyListener listener) {
+        //todo listener config auto manage dto
         DefinitionMap definition = definitionProvider.getObject()
                 .add(Key.HEADER_TOPIC, Value.ROLE_SERVER)
-                .add(Key.FACTORY_CLIENT_TIMEOUT, listener.timeout())
+                .add(Key.FACTORY_CLIENT_TIMEOUT, listener.processingTimeout())
                 .add(Key.FACTORY_REPLICA_QUANTITY, listener.quantity())
                 .add(Key.FACTORY_REPLICA_MAX, listener.max())
                 .add(Key.FACTORY_REPLICA_MIN, listener.min())
                 .add(Key.FACTORY_REPLICA_STEP, listener.step())
                 .add(Key.FACTORY_REPLICA_AUTO_MANAGE, listener.autoManage())
-                .add(Key.FACTORY_REPLICA_POLL_INITIAL_DELAY, listener.pollInitialDelay())
-                .add(Key.FACTORY_REPLICA_POLL_FIXED_DELAY, listener.pollFixedDelay());
+                .add(Key.FACTORY_CLIENT_CONFIG_POLL_INITIAL_DELAY, listener.pollInitialDelay())
+                .add(Key.FACTORY_CLIENT_CONFIG_POLL_FIXED_DELAY, listener.pollFixedDelay());
         factoryResolver.create(definition, ListenerConfig.class).ifPresent(listenerConfigRegistry::save);
     }
 }

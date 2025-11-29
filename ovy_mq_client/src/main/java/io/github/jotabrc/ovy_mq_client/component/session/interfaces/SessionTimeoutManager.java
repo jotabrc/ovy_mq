@@ -7,6 +7,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface SessionTimeoutManager {
 
-    CompletableFuture<SessionManager> manage(SessionManager session, Client client, CompletableFuture<SessionManager> finalFuture);
+    CompletableFuture<SessionManager> execute(SessionManager session, Client client, CompletableFuture<SessionManager> finalFuture);
     SessionType supports();
 }
