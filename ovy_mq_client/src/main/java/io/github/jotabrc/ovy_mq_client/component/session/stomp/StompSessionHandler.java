@@ -52,7 +52,6 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     private List<String> subscriptions;
     private CompletableFuture<SessionManager> connectionFuture;
     private List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
-    // todo Lst with scheduled task to use in the destroy method
 
     @Override
     public SessionManager send(String destination, Object payload) {
@@ -124,11 +123,13 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public void destroy() {
         if (!scheduledFutures.isEmpty()) {
+            log.info("Destroying session for client: {}. Cancelling {} scheduled tasks.", client.getId(), scheduledFutures.size());
             this.client.setIsDestroying(true);
             managerHandler.initialize(client, this, ManagerFactory.SESSION_MANAGER_DESTROY);
             scheduledFutures.forEach(scheduledFuture -> {
                 if (!scheduledFuture.isDone() && !scheduledFuture.isCancelled()) scheduledFuture.cancel(true);
             });
+            scheduledFutures.clear();
         }
 
         if (this.client.canDisconnect()) this.disconnect();
