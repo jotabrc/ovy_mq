@@ -36,7 +36,9 @@ public class ListenerExecutionAspect {
             throw new OvyException.ListenerExecution("Error while executing listener: client=%s topic=%s".formatted(client.getId(), client.getTopic()));
         } finally {
             if (nonNull(client)) client.setIsAvailable(true);
-            clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
+            if (!client.getIsDestroying()) {
+                clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
+            }
         }
     }
 }

@@ -17,8 +17,8 @@ public class ListenerInvocator {
 
     public void invoke(Client client, Object payload) {
         try {
-            listenerExecutionContextHolder.setThreadLocal(client);
             client.setIsAvailable(false);
+            listenerExecutionContextHolder.setThreadLocal(client);
             Object bean = ApplicationContextHolder.getContextBean(client.getBeanName());
             AopUtils.invokeJoinpointUsingReflection(bean, client.getMethod(), new Object[]{payload});
         } catch (Throwable e) {

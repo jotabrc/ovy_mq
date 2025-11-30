@@ -21,7 +21,11 @@ public class Client implements Serializable {
 
     private String id;
     private String topic;
-    private Boolean isAvailable;
+    @Builder.Default
+    private Boolean isAvailable = true;
+    private Boolean inboundMessageRequest;
+    @Builder.Default
+    private Boolean isDestroying = false;
     private String beanName;
     private Method method;
     private ClientType type;
@@ -45,6 +49,10 @@ public class Client implements Serializable {
         synchronized (this) {
             isAvailable = available;
         }
+    }
+
+    public boolean canDisconnect() {
+        return !this.isAvailable && !this.inboundMessageRequest;
     }
 
     @Override

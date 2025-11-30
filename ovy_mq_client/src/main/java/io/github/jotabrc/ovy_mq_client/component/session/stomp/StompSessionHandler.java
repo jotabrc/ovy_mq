@@ -26,8 +26,10 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledFuture;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.CONFIRM_PAYLOAD_RECEIVED;
 import static java.util.Objects.isNull;
@@ -49,6 +51,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     private Client client;
     private List<String> subscriptions;
     private CompletableFuture<SessionManager> connectionFuture;
+    private List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
     // todo Lst with scheduled task to use in the destroy method
 
     @Override
@@ -74,10 +77,9 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public void initializeHandler() {
         if (nonNull(this.client)) {
-            // todo return ScheduledTask
-            managerHandler.initialize(client, this,
+            scheduledFutures.addAll(managerHandler.initialize(client, this,
                     ManagerFactory.HEALTH_CHECK,
-                    ManagerFactory.LISTENER_POLL);
+                    ManagerFactory.LISTENER_POLL));
         } else throw new IllegalStateException("SessionManager initialized without a Client");
     }
 
@@ -121,8 +123,15 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void destroy() {
-        managerHandler.initialize(this.client, this, ManagerFactory.SESSION_MANAGER_DESTROY);
-        managerHandler.destroy(this.client.getId());
+        if (!scheduledFutures.isEmpty()) {
+            this.client.setIsDestroying(true);
+            managerHandler.initialize(client, this, ManagerFactory.SESSION_MANAGER_DESTROY);
+            scheduledFutures.forEach(scheduledFuture -> {
+                if (!scheduledFuture.isDone() && !scheduledFuture.isCancelled()) scheduledFuture.cancel(true);
+            });
+        }
+
+        if (this.client.canDisconnect()) this.disconnect();
     }
 
     @NotNull
@@ -138,6 +147,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void handleFrame(@NotNull StompHeaders headers, Object object) {
+        if (object instanceof MessagePayload) client.setInboundMessageRequest(false);
         dispatcherFacade.acknowledgePayload(this, client, CONFIRM_PAYLOAD_RECEIVED, object);
         dispatcherFacade.handlePayload(client, object, headers);
     }

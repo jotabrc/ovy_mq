@@ -11,7 +11,7 @@ public enum ManagerFactory {
 
     HEALTH_CHECK(ObjectProviderFacade::getHealthCheckManager),
     LISTENER_POLL(ObjectProviderFacade::getListenerPollManager),
-    SESSION_MANAGER_DESTROY(ObjectProviderFacade::getListenerPollManager);
+    SESSION_MANAGER_DESTROY(ObjectProviderFacade::getSessionManagerDestroyManager);
 
     public final AbstractTriFunctionFactory<ObjectProviderFacade, Client, SessionManager, AbstractManager> getAndThen;
 }

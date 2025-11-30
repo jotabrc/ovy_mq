@@ -38,8 +38,8 @@ public class SessionManagerDestroyManager implements AbstractManager {
     @Override
     public ScheduledFuture<?> execute() {
         taskFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
-                    if (client.getIsAvailable()) {
-                        sessionManager.disconnect();
+                    if (client.canDisconnect()) {
+                        sessionManager.destroy();
                         this.destroy();
                     }
                 }, this.initialDelay,

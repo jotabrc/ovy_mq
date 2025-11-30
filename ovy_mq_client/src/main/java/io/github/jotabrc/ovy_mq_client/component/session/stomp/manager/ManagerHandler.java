@@ -6,31 +6,22 @@ import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-
-import static java.util.Objects.isNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 
 @RequiredArgsConstructor
 @Component
 public class ManagerHandler {
 
     private final ObjectProviderFacade objectProviderFacade;
-    private final Map<String, Set<AbstractManager>> managers = new HashMap<>();
 
-    public void initialize(Client client, SessionManager sessionManager, ManagerFactory... factories) {
+    public List<ScheduledFuture<?>> initialize(Client client, SessionManager sessionManager, ManagerFactory... factories) {
+        List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
         for (ManagerFactory managerFactory : factories) {
             AbstractManager manager = managerFactory.getAndThen.create(objectProviderFacade, client, sessionManager);
-            manager.execute();
-            managers.compute(client.getId(), (key, set) -> {
-                if (isNull(set)) set = new HashSet<>();
-                set.add(manager);
-                return set;
-            });
+            scheduledFutures.add(manager.execute());
         }
-    }
-
-    public void destroy(String clientId) {
-        Optional.ofNullable(managers.remove(clientId))
-                .ifPresent(managers -> managers.forEach(AbstractManager::destroy));
+        return scheduledFutures;
     }
 }

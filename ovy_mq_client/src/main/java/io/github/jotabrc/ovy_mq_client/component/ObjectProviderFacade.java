@@ -37,7 +37,7 @@ public class ObjectProviderFacade {
         return listenerPollManager;
     }
 
-    public SessionManagerDestroyManager getSessionManagerLifecycleManager(Client client, SessionManager sessionManager) {
+    public SessionManagerDestroyManager getSessionManagerDestroyManager(Client client, SessionManager sessionManager) {
         SessionManagerDestroyManager sessionManagerDestroyManager = sessioManagerLifecycleManagerObjectProvider.getObject();
         sessionManagerDestroyManager.setClient(client);
         sessionManagerDestroyManager.setSessionManager(sessionManager);
