@@ -8,8 +8,8 @@ logging:
 # Global values
 ovymq.client.processing.timeout: 150000
 
-ovymq.task.session-destroy.initial-delay: 10000
-ovymq.task.session-destroy.fixed-delay: 35000
+ovymq.task.shutdown.wait-delay: 1000
+ovymq.task.shutdown.max-wait: 180000
 
 ovymq.task.listener-poll.initial-delay: 10000
 ovymq.task.listener-poll.fixed-delay: 35000

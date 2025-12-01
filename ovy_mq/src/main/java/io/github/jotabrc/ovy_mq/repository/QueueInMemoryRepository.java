@@ -12,6 +12,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Objects.nonNull;
 
@@ -22,6 +23,7 @@ import static java.util.Objects.nonNull;
 public class QueueInMemoryRepository implements MessageRepository {
 
     private final Map<String, Queue<MessagePayload>> messages = new ConcurrentHashMap<>();
+    private final AtomicInteger awaitingConfirmation = new AtomicInteger(0);
 
     private final LockProcessor lockProcessor;
 
@@ -35,6 +37,7 @@ public class QueueInMemoryRepository implements MessageRepository {
     @Override
     public Optional<MessagePayload> pollFromQueue(String topic) {
         synchronized (lockProcessor.getLockByTopic(topic)) {
+            awaitingConfirmation.incrementAndGet();
             if (!messages.isEmpty()) return Optional.ofNullable(messages.get(topic).poll());
             else return Optional.empty();
         }
@@ -53,8 +56,10 @@ public class QueueInMemoryRepository implements MessageRepository {
     @Override
     public void removeFromQueue(String topic, String messageId) {
         synchronized (lockProcessor.getLockByTopicAndMessageId(topic, messageId)) {
-            if (!messages.isEmpty())
+            if (!messages.isEmpty()) {
                 messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+                awaitingConfirmation.decrementAndGet();
+            }
         }
     }
 
@@ -64,5 +69,10 @@ public class QueueInMemoryRepository implements MessageRepository {
             removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
             saveToQueue(messagePayload);
         }
+    }
+
+    @Override
+    public Integer getAwaitingConfirmationQuantity() {
+        return awaitingConfirmation.get();
     }
 }

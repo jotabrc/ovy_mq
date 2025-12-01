@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq_client.component;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.HealthCheckManager;
 import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.ListenerPollManager;
-import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.SessionManagerDestroyManager;
+import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.ShutdownManager;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class ObjectProviderFacade {
     private final ObjectProvider<DefinitionMap> definitionMapProvider;
     private final ObjectProvider<HealthCheckManager> healthCheckManagerObjectProvider;
     private final ObjectProvider<ListenerPollManager> listenerPollManagerObjectProvider;
-    private final ObjectProvider<SessionManagerDestroyManager> sessioManagerLifecycleManagerObjectProvider;
+    private final ObjectProvider<ShutdownManager> sessioManagerLifecycleManagerObjectProvider;
 
     public DefinitionMap getDefinitionMap() {
         return definitionMapProvider.getObject();
@@ -37,10 +37,10 @@ public class ObjectProviderFacade {
         return listenerPollManager;
     }
 
-    public SessionManagerDestroyManager getSessionManagerDestroyManager(Client client, SessionManager sessionManager) {
-        SessionManagerDestroyManager sessionManagerDestroyManager = sessioManagerLifecycleManagerObjectProvider.getObject();
-        sessionManagerDestroyManager.setClient(client);
-        sessionManagerDestroyManager.setSessionManager(sessionManager);
-        return sessionManagerDestroyManager;
+    public ShutdownManager getSessionManagerDestroyManager(Client client, SessionManager sessionManager) {
+        ShutdownManager shutdownManager = sessioManagerLifecycleManagerObjectProvider.getObject();
+        shutdownManager.setClient(client);
+        shutdownManager.setSessionManager(sessionManager);
+        return shutdownManager;
     }
 }

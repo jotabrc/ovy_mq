@@ -12,4 +12,5 @@ public interface MessageRepository {
     List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms);
     void removeFromQueue(String topic, String messageId);
     void removeAndRequeue(MessagePayload messagePayload);
+    Integer getAwaitingConfirmationQuantity();
 }
