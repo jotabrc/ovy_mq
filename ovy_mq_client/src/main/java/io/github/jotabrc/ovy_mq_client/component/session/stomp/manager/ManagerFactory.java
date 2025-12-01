@@ -10,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 public enum ManagerFactory {
 
     HEALTH_CHECK(ObjectProviderFacade::getHealthCheckManager),
-    LISTENER_POLL(ObjectProviderFacade::getListenerPollManager),
-    SESSION_MANAGER_DESTROY(ObjectProviderFacade::getSessionManagerDestroyManager);
+    LISTENER_POLL(ObjectProviderFacade::getListenerPollManager);
 
     public final AbstractTriFunctionFactory<ObjectProviderFacade, Client, SessionManager, AbstractManager> getAndThen;
 }

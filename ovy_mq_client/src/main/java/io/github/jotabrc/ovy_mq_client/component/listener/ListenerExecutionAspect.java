@@ -37,6 +37,7 @@ public class ListenerExecutionAspect {
         } finally {
             if (nonNull(client)) client.setIsAvailable(true);
             if (!client.getIsDestroying()) {
+                client.setInboundMessageRequest(true);
                 clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
             }
         }

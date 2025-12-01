@@ -1,8 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.component.message;
 
-import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.component.initialize.registry.SessionRegistry;
-import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
+import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.domain.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ public class ClientMessageDispatcher {
     }
 
     public void send(Client client, String topic, String destination, Object payload, SessionManager session) {
-        if (destination.equals(Mapping.REQUEST_MESSAGE)) client.setInboundMessageRequest(true);
         try {
             Optional.ofNullable(session)
                     .filter(SessionManager::isConnected)
@@ -32,7 +30,6 @@ public class ClientMessageDispatcher {
                         session.send(destination, payload);
                     });
         } catch (Exception e) {
-            if (destination.equals(Mapping.REQUEST_MESSAGE)) client.setInboundMessageRequest(false);
             log.error("Error sending message: type={} client={} topic={}", destination, client.getId(), topic, e);
         }
     }

@@ -102,8 +102,13 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     }
 
     @Override
+    public boolean canDisconnect() {
+        return isConnected() && this.client.canDisconnect();
+    }
+
+    @Override
     public void disconnect() {
-        if (nonNull(this.session) && this.isConnected()) this.session.disconnect();
+        if (nonNull(this.session) && this.isConnected() && this.canDisconnect()) this.session.disconnect();
     }
 
     @Override
@@ -125,14 +130,11 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         if (!scheduledFutures.isEmpty()) {
             log.info("Destroying session for client: {}. Cancelling {} scheduled tasks.", client.getId(), scheduledFutures.size());
             this.client.setIsDestroying(true);
-            managerHandler.initialize(client, this, ManagerFactory.SESSION_MANAGER_DESTROY);
             scheduledFutures.forEach(scheduledFuture -> {
                 if (!scheduledFuture.isDone() && !scheduledFuture.isCancelled()) scheduledFuture.cancel(true);
             });
             scheduledFutures.clear();
         }
-
-        if (this.client.canDisconnect()) this.disconnect();
     }
 
     @NotNull
@@ -148,7 +150,6 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void handleFrame(@NotNull StompHeaders headers, Object object) {
-        if (object instanceof MessagePayload) client.setInboundMessageRequest(false);
         dispatcherFacade.acknowledgePayload(this, client, CONFIRM_PAYLOAD_RECEIVED, object);
         dispatcherFacade.handlePayload(client, object, headers);
     }

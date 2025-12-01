@@ -23,7 +23,8 @@ public class Client implements Serializable {
     private String topic;
     @Builder.Default
     private Boolean isAvailable = true;
-    private Boolean inboundMessageRequest;
+    @Builder.Default
+    private Boolean inboundMessageRequest = false;
     @Builder.Default
     private Boolean isDestroying = false;
     private String beanName;
@@ -52,7 +53,7 @@ public class Client implements Serializable {
     }
 
     public boolean canDisconnect() {
-        return !this.isAvailable && !this.inboundMessageRequest;
+        return this.isAvailable && !this.inboundMessageRequest;
     }
 
     @Override

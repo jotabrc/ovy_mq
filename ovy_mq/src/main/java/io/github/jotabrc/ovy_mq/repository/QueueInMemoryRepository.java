@@ -37,8 +37,12 @@ public class QueueInMemoryRepository implements MessageRepository {
     @Override
     public Optional<MessagePayload> pollFromQueue(String topic) {
         synchronized (lockProcessor.getLockByTopic(topic)) {
-            awaitingConfirmation.incrementAndGet();
-            if (!messages.isEmpty()) return Optional.ofNullable(messages.get(topic).poll());
+            if (!messages.isEmpty()) {
+                Optional<MessagePayload> payload = Optional.ofNullable(messages.get(topic).poll());
+                if (payload.isPresent())
+                    awaitingConfirmation.incrementAndGet();
+                return payload;
+            }
             else return Optional.empty();
         }
     }

@@ -21,7 +21,8 @@ public class MessagePayloadConfirmationHandler implements PayloadConfirmationHan
                             Client client,
                             String destination,
                             MessagePayload payload) {
-            clientMessageDispatcher.send(client, client.getTopic(), destination, payload.cleanDataAndUpdateSuccessTo(true), session);
+        clientMessageDispatcher.send(client, client.getTopic(), destination, payload.cleanDataAndUpdateSuccessTo(true), session);
+        client.setInboundMessageRequest(false);
     }
 
     @Override

@@ -10,6 +10,7 @@ public interface SessionManager {
     void initializeHandler();
     void initializeSession();
     boolean isConnected();
+    boolean canDisconnect();
     void disconnect();
     void setClient(Client client);
     void setSubscriptions(List<String> subscriptions);
