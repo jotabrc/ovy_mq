@@ -136,7 +136,6 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
             });
             scheduledFutures.clear();
         }
-        this.isApplicationShuttingDown.set(true);
     }
 
     @NotNull
