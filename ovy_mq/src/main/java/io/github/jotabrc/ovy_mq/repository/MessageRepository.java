@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.repository;
 
-import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 
 import java.util.List;
 import java.util.Optional;

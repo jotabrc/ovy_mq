@@ -21,7 +21,8 @@ public class Key {
     public static final String FACTORY_CLIENT_TIMEOUT = "client-timeout";
     public static final String FACTORY_CLIENT_IS_AVAILABLE = "client-is-available";
 
-    // Factory ClientConfig
+    // Factory ListenerConfig
+    public static final String FACTORY_OVY_LISTENER = "factory-ovy-listener";
     public static final String FACTORY_REPLICA_QUANTITY = "replica-quantity";
     public static final String FACTORY_REPLICA_MAX = "replica-max";
     public static final String FACTORY_REPLICA_MIN = "replica-min";

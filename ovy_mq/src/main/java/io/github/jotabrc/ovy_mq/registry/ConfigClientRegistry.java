@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.registry;
 
-import io.github.jotabrc.ovy_mq_core.domain.ClientType;
-import io.github.jotabrc.ovy_mq_core.domain.ConfigClient;
+import io.github.jotabrc.ovy_mq_core.domain.client.ServerClientConfigurer;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,18 +16,18 @@ import static java.util.Objects.nonNull;
 @Component
 public class ConfigClientRegistry {
 
-    private ConfigClient client;
+    private ServerClientConfigurer client;
 
-    public void add(ConfigClient configClient) {
-        if (nonNull(configClient) && nonNull(configClient.getId()) && nonNull(configClient.getType())) {
-            if (Objects.equals(ClientType.CONFIGURER, configClient.getType())) {
-                log.info("Registry: config-client={}", configClient.getId());
-                client = configClient;
+    public void add(ServerClientConfigurer serverClientConfigurer) {
+        if (nonNull(serverClientConfigurer) && nonNull(serverClientConfigurer.getId()) && nonNull(serverClientConfigurer.getType())) {
+            if (Objects.equals(ClientType.CONFIGURER, serverClientConfigurer.getType())) {
+                log.info("Registry: config-client={}", serverClientConfigurer.getId());
+                client = serverClientConfigurer;
             }
         }
     }
 
-    public Optional<ConfigClient> get() {
+    public Optional<ServerClientConfigurer> get() {
         return Optional.ofNullable(client);
     }
 }

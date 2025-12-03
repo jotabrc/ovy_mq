@@ -3,9 +3,10 @@ package io.github.jotabrc.ovy_mq_client.component.payload;
 import io.github.jotabrc.ovy_mq_client.component.listener.ListenerExecutionContextHolder;
 import io.github.jotabrc.ovy_mq_client.component.listener.ListenerInvocator;
 import io.github.jotabrc.ovy_mq_client.component.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
+import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +50,7 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
     private void handleAsync(Client client, MessagePayload messagePayload) {
         CompletableFuture.runAsync(() -> execute(messagePayload, client), listenerExecutor)
-                .orTimeout(timeout, TimeUnit.MILLISECONDS)
+                .orTimeout(ValueUtil.get(client.getProcessingTimeout(), timeout, client.useGlobalValues()), TimeUnit.MILLISECONDS)
                 .exceptionally(e -> {
                     log.error("Listener task failed: client={} message={} topic={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), e);
                     return null;

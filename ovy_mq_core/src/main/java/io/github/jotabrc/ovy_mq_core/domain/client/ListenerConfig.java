@@ -1,12 +1,13 @@
-package io.github.jotabrc.ovy_mq_core.domain;
+package io.github.jotabrc.ovy_mq_core.domain.client;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class ClientConfig {
+public class ListenerConfig {
 
+    private String topic;
     private Replica replica;
     private Long processingTimeout;
     private Long pollInitialDelay;

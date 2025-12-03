@@ -5,7 +5,7 @@ import io.github.jotabrc.ovy_mq_client.component.session.stomp.StompSessionHandl
 import io.github.jotabrc.ovy_mq_core.components.Definition;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

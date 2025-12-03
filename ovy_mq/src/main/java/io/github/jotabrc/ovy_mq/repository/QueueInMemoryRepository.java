@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.repository;
 
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
-import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,43 +37,51 @@ public class QueueInMemoryRepository implements MessageRepository {
 
     @Override
     public Optional<MessagePayload> pollFromQueue(String topic) {
-        synchronized (lockProcessor.getLockByTopic(topic)) {
+        Callable<Optional<MessagePayload>> callable = () -> {
             if (!messages.isEmpty()) {
-                Optional<MessagePayload> payload = Optional.ofNullable(messages.get(topic).poll());
-                if (payload.isPresent())
+                Optional<MessagePayload> payload = Optional.ofNullable(messages.getOrDefault(topic, new ConcurrentLinkedQueue<>()).poll());
+                if (payload.isPresent()) {
                     awaitingConfirmation.incrementAndGet();
+                }
                 return payload;
-            }
-            else return Optional.empty();
-        }
+            } else return Optional.empty();
+        };
+        return lockProcessor.getLockAndExecute(callable, topic, null, null);
     }
 
     @Override
     public List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms) {
-        return messages.values()
-                .stream()
-                .flatMap(Collection::stream)
-                .filter(s -> nonNull(s.getProcessingStartedAt()))
-                .filter(s -> ChronoUnit.MILLIS.between(s.getProcessingStartedAt(), OffsetDateTime.now()) > ms)
-                .toList();
+        Callable<List<MessagePayload>> callable = () -> {
+            return messages.values()
+                    .stream()
+                    .flatMap(Collection::stream)
+                    .filter(s -> nonNull(s.getProcessingStartedAt()))
+                    .filter(s -> ChronoUnit.MILLIS.between(s.getProcessingStartedAt(), OffsetDateTime.now()) > ms)
+                    .toList();
+        };
+        return lockProcessor.getLockAndExecute(callable, null, null, null);
     }
 
     @Override
     public void removeFromQueue(String topic, String messageId) {
-        synchronized (lockProcessor.getLockByTopicAndMessageId(topic, messageId)) {
+        Callable<Void> callable = () -> {
             if (!messages.isEmpty()) {
                 messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
                 awaitingConfirmation.decrementAndGet();
             }
-        }
+            return null;
+        };
+        lockProcessor.getLockAndExecute(callable, topic, messageId, null);
     }
 
     @Override
     public void removeAndRequeue(MessagePayload messagePayload) {
-        synchronized (lockProcessor.getLockByTopicAndMessageId(messagePayload.getTopic(), messagePayload.getId())) {
+        Callable<Void> callable = () -> {
             removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
             saveToQueue(messagePayload);
-        }
+            return null;
+        };
+        lockProcessor.getLockAndExecute(callable, messagePayload.getTopic(), messagePayload.getId(), null);
     }
 
     @Override

@@ -1,10 +1,11 @@
 package io.github.jotabrc.ovy_mq_core.components;
 
-import io.github.jotabrc.ovy_mq_core.domain.ThreadLock;
+import io.github.jotabrc.ovy_mq_core.domain.concurrency.ThreadLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Objects.isNull;
@@ -33,13 +34,31 @@ public class LockProcessor {
 
     public ThreadLock getLock(String topic, String messageId, String clientId) {
         String key = getKey(topic, messageId, clientId);
-        ThreadLock lock = locks.get(key);
-        if (isNull(lock)) {
-            lock = new ThreadLock(topic, messageId, clientId);
-            locks.put(key, lock);
+        return locks.computeIfAbsent(key, k -> ThreadLock.builder()
+                .topic(topic)
+                .messageId(messageId)
+                .clientId(clientId)
+                .build());
+    }
+
+    public <T> T getLockAndExecute(Callable<T> callable, String topic, String messageId, String clientId) {
+        ThreadLock lock = getLock(topic, messageId, clientId);
+        log.info("Thread={} requesting lock={}", Thread.currentThread().getName(), getKey(topic, messageId, clientId));
+        synchronized (lock) {
+            log.info("Thread={} acquired lock={}: processing request", Thread.currentThread().getName(), getKey(topic, messageId, clientId));
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw new IllegalStateException("Error executing lock with key=%s: %s"
+                        .formatted(getKey(topic, messageId, clientId), e.getMessage()));
+            } finally {
+                this.removeLock(lock);
+            }
         }
-        log.info("Thread={} requesting lock={}", Thread.currentThread().getName(), lock);
-        return lock;
+    }
+
+    public void removeLock(ThreadLock threadLock) {
+        locks.remove(getKey(threadLock.getTopic(), threadLock.getMessageId(), threadLock.getClientId()));
     }
 
     private String getKey(String topic, String messageId, String clientId) {

@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.component.initialize.registry;
 
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.ClientType;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

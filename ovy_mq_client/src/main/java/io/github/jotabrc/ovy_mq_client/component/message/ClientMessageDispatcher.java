@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.component.message;
 
 import io.github.jotabrc.ovy_mq_client.component.initialize.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

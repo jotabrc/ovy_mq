@@ -2,8 +2,8 @@ package io.github.jotabrc.ovy_mq_client.component.session.stomp.manager;
 
 import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -51,8 +51,8 @@ public class HealthCheckManager implements AbstractManager {
                     reconnectIfNeeded(isLastHealthCheckExpired(this.client));
                     HealthStatus healthStatus = buildHealthStatus();
                     clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_HEALTH_CHECK, healthStatus, this.session);
-                }, ValueUtil.get(client.getConfig().getHealthCheckInitialDelay(), this.initialDelay, client.getConfig().getUseGlobalValues()),
-                ValueUtil.get(client.getConfig().getHealthCheckFixedDelay(), this.fixedDelay, client.getConfig().getUseGlobalValues()),
+                }, ValueUtil.get(client.getHealthCheckInitialDelay(), this.initialDelay, client.useGlobalValues()),
+                ValueUtil.get(client.getHealthCheckFixedDelay(), this.fixedDelay, client.useGlobalValues()),
                 TimeUnit.MILLISECONDS);
         return taskFuture;
     }
@@ -66,7 +66,7 @@ public class HealthCheckManager implements AbstractManager {
     }
 
     private boolean isLastHealthCheckExpired(Client client) {
-        return OffsetDateTime.now().minus(ValueUtil.get(client.getConfig().getHealthCheckExpirationTime(), this.expirationTime, client.getConfig().getUseGlobalValues()),
+        return OffsetDateTime.now().minus(ValueUtil.get(client.getHealthCheckExpirationTime(), this.expirationTime, client.useGlobalValues()),
                         ChronoUnit.MILLIS)
                 .isAfter(client.getLastHealthCheck());
     }

@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.component.session.stomp.manager;
 
 import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -46,8 +46,8 @@ public class ListenerPollManager implements AbstractManager {
                         log.info("Requesting message: client={} topic={}", this.client.getId(), this.client.getTopic());
                         clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_MESSAGE, this.client.getTopic());
                     }
-                }, ValueUtil.get(this.client.getConfig().getPollInitialDelay(), this.initialDelay, this.client.getConfig().getUseGlobalValues()),
-                ValueUtil.get(this.client.getConfig().getPollFixedDelay(), this.fixedDelay, this.client.getConfig().getUseGlobalValues()),
+                }, ValueUtil.get(this.client.getPollInitialDelay(), this.initialDelay, this.client.useGlobalValues()),
+                ValueUtil.get(this.client.getPollFixedDelay(), this.fixedDelay, this.client.useGlobalValues()),
                 TimeUnit.MILLISECONDS);
         return taskFuture;
     }

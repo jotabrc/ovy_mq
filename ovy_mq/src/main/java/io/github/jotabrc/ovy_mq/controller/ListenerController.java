@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq.controller;
 
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
-import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
+import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

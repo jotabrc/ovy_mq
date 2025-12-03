@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
 import io.github.jotabrc.ovy_mq.security.SecurityChainType;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.domain.ClientType;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

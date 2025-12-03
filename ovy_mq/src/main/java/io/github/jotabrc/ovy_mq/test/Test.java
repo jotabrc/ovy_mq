@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq.test;
 
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
-import io.github.jotabrc.ovy_mq_core.domain.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

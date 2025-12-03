@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client;
+package io.github.jotabrc.ovy_mq_core.domain.client;
 
 import java.lang.annotation.*;
 

@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.domain;
+package io.github.jotabrc.ovy_mq_core.domain.payload;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.jotabrc.ovy_mq_core.util.TopicUtil;

@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.component.session.stomp.manager;
 
 import io.github.jotabrc.ovy_mq_client.component.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.util.AbstractTriFunctionFactory;
 import lombok.RequiredArgsConstructor;
 

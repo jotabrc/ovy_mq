@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.component.payload;
 
 import io.github.jotabrc.ovy_mq_client.component.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.HealthStatus;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;

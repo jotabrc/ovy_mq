@@ -5,8 +5,9 @@ import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolve
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Subscribe;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.ClientType;
+import io.github.jotabrc.ovy_mq_core.defaults.Value;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ConfigClientInitializer implements ApplicationRunner {
+public class ConfigListenerClientInitializer implements ApplicationRunner {
 
     private final ClientRegistry clientRegistry;
     private final SessionInitializer sessionInitializer;
@@ -32,7 +33,7 @@ public class ConfigClientInitializer implements ApplicationRunner {
     private void initialize() {
         DefinitionMap definition = definitionProvider.getObject()
                 .add(Key.HEADER_CLIENT_TYPE, ClientType.CONFIGURER)
-                .add(Key.HEADER_TOPIC, io.github.jotabrc.ovy_mq_core.defaults.Value.ROLE_SERVER);
+                .add(Key.HEADER_TOPIC, Value.ROLE_SERVER);
         factoryResolver.create(definition, Client.class)
                 .ifPresent(client -> {
                     DefinitionMap sessionDefinition = definitionProvider.getObject()

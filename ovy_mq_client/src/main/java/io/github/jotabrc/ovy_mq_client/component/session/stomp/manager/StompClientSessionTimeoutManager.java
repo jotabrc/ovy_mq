@@ -9,7 +9,7 @@ import io.github.jotabrc.ovy_mq_client.component.session.stomp.StompSessionHandl
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +84,7 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
                          Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect,
                          Client client,
                          int attempt) {
-        if (attempt > ValueUtil.get(client.getConfig().getConnectionMaxRetries(), this.maxRetries, client.getConfig().getUseGlobalValues())) {
+        if (attempt > ValueUtil.get(client.getConnectionMaxRetries(), this.maxRetries, client.useGlobalValues())) {
             finalFuture.completeExceptionally(new TimeoutException("Connection failed attempt=%d".formatted(attempt)));
             return;
         }
@@ -102,7 +102,7 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
         if (finalFuture.isDone()) return;
 
         scheduledExecutor.schedule(() -> connect(finalFuture, connect, client, attempt + 1),
-                ValueUtil.get(client.getConfig().getConnectionTimeout(), this.timeout, client.getConfig().getUseGlobalValues()),
+                ValueUtil.get(client.getConnectionTimeout(), this.timeout, client.useGlobalValues()),
                 TimeUnit.MILLISECONDS);
     }
 }

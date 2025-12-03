@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_core.util;
 
-import io.github.jotabrc.ovy_mq_core.domain.MessageStatus;
+import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
 
 public class TopicUtil {
 

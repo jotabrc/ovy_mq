@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.security.filter.chain;
 import io.github.jotabrc.ovy_mq.security.SecurityChainType;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.domain.ClientType;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

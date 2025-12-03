@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.component.payload;
 
 import io.github.jotabrc.ovy_mq_client.component.payload.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
-import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -21,14 +21,7 @@ public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
     }
 
     private void handle(Client client, ListenerConfig listenerConfig) {
-        log.info("Configuring listener with topic={}: config=[quantity={} max={} min={} step={} autoManage={} timeout={}ms]",
-                listenerConfig.getListenerState().getTopic(),
-                listenerConfig.getListenerState().getReplica().getQuantity(),
-                listenerConfig.getListenerState().getReplica().getMax(),
-                listenerConfig.getListenerState().getReplica().getMin(),
-                listenerConfig.getListenerState().getReplica().getStep(),
-                listenerConfig.getListenerState().getReplica().getAutoManage(),
-                listenerConfig.getListenerState().getTimeout());
+        // log
         // TODO
     }
 

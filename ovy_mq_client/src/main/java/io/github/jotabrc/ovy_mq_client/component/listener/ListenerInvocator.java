@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.component.listener;
 
-import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import io.github.jotabrc.ovy_mq_core.util.ApplicationContextHolder;
 import lombok.RequiredArgsConstructor;

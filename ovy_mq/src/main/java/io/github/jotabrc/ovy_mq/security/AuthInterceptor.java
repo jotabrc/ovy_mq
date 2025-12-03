@@ -2,8 +2,8 @@ package io.github.jotabrc.ovy_mq.security;
 
 import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.domain.ClientType;
-import io.github.jotabrc.ovy_mq_core.domain.ConfigClient;
+import io.github.jotabrc.ovy_mq_core.domain.client.ServerClientConfigurer;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -63,7 +63,7 @@ public class AuthInterceptor implements HandshakeInterceptor {
         Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
         if (clientType instanceof String type && clientId instanceof String id) {
             if (Objects.equals(ClientType.CONFIGURER, ClientType.valueOf(type)) && !id.isBlank()) {
-                configClientContextHolder.add(ConfigClient.builder()
+                configClientContextHolder.add(ServerClientConfigurer.builder()
                         .id(id)
                         .type(ClientType.valueOf(clientType.toString()))
                         .build());

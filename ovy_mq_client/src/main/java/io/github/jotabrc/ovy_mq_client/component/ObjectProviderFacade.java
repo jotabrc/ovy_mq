@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManag
 import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.HealthCheckManager;
 import io.github.jotabrc.ovy_mq_client.component.session.stomp.manager.ListenerPollManager;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.domain.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;

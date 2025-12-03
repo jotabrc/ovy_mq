@@ -7,8 +7,8 @@ import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
 import io.github.jotabrc.ovy_mq_core.defaults.Value;
-import io.github.jotabrc.ovy_mq_core.domain.ClientType;
-import io.github.jotabrc.ovy_mq_core.domain.ListenerConfig;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
+import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -28,14 +28,7 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
 
     @Override
     public void handle(ListenerConfig listenerConfig) {
-        log.info("Sending listener config: topic={} replica-config=[quantity={} max={} min={} step={} autoManage={} timeout={}ms]",
-                listenerConfig.getListenerState().getTopic(),
-                listenerConfig.getListenerState().getReplica().getQuantity(),
-                listenerConfig.getListenerState().getReplica().getMax(),
-                listenerConfig.getListenerState().getReplica().getMin(),
-                listenerConfig.getListenerState().getReplica().getMin(),
-                listenerConfig.getListenerState().getReplica().getAutoManage(),
-                listenerConfig.getListenerState().getTimeout());
+        // todo: log new config
         sendConfig(listenerConfig);
     }
 
@@ -52,7 +45,7 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
                                             listenerConfig,
                                             headers));
                         },
-                        () -> log.info("ConfigClient not found, unable to send configuration to client."));
+                        () -> log.info("ServerClientConfigurer not found, unable to send configuration to client."));
     }
 
     @Override
