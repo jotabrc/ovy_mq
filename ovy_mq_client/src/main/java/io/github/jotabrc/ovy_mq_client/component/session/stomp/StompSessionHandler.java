@@ -12,8 +12,8 @@ import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.defaults.Value;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
-import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
+import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -103,12 +103,13 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public boolean canDisconnect() {
-        return isConnected() && this.client.canDisconnect();
+        return this.client.canDisconnect();
     }
 
     @Override
     public void disconnect() {
-        if (nonNull(this.session) && this.isConnected() && this.canDisconnect()) this.session.disconnect();
+        if (nonNull(this.session) && this.isConnected() && this.canDisconnect())
+            this.session.disconnect();
     }
 
     @Override
@@ -135,6 +136,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
             });
             scheduledFutures.clear();
         }
+        this.isApplicationShuttingDown.set(true);
     }
 
     @NotNull

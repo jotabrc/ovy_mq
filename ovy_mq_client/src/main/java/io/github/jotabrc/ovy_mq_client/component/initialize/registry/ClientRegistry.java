@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -39,14 +40,13 @@ public class ClientRegistry {
 
     @Deprecated
     public Client getByClientIdOrThrow(String clientId) {
-        synchronized (lockProcessor.getLockByClientId(clientId)) {
-            return clients.values()
-                    .stream()
-                    .flatMap(Collection::stream)
-                    .filter(client -> Objects.equals(clientId, client.getId()))
-                    .findFirst()
-                    .orElseThrow(() -> new OvyException.NotFound("Client %s not found".formatted(clientId)));
-        }
+        Callable<Client> callable = () -> clients.values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(client -> Objects.equals(clientId, client.getId()))
+                .findFirst()
+                .orElseThrow(() -> new OvyException.NotFound("Client %s not found".formatted(clientId)));
+        return lockProcessor.getLockAndExecute(callable, null, null, clientId);
     }
 
     public List<Client> getAllAvailableClients() {

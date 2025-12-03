@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.security;
 
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.defaults.Value;
+import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
@@ -19,11 +19,11 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
                                       Map<String, Object> attributes) {
         return () -> {
             Object clientId = attributes.get(Key.HEADER_CLIENT_ID);
-            return nonNull(clientId)
+            if (nonNull(clientId)
                     && clientId instanceof String client
-                    && !client.isBlank()
-                    ? client
-                    : Value.PRINCIPAL_IS_MISSING;//todo
+                    && !client.isBlank())
+                return client;
+            throw new OvyException.AuthorizationDenied("Principal not available");
         };
     }
 }

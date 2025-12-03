@@ -49,7 +49,6 @@ public class ClientListenerInitializer implements BeanPostProcessor {
     }
 
     private void createClient(String beanName, Method method, OvyListener listener, AtomicInteger i) {
-        // todo simplify client creating inserting OvyListener instead of each value individually
         DefinitionMap definition = definitionProvider.getObject()
                 .add(Key.FACTORY_CLIENT_METHOD, method)
                 .add(Key.FACTORY_CLIENT_BEAN_NAME, beanName)

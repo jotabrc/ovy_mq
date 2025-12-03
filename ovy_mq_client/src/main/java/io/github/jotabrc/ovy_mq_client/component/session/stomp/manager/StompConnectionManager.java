@@ -23,6 +23,11 @@ public class StompConnectionManager implements ConnectionManager<StompSession, W
     }
 
     @Override
+    public void stop() {
+        webSocketStompClient.stop();
+    }
+
+    @Override
     public SessionType supports() {
         return SessionType.STOMP;
     }

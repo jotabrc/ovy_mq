@@ -16,31 +16,6 @@ public class LockProcessor {
 
     private final Map<String, ThreadLock> locks = new ConcurrentHashMap<>();
 
-    public ThreadLock getLockByTopic(String topic) {
-        return getLockByTopicAndMessageId(topic, null);
-    }
-
-    public ThreadLock getLockByClientId(String clientId) {
-        return getLock(null, null, clientId);
-    }
-
-    public ThreadLock getLockByTopicAndClientId(String topic, String clientId) {
-        return getLock(topic, null, clientId);
-    }
-
-    public ThreadLock getLockByTopicAndMessageId(String topic, String messageId) {
-        return getLock(topic, messageId, null);
-    }
-
-    public ThreadLock getLock(String topic, String messageId, String clientId) {
-        String key = getKey(topic, messageId, clientId);
-        return locks.computeIfAbsent(key, k -> ThreadLock.builder()
-                .topic(topic)
-                .messageId(messageId)
-                .clientId(clientId)
-                .build());
-    }
-
     public <T> T getLockAndExecute(Callable<T> callable, String topic, String messageId, String clientId) {
         ThreadLock lock = getLock(topic, messageId, clientId);
         log.info("Thread={} requesting lock={}", Thread.currentThread().getName(), getKey(topic, messageId, clientId));
@@ -57,7 +32,16 @@ public class LockProcessor {
         }
     }
 
-    public void removeLock(ThreadLock threadLock) {
+    private ThreadLock getLock(String topic, String messageId, String clientId) {
+        String key = getKey(topic, messageId, clientId);
+        return locks.computeIfAbsent(key, k -> ThreadLock.builder()
+                .topic(topic)
+                .messageId(messageId)
+                .clientId(clientId)
+                .build());
+    }
+
+    private void removeLock(ThreadLock threadLock) {
         locks.remove(getKey(threadLock.getTopic(), threadLock.getMessageId(), threadLock.getClientId()));
     }
 

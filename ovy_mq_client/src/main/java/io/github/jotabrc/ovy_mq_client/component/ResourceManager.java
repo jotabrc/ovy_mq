@@ -35,11 +35,11 @@ public class ResourceManager implements SmartLifecycle {
                     log.info("All sessions ready to disconnect");
                     break;
                 }
-                if (System.currentTimeMillis() - startTime > maxWait) {
+                if (elapsedTime(startTime) > maxWait) {
                     log.info("Waiting graceful shutdown time exceeded {} ms", maxWait);
                     break;
                 }
-                log.info("Waiting all clients be ready to disconnect");
+                log.info("Waiting clients to shutdown: elapsed-time={} sec", elapsedTime(startTime) / 1000);
                 Thread.sleep(waitDelay);
             } catch (InterruptedException e) {
                 log.error("Error while executing graceful shutdown", e);
@@ -49,7 +49,11 @@ public class ResourceManager implements SmartLifecycle {
         sessionRegistry.getAll().values().forEach(SessionManager::disconnect);
         log.info("Shutdown completed");
         isRunning.set(false);
-        SmartLifecycle.super.stop(callback);
+        callback.run();
+    }
+
+    private static long elapsedTime(long startTime) {
+        return System.currentTimeMillis() - startTime;
     }
 
     @Override
