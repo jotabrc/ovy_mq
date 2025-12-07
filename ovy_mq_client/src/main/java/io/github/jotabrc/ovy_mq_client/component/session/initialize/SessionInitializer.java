@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.component.session.initialize;
 
-import io.github.jotabrc.ovy_mq_client.component.session.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.component.session.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_client.component.session.stomp.StompSessionHandler;
 import io.github.jotabrc.ovy_mq_core.components.Definition;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
@@ -28,14 +28,13 @@ public class SessionInitializer {
 
     public Optional<SessionManager> createSessionAndConnect(Client client, DefinitionMap sessionDefinition) {
         log.info("Creating SessionManager and initializing: client={}", client.getId());
-        abstractFactoryResolver.create(sessionDefinition, StompSessionHandler.class)
+        return abstractFactoryResolver.create(sessionDefinition, StompSessionHandler.class)
                 .map(sessionManager -> {
                     if (!Objects.equals(ClientType.PRODUCER, client.getType())) {
                         sessionRegistry.addOrReplace(client.getId(), sessionManager);
                     }
                     sessionManager.initializeHandler();
-                    return Optional.of(sessionManager);
+                    return sessionManager;
                 });
-        return Optional.empty();
     }
 }
