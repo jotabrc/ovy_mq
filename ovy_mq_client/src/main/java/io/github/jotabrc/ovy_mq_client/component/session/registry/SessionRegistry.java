@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.component.initialize.registry;
+package io.github.jotabrc.ovy_mq_client.component.session.registry;
 
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
 import lombok.RequiredArgsConstructor;

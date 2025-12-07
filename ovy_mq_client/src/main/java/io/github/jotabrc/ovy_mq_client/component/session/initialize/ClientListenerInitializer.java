@@ -1,6 +1,6 @@
-package io.github.jotabrc.ovy_mq_client.component.initialize;
+package io.github.jotabrc.ovy_mq_client.component.session.initialize;
 
-import io.github.jotabrc.ovy_mq_client.component.initialize.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.component.session.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;

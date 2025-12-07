@@ -14,16 +14,24 @@ public class ThreadPoolConfig {
 
     public static final String LISTENER_EXECUTOR = "listenerExecutor";
     public static final String SCHEDULED_EXECUTOR = "scheduledExecutor";
+    public static final String PRODUCER_EXECUTOR = "producerExecutor";
 
     @Value("${ovy.executor.client-task.core-pool-size:1}")
     private Integer clientTaskCorePoolSize;
 
     @Value("${ovy.executor.listener.core-pool-size:3}")
     private Integer listenerExecutorCorePoolSize;
-    @Value("${ovy.executor.client-task.max-pool-size:10}")
+    @Value("${ovy.executor.listener-task.max-pool-size:10}")
     private Integer listenerExecutorMaxPoolSize;
-    @Value("${ovy.executor.client-task.queue-capacity:25}")
+    @Value("${ovy.executor.listener-task.queue-capacity:25}")
     private Integer listenerExecutorQueueCapacity;
+
+    @Value("${ovy.executor.producer.core-pool-size:1}")
+    private Integer producerExecutorCorePoolSize;
+    @Value("${ovy.executor.producer-task.max-pool-size:1}")
+    private Integer producerExecutorMaxPoolSize;
+    @Value("${ovy.executor.producer-task.queue-capacity:25}")
+    private Integer producerExecutorQueueCapacity;
 
     @Bean(name = SCHEDULED_EXECUTOR)
     public ScheduledExecutorService scheduledExecutor() {
@@ -34,13 +42,24 @@ public class ThreadPoolConfig {
         });
     }
 
-    @Bean(name = LISTENER_EXECUTOR)
-    public Executor listenerExecutor() {
+    @Bean(name = PRODUCER_EXECUTOR)
+    public Executor producerExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(listenerExecutorCorePoolSize);
         executor.setMaxPoolSize(listenerExecutorMaxPoolSize);
         executor.setQueueCapacity(listenerExecutorQueueCapacity);
         executor.setThreadNamePrefix("ListenerExecutor-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = LISTENER_EXECUTOR)
+    public Executor listenerExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(producerExecutorCorePoolSize);
+        executor.setMaxPoolSize(producerExecutorMaxPoolSize);
+        executor.setQueueCapacity(producerExecutorQueueCapacity);
+        executor.setThreadNamePrefix("ProducerExecutor-");
         executor.initialize();
         return executor;
     }
