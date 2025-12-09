@@ -1,14 +1,14 @@
 package io.github.jotabrc.ovy_mq_core.domain.client;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Replica implements Serializable {
 

@@ -9,7 +9,7 @@ import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
 public class Subscribe {
 
     public static final String HEALTH_CHECK = WS_USER + WS_HEALTH;
-    public static final String LISTENER_CONFIG_QUEUE = Mapping.WS_CONFIG;
+    public static final String LISTENER_CONFIG_QUEUE = WS_USER + WS_CONFIG;
     public static final Function<String, String> MESSAGE_PAYLOAD_QUEUE = Subscribe::getMessagePayloadQueueValue;
 
     public static final Function<String, List<String>> CONSUMER_SUBSCRIPTION = topic -> new ArrayList<>(List.of(HEALTH_CHECK, MESSAGE_PAYLOAD_QUEUE.apply(topic)));

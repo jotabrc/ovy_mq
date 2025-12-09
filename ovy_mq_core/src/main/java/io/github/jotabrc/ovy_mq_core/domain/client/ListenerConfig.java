@@ -1,11 +1,19 @@
 package io.github.jotabrc.ovy_mq_core.domain.client;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
+import java.io.Serial;
+import java.io.Serializable;
+
+@Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class ListenerConfig {
+public class ListenerConfig implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String topic;
     private Replica replica;
