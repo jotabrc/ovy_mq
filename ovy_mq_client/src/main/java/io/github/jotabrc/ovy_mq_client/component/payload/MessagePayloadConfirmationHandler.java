@@ -22,7 +22,7 @@ public class MessagePayloadConfirmationHandler implements PayloadConfirmationHan
                             String destination,
                             MessagePayload payload) {
         clientMessageDispatcher.send(client, client.getTopic(), destination, payload.cleanDataAndUpdateSuccessTo(true), session);
-        client.setInboundMessageRequest(false);
+        client.setIsMessageInteractionActive(false);
     }
 
     @Override

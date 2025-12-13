@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq.security.handler;
 
-import io.github.jotabrc.ovy_mq.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq.security.handler.interfaces.AuthHandler;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
+import io.github.jotabrc.ovy_mq_core.config.CredentialConfig;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import jakarta.annotation.PostConstruct;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

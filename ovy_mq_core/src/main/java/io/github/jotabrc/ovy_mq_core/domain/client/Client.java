@@ -27,7 +27,7 @@ public class Client implements Serializable {
     @Builder.Default
     private Boolean isAvailable = true;
     @Builder.Default
-    private Boolean inboundMessageRequest = false;
+    private Boolean isMessageInteractionActive = false;
     @Builder.Default
     private Boolean isDestroying = false;
     private String beanName;
@@ -56,7 +56,7 @@ public class Client implements Serializable {
     }
 
     public boolean canDisconnect() {
-        return this.isAvailable && !this.inboundMessageRequest;
+        return this.isAvailable && !this.isMessageInteractionActive;
     }
 
     public Boolean useGlobalValues() {
