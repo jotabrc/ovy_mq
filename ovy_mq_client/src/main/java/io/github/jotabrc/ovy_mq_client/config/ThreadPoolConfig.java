@@ -45,10 +45,10 @@ public class ThreadPoolConfig {
     @Bean(name = PRODUCER_EXECUTOR)
     public Executor producerExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(listenerExecutorCorePoolSize);
-        executor.setMaxPoolSize(listenerExecutorMaxPoolSize);
-        executor.setQueueCapacity(listenerExecutorQueueCapacity);
-        executor.setThreadNamePrefix("ListenerExecutor-");
+        executor.setCorePoolSize(producerExecutorCorePoolSize);
+        executor.setMaxPoolSize(producerExecutorMaxPoolSize);
+        executor.setQueueCapacity(producerExecutorQueueCapacity);
+        executor.setThreadNamePrefix("ProducerExecutor-");
         executor.initialize();
         return executor;
     }
@@ -56,10 +56,10 @@ public class ThreadPoolConfig {
     @Bean(name = LISTENER_EXECUTOR)
     public Executor listenerExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(producerExecutorCorePoolSize);
-        executor.setMaxPoolSize(producerExecutorMaxPoolSize);
-        executor.setQueueCapacity(producerExecutorQueueCapacity);
-        executor.setThreadNamePrefix("ProducerExecutor-");
+        executor.setCorePoolSize(listenerExecutorCorePoolSize);
+        executor.setMaxPoolSize(listenerExecutorMaxPoolSize);
+        executor.setQueueCapacity(listenerExecutorQueueCapacity);
+        executor.setThreadNamePrefix("ListenerExecutor-");
         executor.initialize();
         return executor;
     }
