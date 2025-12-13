@@ -1,27 +1,22 @@
-package io.github.jotabrc.ovy_mq_client.component;
+package io.github.jotabrc.ovy_mq_client.component.resource;
 
-import io.github.jotabrc.ovy_mq_client.component.session.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_client.component.session.interfaces.SessionManager;
-import lombok.RequiredArgsConstructor;
+import io.github.jotabrc.ovy_mq_client.component.session.registry.SessionRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
-public class ResourceManager implements SmartLifecycle {
+public class ResourceManager extends AbstractResourceUtil implements SmartLifecycle {
 
-    private final SessionRegistry sessionRegistry;
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    @Value("${ovymq.task.shutdown.wait-delay:1000}")
-    private Long waitDelay;
-    @Value("${ovymq.task.shutdown.max-wait:180000}")
-    private Long maxWait;
+    public ResourceManager(SessionRegistry sessionRegistry) {
+        super(sessionRegistry);
+    }
 
     @Override
     public void stop(Runnable callback) {
@@ -50,10 +45,6 @@ public class ResourceManager implements SmartLifecycle {
         log.info("Shutdown completed");
         isRunning.set(false);
         callback.run();
-    }
-
-    private static long elapsedTime(long startTime) {
-        return System.currentTimeMillis() - startTime;
     }
 
     @Override

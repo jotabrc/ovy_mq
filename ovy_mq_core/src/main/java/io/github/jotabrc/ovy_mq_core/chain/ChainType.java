@@ -1,8 +1,7 @@
-package io.github.jotabrc.ovy_mq.security;
+package io.github.jotabrc.ovy_mq_core.chain;
 
-public enum SecurityChainType {
+public enum ChainType {
 
-    UNSUPPORTED,
     AUTH_BASE64,
     AUTHENTICATION_CREATOR,
     SUBJECT_IDENTIFIER,

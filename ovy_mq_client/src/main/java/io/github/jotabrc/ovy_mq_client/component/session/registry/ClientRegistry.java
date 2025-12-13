@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -38,6 +39,14 @@ public class ClientRegistry {
         }
     }
 
+    public List<Client> getClientsByTopic(String topic) {
+        Callable<List<Client>> callable = () -> clients.values().stream()
+                .flatMap(Collection::stream)
+                .filter(client -> Objects.equals(topic, client.getTopic()))
+                .collect(Collectors.toCollection(ArrayList::new));
+        return lockProcessor.getLockAndExecute(callable, topic, null, null);
+    }
+
     @Deprecated
     public Client getByClientIdOrThrow(String clientId) {
         Callable<Client> callable = () -> clients.values()
@@ -49,6 +58,7 @@ public class ClientRegistry {
         return lockProcessor.getLockAndExecute(callable, null, null, clientId);
     }
 
+    @Deprecated
     public List<Client> getAllAvailableClients() {
         return clients.values()
                 .stream()
@@ -58,6 +68,7 @@ public class ClientRegistry {
                 .toList();
     }
 
+    @Deprecated
     public List<Client> getAllClients() {
         return clients.values()
                 .stream()

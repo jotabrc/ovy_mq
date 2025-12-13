@@ -1,7 +1,8 @@
 package io.github.jotabrc.ovy_mq.security.filter.chain;
 
 import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
+import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
@@ -18,7 +19,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SubjectSecurityChain extends AbstractSecurityChain {
+public class SubjectChain extends AbstractChain {
 
     private final ConfigClientContextHolder configClientContextHolder;
 
@@ -42,7 +43,7 @@ public class SubjectSecurityChain extends AbstractSecurityChain {
     }
 
     @Override
-    public SecurityChainType type() {
-        return SecurityChainType.SUBJECT_IDENTIFIER;
+    public ChainType type() {
+        return ChainType.SUBJECT_IDENTIFIER;
     }
 }

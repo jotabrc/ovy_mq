@@ -1,5 +1,7 @@
 package io.github.jotabrc.ovy_mq_core.defaults;
 
+import java.util.function.Function;
+
 public class Value {
 
     // Principal
@@ -21,4 +23,7 @@ public class Value {
     public static final String ROLE_SERVER = "ovy-server";
     public static final String ROLE_CONFIGURER = "ovy-configurer";
     public static final String ROLE_OVY = "ovy-ovy";
+
+    // ListenerConfigHandler Key
+    public static final Function<String, String> LOCK_KEY_VALUE = "key:listener:config:handler:"::concat;
 }

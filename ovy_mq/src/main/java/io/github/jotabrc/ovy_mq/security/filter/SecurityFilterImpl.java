@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq.security.filter;
 
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
-import io.github.jotabrc.ovy_mq.security.filter.chain.SecurityChainResolver;
-import io.github.jotabrc.ovy_mq.security.filter.interfaces.SecurityChain;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainResolver;
+import io.github.jotabrc.ovy_mq_core.chain.BaseChain;
 import io.github.jotabrc.ovy_mq.security.filter.interfaces.SecurityFilter;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
@@ -26,7 +26,7 @@ import static java.util.Objects.nonNull;
 @Component
 public class SecurityFilterImpl implements SecurityFilter {
 
-    private final SecurityChainResolver securityChainResolver;
+    private final ChainResolver chainResolver;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
     @Override
@@ -36,20 +36,20 @@ public class SecurityFilterImpl implements SecurityFilter {
         String auth = req.getHeader(Key.HEADER_AUTHORIZATION);
 
         if (nonNull(auth) && !auth.isBlank()) {
-            SecurityChain securityChain = securityChainResolver.getByType(SecurityChainType.DEFINITION_CREATOR)
+            BaseChain baseChain = chainResolver.getByType(ChainType.DEFINITION_CREATOR)
                     .orElseThrow(() -> new OvyException.SecurityFilterFailure("Definition handler not found"));
 
-            securityChain.setNext(securityChainResolver.getByAuth(auth)
+            baseChain.setNext(chainResolver.getByAuth(auth)
                             .orElseThrow(() -> new OvyException.SecurityFilterFailure("Authentication handler not found")))
-                    .setNext(securityChainResolver.getByType(SecurityChainType.SUBJECT_IDENTIFIER)
+                    .setNext(chainResolver.getByType(ChainType.SUBJECT_IDENTIFIER)
                             .orElseThrow(() -> new OvyException.SecurityFilterFailure("Subject handler not found")))
-                    .setNext(securityChainResolver.getByType(SecurityChainType.ROLES_IDENTIFIER)
+                    .setNext(chainResolver.getByType(ChainType.ROLES_IDENTIFIER)
                             .orElseThrow(() -> new OvyException.SecurityFilterFailure("Roles handler not found")))
-                    .setNext(securityChainResolver.getByType(SecurityChainType.AUTHENTICATION_CREATOR)
+                    .setNext(chainResolver.getByType(ChainType.AUTHENTICATION_CREATOR)
                             .orElseThrow(() -> new OvyException.SecurityFilterFailure("Authentication creator handler not found")));
 
             DefinitionMap definition = definitionProvider.getObject().add(Key.FILTER_SERVLET_REQUEST, req);
-            definition = securityChain.handle(definition);
+            definition = baseChain.handle(definition);
 
             servletRequest.setAttribute(Key.HEADER_CLIENT_ID, definition.extract(Key.HEADER_CLIENT_ID, String.class));
             servletRequest.setAttribute(Key.HEADER_TOPIC, definition.extract(Key.HEADER_TOPIC, String.class));

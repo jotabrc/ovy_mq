@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
@@ -68,7 +68,7 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
         accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
         accessor.setLeaveMutable(true);
-        authHandlerResolver.get(SecurityChainType.AUTH_BASE64)
+        authHandlerResolver.get(ChainType.AUTH_BASE64)
                 .ifPresent(authHandler -> {
                     accessor.setNativeHeader(Key.HEADER_AUTHORIZATION, authHandler.createAuthorizationHeader().get(Key.HEADER_AUTHORIZATION).toString());
                     accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_MESSAGE_PAYLOAD);

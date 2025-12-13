@@ -1,16 +1,15 @@
-package io.github.jotabrc.ovy_mq.security.filter.chain;
+package io.github.jotabrc.ovy_mq_core.chain;
 
-import io.github.jotabrc.ovy_mq.security.filter.interfaces.SecurityChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 
 import static java.util.Objects.nonNull;
 
-public abstract class AbstractSecurityChain implements SecurityChain {
+public abstract class AbstractChain implements BaseChain {
 
-    protected SecurityChain next;
+    protected BaseChain next;
 
     @Override
-    public SecurityChain setNext(SecurityChain next) {
+    public BaseChain setNext(BaseChain next) {
         this.next = next;
         return next;
     }

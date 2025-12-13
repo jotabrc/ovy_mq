@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.security.handler;
 
 import io.github.jotabrc.ovy_mq.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq.security.handler.interfaces.AuthHandler;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import jakarta.annotation.PostConstruct;
@@ -65,8 +65,8 @@ public class AuthBasicHandler implements AuthHandler {
     }
 
     @Override
-    public SecurityChainType supports() {
-        return SecurityChainType.AUTH_BASE64;
+    public ChainType supports() {
+        return ChainType.AUTH_BASE64;
     }
 
     public static void main(String[] args) {

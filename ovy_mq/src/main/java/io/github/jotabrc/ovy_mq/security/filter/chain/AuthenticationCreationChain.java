@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq.security.filter.chain;
 
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
+import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
@@ -22,7 +23,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class AuthenticationCreationSecurityChain extends AbstractSecurityChain {
+public class AuthenticationCreationChain extends AbstractChain {
 
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
@@ -45,7 +46,7 @@ public class AuthenticationCreationSecurityChain extends AbstractSecurityChain {
     }
 
     @Override
-    public SecurityChainType type() {
-        return SecurityChainType.AUTHENTICATION_CREATOR;
+    public ChainType type() {
+        return ChainType.AUTHENTICATION_CREATOR;
     }
 }

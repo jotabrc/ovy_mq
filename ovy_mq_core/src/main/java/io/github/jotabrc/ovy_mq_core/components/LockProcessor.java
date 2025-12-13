@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,14 +19,24 @@ public class LockProcessor {
 
     public <T> T getLockAndExecute(Callable<T> callable, String topic, String messageId, String clientId) {
         ThreadLock lock = getLock(topic, messageId, clientId);
-        log.info("Thread={} requesting lock={}", Thread.currentThread().getName(), getKey(topic, messageId, clientId));
+        return acquireLockAndExecute(callable, getKey(topic, messageId, clientId), lock);
+    }
+
+    public <T> T getLockAndExecute(Callable<T> callable, String key) {
+        ThreadLock lock = getLock(key);
+        return acquireLockAndExecute(callable, key, lock);
+    }
+
+    private <T> T acquireLockAndExecute(Callable<T> callable, String key, ThreadLock lock) {
+        Objects.requireNonNull(lock, "ThreadLock");
+        log.info("Thread={} requesting lock={}", Thread.currentThread().getName(), key);
         synchronized (lock) {
-            log.info("Thread={} acquired lock={}: processing request", Thread.currentThread().getName(), getKey(topic, messageId, clientId));
+            log.info("Thread={} acquired lock={}: processing request", Thread.currentThread().getName(), key);
             try {
                 return callable.call();
             } catch (Exception e) {
                 throw new IllegalStateException("Error executing lock with key=%s: %s"
-                        .formatted(getKey(topic, messageId, clientId), e.getMessage()));
+                        .formatted(key, e.getMessage()));
             } finally {
                 this.removeLock(lock);
             }
@@ -35,14 +46,18 @@ public class LockProcessor {
     private ThreadLock getLock(String topic, String messageId, String clientId) {
         String key = getKey(topic, messageId, clientId);
         return locks.computeIfAbsent(key, k -> ThreadLock.builder()
-                .topic(topic)
-                .messageId(messageId)
-                .clientId(clientId)
+                .key(key)
+                .build());
+    }
+
+    private ThreadLock getLock(String key) {
+        return locks.computeIfAbsent(key, k -> ThreadLock.builder()
+                .key(key)
                 .build());
     }
 
     private void removeLock(ThreadLock threadLock) {
-        locks.remove(getKey(threadLock.getTopic(), threadLock.getMessageId(), threadLock.getClientId()));
+        locks.remove(threadLock.getKey());
     }
 
     private String getKey(String topic, String messageId, String clientId) {

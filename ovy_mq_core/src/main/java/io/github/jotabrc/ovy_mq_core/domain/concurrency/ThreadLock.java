@@ -9,7 +9,5 @@ import lombok.extern.slf4j.Slf4j;
 @Builder
 public class ThreadLock {
 
-    private final String topic;
-    private final String messageId;
-    private final String clientId;
+    private final String key;
 }

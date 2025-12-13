@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq.security.filter.chain;
 
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
+import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
@@ -18,7 +19,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class DefinitionSecurityChain extends AbstractSecurityChain {
+public class DefinitionChain extends AbstractChain {
 
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
@@ -48,7 +49,7 @@ public class DefinitionSecurityChain extends AbstractSecurityChain {
     }
 
     @Override
-    public SecurityChainType type() {
-        return SecurityChainType.DEFINITION_CREATOR;
+    public ChainType type() {
+        return ChainType.DEFINITION_CREATOR;
     }
 }

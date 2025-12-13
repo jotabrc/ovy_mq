@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq.security.filter.chain;
 
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
+import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import static java.util.Objects.isNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class RoleSecurityChain extends AbstractSecurityChain {
+public class RoleChain extends AbstractChain {
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
@@ -28,7 +29,7 @@ public class RoleSecurityChain extends AbstractSecurityChain {
     }
 
     @Override
-    public SecurityChainType type() {
-        return SecurityChainType.ROLES_IDENTIFIER;
+    public ChainType type() {
+        return ChainType.ROLES_IDENTIFIER;
     }
 }

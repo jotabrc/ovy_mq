@@ -1,8 +1,9 @@
 package io.github.jotabrc.ovy_mq.security.filter.chain;
 
-import io.github.jotabrc.ovy_mq.security.SecurityChainType;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.security.handler.interfaces.AuthHandler;
+import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.defaults.Key;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
@@ -15,7 +16,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class BasicSecurityChain extends AbstractSecurityChain {
+public class BasicChain extends AbstractChain {
 
     private final AuthHandlerResolver authHandlerResolver;
 
@@ -24,7 +25,7 @@ public class BasicSecurityChain extends AbstractSecurityChain {
         String auth = definition.extract(Key.HEADER_AUTHORIZATION, String.class);
 
         if (nonNull(auth) && !auth.isBlank()) {
-            AuthHandler authHandler = authHandlerResolver.get(SecurityChainType.AUTH_BASE64)
+            AuthHandler authHandler = authHandlerResolver.get(ChainType.AUTH_BASE64)
                     .orElseThrow(() -> new OvyException.SecurityFilterFailure("Auth handler not found"));
 
             String credential = authHandler.retrieveCredentials(auth);
@@ -37,7 +38,7 @@ public class BasicSecurityChain extends AbstractSecurityChain {
     }
 
     @Override
-    public SecurityChainType type() {
-        return SecurityChainType.AUTH_BASE64;
+    public ChainType type() {
+        return ChainType.AUTH_BASE64;
     }
 }
