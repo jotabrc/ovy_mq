@@ -70,6 +70,7 @@ The platform allows client applications to consume messages declaratively using 
 *   **Consumer Auto-Scaling**: The server can dynamically instruct clients to increase or decrease the number of consumers for a topic.
 *   **Health Checks**: Built-in mechanism to monitor the health of client connections.
 *   **Graceful Shutdown**: Ensures that in-flight messages are not lost when the application shuts down.
+*   **Reaper Task**: Re-queues messages that were sent to a client but never received a confirmation (ACK), ensuring message delivery even in case of client failures.
 
 ### System Flows
 
@@ -133,8 +134,8 @@ graph TD
     end
 
     subgraph Reaper Task
-        F[OvyMQ Server] -- 1. Periodically checks --> G(All Registered Consumers);
-        G -- 2. If unresponsive --> H{Remove from active pool};
+        F[OvyMQ Server] -- 1. Monitors unconfirmed messages --> G(Messages sent to Consumers);
+        G -- 2. If ACK not received within timeout --> H{Re-queue message};
     end
 ```
 
@@ -240,7 +241,7 @@ The application offers a high degree of customization through parameters in the 
 | Property | Default | Description |
 | :--- | :--- | :--- |
 | `server.port` | `9090` | Port where the server will run. |
-| `ovymq.task.reaper.active` | `true` | Activates the task that monitors inactive clients. |
+| `ovymq.task.reaper.active` | `true` | Activates the task that monitors unconfirmed messages and re-queues them if no ACK is received within a timeout. |
 | `ovymq.task.reaper.delay` | `60000` | Interval (ms) for the `reaper` task execution. |
 | `ovymq.task.shutdown.wait-delay` | `10000` | Wait interval (ms) during graceful shutdown. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Maximum wait time (ms) during graceful shutdown. |
@@ -299,6 +300,7 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 *   **Auto-Scaling de Consumidores**: O servidor pode instruir os clientes a aumentar ou diminuir o número de consumidores para um tópico dinamicamente.
 *   **Health Checks**: Mecanismo integrado para monitorar a saúde das conexões dos clientes.
 *   **Graceful Shutdown**: Garante que mensagens em processamento não sejam perdidas durante o desligamento da aplicação.
+*   **Tarefa Reaper**: Re-enfileira mensagens que foram enviadas a um cliente, mas cuja confirmação (ACK) nunca foi recebida, garantindo a entrega da mensagem mesmo em caso de falhas do cliente.
 
 ### Fluxos do Sistema
 
@@ -362,8 +364,8 @@ graph TD
     end
 
     subgraph Tarefa Reaper
-        F[Servidor OvyMQ] -- 1. Verifica periodicamente --> G(Todos os Consumidores Registrados);
-        G -- 2. Se não responsivo --> H{Remove do pool ativo};
+        F[Servidor OvyMQ] -- 1. Monitora mensagens não confirmadas --> G(Mensagens enviadas aos Consumidores);
+        G -- 2. Se ACK não recebido dentro do timeout --> H{Re-enfileira mensagem};
     end
 ```
 
@@ -418,7 +420,7 @@ Você pode implementar a interface `ListenerAfterProcessingHandler` para executa
 **Exemplo de um Handler de DLQ:**
 ```java
 import io.github.jotabrc.ovy_mq_client.component.listener.ListenerAfterProcessingHandler;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -469,7 +471,7 @@ A aplicação oferece um alto grau de personalização através de parâmetros n
 | Propriedade | Padrão | Descrição |
 | :--- | :--- | :--- |
 | `server.port` | `9090` | Porta onde o servidor irá rodar. |
-| `ovymq.task.reaper.active` | `true` | Ativa a tarefa que monitora clientes inativos. |
+| `ovymq.task.reaper.active` | `true` | Ativa a tarefa que monitora mensagens não confirmadas e as re-enfileira se nenhum ACK for recebido dentro de um timeout. |
 | `ovymq.task.reaper.delay` | `60000` | Intervalo (ms) para a execução da tarefa `reaper`. |
 | `ovymq.task.shutdown.wait-delay` | `10000` | Intervalo (ms) de espera durante o *graceful shutdown*. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Tempo máximo (ms) de espera no *graceful shutdown*. |
