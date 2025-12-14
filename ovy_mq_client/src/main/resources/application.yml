@@ -10,6 +10,7 @@ spring.lifecycle.timeout-per-shutdown-phase: 600s
 
 # Global values
 ovymq.client.processing.timeout: 150000
+ovymq.client.processing.max-retries: 3
 
 ovymq.task.shutdown.wait-delay: 1000
 ovymq.task.shutdown.max-wait: 180000

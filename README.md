@@ -21,6 +21,7 @@
       <li><a href="#system-flows">System Flows</a></li>
       <li><a href="#getting-started">Getting Started</a></li>
       <li><a href="#usage">Usage</a></li>
+      <li><a href="#advanced-usage-handling-processing-outcomes">Advanced Usage: Handling Processing Outcomes</a></li>
       <li><a href="#detailed-configuration">Detailed Configuration</a></li>
       <li><a href="#contributing">Contributing</a></li>
       <li><a href="#license">License</a></li>
@@ -32,6 +33,7 @@
       <li><a href="#fluxos-do-sistema">Fluxos do Sistema</a></li>
       <li><a href="#começando">Começando</a></li>
       <li><a href="#uso">Uso</a></li>
+      <li><a href="#uso-avançado-tratando-resultados-de-processamento">Uso Avançado: Tratando Resultados de Processamento</a></li>
       <li><a href="#configuração-detalhada">Configuração Detalhada</a></li>
       <li><a href="#como-contribuir">Como Contribuir</a></li>
       <li><a href="#licença">Licença</a></li>
@@ -60,6 +62,7 @@ The platform allows client applications to consume messages declaratively using 
 
 *   **WebSocket/STOMP Communication**: Full-duplex and efficient communication.
 *   **Declarative Consumers**: Create message consumers with the simple `@OvyListener` annotation.
+*   **Extensible Hooks**: Provides the `ListenerAfterProcessingHandler` interface to handle processing success or failure, enabling custom logic like Dead-Letter Queues (DLQ).
 *   **Modular Architecture**:
     *   `ovy_mq_core`: Shared entities, DTOs, and interfaces.
     *   `ovy_mq_client`: Client library for integration with your applications.
@@ -72,19 +75,25 @@ The platform allows client applications to consume messages declaratively using 
 
 #### Standard Message Flow
 
-This diagram shows the complete lifecycle of a message, from producer to consumer.
+This diagram shows the complete lifecycle of a message, from producer to consumer, including the post-processing hooks.
 
 ```mermaid
 sequenceDiagram
     participant Producer
     participant OvyMQ Server
     participant Consumer
+    participant ListenerAfterProcessingHandler
 
     Producer->>OvyMQ Server: 1. Send Message (Payload)
     OvyMQ Server-->>Producer: 2. Acknowledge Receipt
     OvyMQ Server->>Consumer: 3. Deliver Message
-    Consumer-->>OvyMQ Server: 4. Acknowledge Processing
-    Note right of Consumer: Business logic is executed here
+    Consumer->>Consumer: 4. Execute business logic (with retries)
+    alt Processing Succeeded
+        Consumer->>ListenerAfterProcessingHandler: 5a. afterSuccess(payload)
+    else Processing Failed
+        Consumer->>ListenerAfterProcessingHandler: 5b. afterFailure(payload, exception)
+    end
+    Consumer-->>OvyMQ Server: 6. Acknowledge and request next message
 ```
 
 #### Listener Registration and Scaling
@@ -103,29 +112,6 @@ sequenceDiagram
         OvyMQ Server->>Consumer App: 3. Send Scaling Command (e.g., new 'quantity')
         Consumer App->>Consumer App: 4. Adjusts number of active listeners
         Consumer App-->>OvyMQ Server: 5. Confirm Scaling
-    end
-```
-
-#### Background Flows
-
-These are periodic tasks that ensure system health and message flow.
-
-```mermaid
-graph TD
-    subgraph Health Check
-        A[OvyMQ Server] -- 1. Request Health Status --> B(Consumer);
-        B -- 2. Respond with 'alive' --> A;
-    end
-
-    subgraph Message Polling
-        C(Consumer) -- 1. Is idle? --> D{Send Poll Request};
-        D -- 2. Request new message --> E[OvyMQ Server];
-        E -- 3. Send message if available --> C;
-    end
-
-    subgraph Reaper Task
-        F[OvyMQ Server] -- 1. Periodically checks --> G(All Registered Consumers);
-        G -- 2. If unresponsive --> H{Remove from active pool};
     end
 ```
 
@@ -173,6 +159,33 @@ public class MyListener {
 }
 ```
 
+### Advanced Usage: Handling Processing Outcomes
+
+You can implement the `ListenerAfterProcessingHandler` interface to execute custom logic after a message is processed, either successfully or after all retry attempts have failed. This is the ideal place to implement a Dead-Letter Queue (DLQ).
+
+**Example of a DLQ Handler:**
+```java
+import io.github.jotabrc.ovy_mq_client.component.listener.ListenerAfterProcessingHandler;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+@Slf4j
+@Component
+public class MyAfterProcessingHandler implements ListenerAfterProcessingHandler {
+
+    @Override
+    public <T> void afterSuccess(T payload) {
+        log.info("Successfully processed payload: {}", payload);
+    }
+
+    @Override
+    public <T> void afterFailure(T payload, RuntimeException throwable) {
+        log.error("Failed to process payload after all retries. Sending to DLQ. Payload: {}", payload, throwable);
+        // Logic to send the payload to a Dead-Letter Queue (e.g., another topic, a database, etc.)
+    }
+}
+```
+
 ### Detailed Configuration
 
 The application offers a high degree of customization through parameters in the `@OvyListener` annotation and properties in `application.yml`.
@@ -213,6 +226,8 @@ The application offers a high degree of customization through parameters in the 
 
 | Property | Default | Description |
 | :--- | :--- | :--- |
+| `ovymq.client.processing.max-retries` | `3` | Maximum number of reprocessing attempts in case of failure. |
+| `ovymq.client.processing.timeout` | `150000` | **Global default:** Message processing timeout (ms). |
 | `ovymq.task.shutdown.wait-delay` | `1000` | Client's wait interval (ms) during graceful shutdown. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Client's maximum wait time (ms) during graceful shutdown. |
 | `ovymq.session-manager.connection.timeout` | `150000` | **Global default:** Connection timeout (ms). |
@@ -222,7 +237,6 @@ The application offers a high degree of customization through parameters in the 
 | `ovymq.task.health-check.expiration-time` | `120000` | **Global default:** Health check expiration time (ms). |
 | `ovymq.task.listener-poll.initial-delay` | `10000` | **Global default:** Initial delay (ms) for `poll`. |
 | `ovymq.task.listener-poll.fixed-delay` | `35000` | **Global default:** `poll` interval (ms). |
-| `ovymq.client.processing.timeout` | `150000` | **Global default:** Message processing timeout (ms). |
 | `ovy.executor.client-task.core-pool-size` | `1` | Threads for client's scheduled tasks. |
 | `ovy.executor.listener.core-pool-size` | `3` | Threads for listener execution (`@OvyListener`). |
 | `ovy.executor.listener-task.max-pool-size` | `10` | Maximum threads for listeners. |
@@ -254,6 +268,7 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 
 *   **Comunicação via WebSocket/STOMP**: Comunicação full-duplex e eficiente.
 *   **Consumidores Declarativos**: Crie consumidores de mensagens com a simples anotação `@OvyListener`.
+*   **Hooks Extensíveis**: Fornece a interface `ListenerAfterProcessingHandler` para tratar o sucesso ou a falha do processamento, permitindo lógicas customizadas como Dead-Letter Queues (DLQ).
 *   **Arquitetura Modular**:
     *   `ovy_mq_core`: Entidades, DTOs e interfaces compartilhadas.
     *   `ovy_mq_client`: Biblioteca cliente para integração com suas aplicações.
@@ -266,19 +281,25 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 
 #### Fluxo Padrão de Mensagem
 
-Este diagrama mostra o ciclo de vida completo de uma mensagem, do produtor ao consumidor.
+Este diagrama mostra o ciclo de vida completo de uma mensagem, do produtor ao consumidor, incluindo os hooks de pós-processamento.
 
 ```mermaid
 sequenceDiagram
     participant Produtor
     participant Servidor OvyMQ
     participant Consumidor
+    participant ListenerAfterProcessingHandler
 
     Produtor->>Servidor OvyMQ: 1. Envia Mensagem (Payload)
     Servidor OvyMQ-->>Produtor: 2. Confirma Recebimento
     Servidor OvyMQ->>Consumidor: 3. Entrega Mensagem
-    Consumidor-->>Servidor OvyMQ: 4. Confirma Processamento
-    Note right of Consumidor: Lógica de negócio é executada aqui
+    Consumidor->>Consumidor: 4. Executa lógica de negócio (com retries)
+    alt Processamento com Sucesso
+        Consumidor->>ListenerAfterProcessingHandler: 5a. afterSuccess(payload)
+    else Processamento Falhou
+        Consumidor->>ListenerAfterProcessingHandler: 5b. afterFailure(payload, exception)
+    end
+    Consumidor-->>Servidor OvyMQ: 6. Confirma e requisita próxima mensagem
 ```
 
 #### Registro e Scaling de Listeners
@@ -297,29 +318,6 @@ sequenceDiagram
         Servidor OvyMQ->>Aplicação Consumidora: 3. Envia Comando de Scaling (ex: nova 'quantity')
         Aplicação Consumidora->>Aplicação Consumidora: 4. Ajusta o número de listeners ativos
         Aplicação Consumidora-->>Servidor OvyMQ: 5. Confirma Scaling
-    end
-```
-
-#### Fluxos em Background
-
-Estas são tarefas periódicas que garantem a saúde do sistema e o fluxo de mensagens.
-
-```mermaid
-graph TD
-    subgraph Health Check
-        A[Servidor OvyMQ] -- 1. Requisita Status de Saúde --> B(Consumidor);
-        B -- 2. Responde com 'vivo' --> A;
-    end
-
-    subgraph Polling de Mensagens
-        C(Consumidor) -- 1. Está ocioso? --> D{Enviar Requisição de Poll};
-        D -- 2. Requisita nova mensagem --> E[Servidor OvyMQ];
-        E -- 3. Envia mensagem se disponível --> C;
-    end
-
-    subgraph Tarefa Reaper
-        F[Servidor OvyMQ] -- 1. Verifica periodicamente --> G(Todos os Consumidores Registrados);
-        G -- 2. Se não responsivo --> H{Remove do pool ativo};
     end
 ```
 
@@ -367,6 +365,33 @@ public class MeuListener {
 }
 ```
 
+### Uso Avançado: Tratando Resultados de Processamento
+
+Você pode implementar a interface `ListenerAfterProcessingHandler` para executar uma lógica customizada após uma mensagem ser processada, seja com sucesso ou após todas as tentativas de retry falharem. Este é o local ideal para implementar uma Dead-Letter Queue (DLQ).
+
+**Exemplo de um Handler de DLQ:**
+```java
+import io.github.jotabrc.ovy_mq_client.component.listener.ListenerAfterProcessingHandler;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+@Slf4j
+@Component
+public class MeuAfterProcessingHandler implements ListenerAfterProcessingHandler {
+
+    @Override
+    public <T> void afterSuccess(T payload) {
+        log.info("Payload processado com sucesso: {}", payload);
+    }
+
+    @Override
+    public <T> void afterFailure(T payload, RuntimeException throwable) {
+        log.error("Falha ao processar payload após todas as tentativas. Enviando para DLQ. Payload: {}", payload, throwable);
+        // Lógica para enviar o payload para uma Dead-Letter Queue (ex: outro tópico, um banco de dados, etc.)
+    }
+}
+```
+
 ### Configuração Detalhada
 
 A aplicação oferece um alto grau de personalização através de parâmetros na anotação `@OvyListener` e de propriedades no `application.yml`.
@@ -407,6 +432,8 @@ A aplicação oferece um alto grau de personalização através de parâmetros n
 
 | Propriedade | Padrão | Descrição |
 | :--- | :--- | :--- |
+| `ovymq.client.processing.max-retries` | `3` | Número máximo de tentativas de reprocessamento em caso de falha. |
+| `ovymq.client.processing.timeout` | `150000` | **Padrão global:** Timeout (ms) para processamento de mensagem. |
 | `ovymq.task.shutdown.wait-delay` | `1000` | Intervalo (ms) de espera durante o *graceful shutdown* do cliente. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Tempo máximo (ms) de espera no *graceful shutdown* do cliente. |
 | `ovymq.session-manager.connection.timeout` | `150000` | **Padrão global:** Timeout (ms) para conexão. |
@@ -416,7 +443,6 @@ A aplicação oferece um alto grau de personalização através de parâmetros n
 | `ovymq.task.health-check.expiration-time` | `120000` | **Padrão global:** Tempo (ms) de expiração do *health check*. |
 | `ovymq.task.listener-poll.initial-delay` | `10000` | **Padrão global:** Atraso inicial (ms) para `poll`. |
 | `ovymq.task.listener-poll.fixed-delay` | `35000` | **Padrão global:** Intervalo (ms) do `poll`. |
-| `ovymq.client.processing.timeout` | `150000` | **Padrão global:** Timeout (ms) para processamento de mensagem. |
 | `ovy.executor.client-task.core-pool-size` | `1` | Threads para tarefas agendadas do cliente. |
 | `ovy.executor.listener.core-pool-size` | `3` | Threads para execução dos listeners (`@OvyListener`). |
 | `ovy.executor.listener-task.max-pool-size` | `10` | Máximo de threads para os listeners. |

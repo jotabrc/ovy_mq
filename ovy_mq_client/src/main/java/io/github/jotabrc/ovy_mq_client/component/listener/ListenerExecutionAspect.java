@@ -1,14 +1,15 @@
 package io.github.jotabrc.ovy_mq_client.component.listener;
 
 import io.github.jotabrc.ovy_mq_client.component.message.ClientMessageDispatcher;
-import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.REQUEST_MESSAGE;
@@ -20,6 +21,10 @@ import static java.util.Objects.nonNull;
 @Component
 public class ListenerExecutionAspect {
 
+    @Value("ovymq.client.processing.max-retries:3")
+    private int maxRetries;
+
+    private final ListenerAfterProcessingHandler listenerAfterProcessingHandler;
     private final ListenerExecutionContextHolder listenerExecutionContextHolder;
     private final ClientMessageDispatcher clientMessageDispatcher;
 
@@ -31,9 +36,17 @@ public class ListenerExecutionAspect {
         }
 
         try {
-            return joinPoint.proceed();
-        } catch (Throwable e) {
-            throw new OvyException.ListenerExecution("Error while executing listener: client=%s topic=%s".formatted(client.getId(), client.getTopic()));
+            int retries = 1;
+            while (retries < maxRetries) {
+                try {
+                    Object object = joinPoint.proceed();
+                    listenerAfterProcessingHandler.afterSuccess(joinPoint.getArgs()[0]);
+                    return object;
+                } catch (Throwable e) {
+                    log.warn("Error while processing message for client={} topic={} retry={}/{}", client.getId(), client.getTopic(), retries, maxRetries);
+                    ++retries;
+                }
+            }
         } finally {
             if (nonNull(client)) client.setIsAvailable(true);
             if (!client.getIsDestroying()) {
@@ -41,5 +54,8 @@ public class ListenerExecutionAspect {
                 clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
             }
         }
+        OvyException.ListenerExecution exception = new OvyException.ListenerExecution("Error while executing listener: client=%s topic=%s after %d retries".formatted(client.getId(), client.getTopic(), maxRetries));
+        listenerAfterProcessingHandler.afterFailure(joinPoint.getArgs()[0], exception);
+        return null;
     }
 }
