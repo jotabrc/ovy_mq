@@ -115,6 +115,29 @@ sequenceDiagram
     end
 ```
 
+#### Background Flows
+
+These are periodic tasks that ensure system health and message flow.
+
+```mermaid
+graph TD
+    subgraph Health Check
+        A[OvyMQ Server] -- 1. Request Health Status --> B(Consumer);
+        B -- 2. Respond with 'alive' --> A;
+    end
+
+    subgraph Message Polling
+        C(Consumer) -- 1. Is idle? --> D{Send Poll Request};
+        D -- 2. Request new message --> E[OvyMQ Server];
+        E -- 3. Send message if available --> C;
+    end
+
+    subgraph Reaper Task
+        F[OvyMQ Server] -- 1. Periodically checks --> G(All Registered Consumers);
+        G -- 2. If unresponsive --> H{Remove from active pool};
+    end
+```
+
 ### Getting Started
 
 #### Prerequisites
@@ -321,7 +344,30 @@ sequenceDiagram
     end
 ```
 
-### Começando
+#### Fluxos em Background
+
+Estas são tarefas periódicas que garantem a saúde do sistema e o fluxo de mensagens.
+
+```mermaid
+graph TD
+    subgraph Health Check
+        A[Servidor OvyMQ] -- 1. Requisita Status de Saúde --> B(Consumidor);
+        B -- 2. Responde com 'vivo' --> A;
+    end
+
+    subgraph Polling de Mensagens
+        C(Consumidor) -- 1. Está ocioso? --> D{Enviar Requisição de Poll};
+        D -- 2. Requisita nova mensagem --> E[Servidor OvyMQ];
+        E -- 3. Envia mensagem se disponível --> C;
+    end
+
+    subgraph Tarefa Reaper
+        F[Servidor OvyMQ] -- 1. Verifica periodicamente --> G(Todos os Consumidores Registrados);
+        G -- 2. Se não responsivo --> H{Remove do pool ativo};
+    end
+```
+
+### Getting Started
 
 #### Pré-requisitos
 
