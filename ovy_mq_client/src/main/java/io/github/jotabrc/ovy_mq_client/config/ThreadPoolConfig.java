@@ -17,24 +17,24 @@ public class ThreadPoolConfig {
     public static final String SCHEDULED_BACKOFF_EXECUTOR = "scheduledBackoffExecutor";
     public static final String PRODUCER_EXECUTOR = "producerExecutor";
 
-    @Value("${ovy.executor.client-task.core-pool-size:1}")
+    @Value("${ovy.executor.client-task.core-pool-size:5}")
     private Integer clientTaskCorePoolSize;
 
-    @Value("${ovy.executor.client-task.core-pool-size:1}")
+    @Value("${ovy.executor.client-task.core-pool-size:5}")
     private Integer backoffTaskCorePoolSize;
 
-    @Value("${ovy.executor.listener.core-pool-size:3}")
+    @Value("${ovy.executor.listener.core-pool-size:5}")
     private Integer listenerExecutorCorePoolSize;
-    @Value("${ovy.executor.listener-task.max-pool-size:10}")
+    @Value("${ovy.executor.listener-task.max-pool-size:25}")
     private Integer listenerExecutorMaxPoolSize;
-    @Value("${ovy.executor.listener-task.queue-capacity:100}")
+    @Value("${ovy.executor.listener-task.queue-capacity:1000}")
     private Integer listenerExecutorQueueCapacity;
 
-    @Value("${ovy.executor.producer.core-pool-size:1}")
+    @Value("${ovy.executor.producer.core-pool-size:5}")
     private Integer producerExecutorCorePoolSize;
-    @Value("${ovy.executor.producer-task.max-pool-size:10}")
+    @Value("${ovy.executor.producer-task.max-pool-size:25}")
     private Integer producerExecutorMaxPoolSize;
-    @Value("${ovy.executor.producer-task.queue-capacity:100}")
+    @Value("${ovy.executor.producer-task.queue-capacity:1000}")
     private Integer producerExecutorQueueCapacity;
 
     @Bean(name = SCHEDULED_EXECUTOR)
