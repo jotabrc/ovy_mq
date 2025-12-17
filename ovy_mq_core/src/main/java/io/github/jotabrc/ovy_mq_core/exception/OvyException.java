@@ -46,4 +46,11 @@ public class OvyException extends RuntimeException {
             super(message);
         }
     }
+
+    public static class MessageDispatcher extends OvyException {
+
+        public MessageDispatcher(String message) {
+            super(message);
+        }
+    }
 }

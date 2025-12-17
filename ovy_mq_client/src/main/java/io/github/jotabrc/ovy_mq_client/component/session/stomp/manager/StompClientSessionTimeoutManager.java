@@ -37,7 +37,7 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
     @Value("${ovymq.session-manager.connection.max-retries:10}")
     protected Integer maxRetries;
 
-    @Value("${ovymq.session-manager.connection.timeout:150000}")
+    @Value("${ovymq.session-manager.connection.timeout:10000}")
     protected Long timeout;
 
     private final ObjectProviderFacade objectProviderFacade;

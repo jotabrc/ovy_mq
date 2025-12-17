@@ -23,7 +23,7 @@ ovymq.task.health-check.fixed-delay: 60000
 ovymq.task.health-check.expiration-time: 120000
 
 ovymq.session-manager.connection.max-retries: 50
-ovymq.session-manager.connection.timeout: 150000
+ovymq.session-manager.connection.timeout: 10000
 
 ovymq.config-client.timeout: 150000
 ovymq.config-client.initial-delay: 10000
