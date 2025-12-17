@@ -62,6 +62,7 @@ The platform allows client applications to consume messages declaratively using 
 
 *   **WebSocket/STOMP Communication**: Full-duplex and efficient communication.
 *   **Declarative Consumers**: Create message consumers with the simple `@OvyListener` annotation.
+*   **Asynchronous Retry with Backoff**: In case of processing failure, the system automatically retries the operation asynchronously with a progressive backoff delay, preventing thread blocking and increasing resilience.
 *   **Extensible Hooks**: Provides the `ListenerAfterProcessingHandler` interface to handle processing success or failure, enabling custom logic like Dead-Letter Queues (DLQ).
 *   **Modular Architecture**:
     *   `ovy_mq_core`: Shared entities, DTOs, and interfaces.
@@ -76,7 +77,7 @@ The platform allows client applications to consume messages declaratively using 
 
 #### Standard Message Flow
 
-This diagram shows the complete lifecycle of a message, from producer to consumer, including the post-processing hooks.
+This diagram shows the complete lifecycle of a message, from producer to consumer, including the post-processing hooks. The entire processing cycle, including retries, is handled asynchronously.
 
 ```mermaid
 sequenceDiagram
@@ -88,7 +89,7 @@ sequenceDiagram
     Producer->>OvyMQ Server: 1. Send Message (Payload)
     OvyMQ Server-->>Producer: 2. Acknowledge Receipt
     OvyMQ Server->>Consumer: 3. Deliver Message
-    Consumer->>Consumer: 4. Execute business logic (with retries)
+    Consumer->>Consumer: 4. Execute business logic (asynchronously with retries)
     alt Processing Succeeded
         Consumer->>ListenerAfterProcessingHandler: 5a. afterSuccess(payload)
     else Processing Failed
@@ -251,6 +252,7 @@ The application offers a high degree of customization through parameters in the 
 | Property | Default | Description |
 | :--- | :--- | :--- |
 | `ovymq.client.processing.max-retries` | `3` | Maximum number of reprocessing attempts in case of failure. |
+| `ovymq.client.processing.exponential-timer` | `1000` | Base delay (ms) for the progressive backoff between retries. |
 | `ovymq.client.processing.timeout` | `150000` | **Global default:** Message processing timeout (ms). |
 | `ovymq.task.shutdown.wait-delay` | `1000` | Client's wait interval (ms) during graceful shutdown. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Client's maximum wait time (ms) during graceful shutdown. |
@@ -292,6 +294,7 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 
 *   **Comunicação via WebSocket/STOMP**: Comunicação full-duplex e eficiente.
 *   **Consumidores Declarativos**: Crie consumidores de mensagens com a simples anotação `@OvyListener`.
+*   **Retry Assíncrono com Backoff**: Em caso de falha no processamento, o sistema automaticamente tenta reexecutar a operação de forma assíncrona com um atraso progressivo (backoff), evitando o bloqueio de threads e aumentando a resiliência.
 *   **Hooks Extensíveis**: Fornece a interface `ListenerAfterProcessingHandler` para tratar o sucesso ou a falha do processamento, permitindo lógicas customizadas como Dead-Letter Queues (DLQ).
 *   **Arquitetura Modular**:
     *   `ovy_mq_core`: Entidades, DTOs e interfaces compartilhadas.
@@ -306,7 +309,7 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 
 #### Fluxo Padrão de Mensagem
 
-Este diagrama mostra o ciclo de vida completo de uma mensagem, do produtor ao consumidor, incluindo os hooks de pós-processamento.
+Este diagrama mostra o ciclo de vida completo de uma mensagem, do produtor ao consumidor, incluindo os hooks de pós-processamento. Todo o ciclo de processamento, incluindo as retentativas, é gerenciado de forma assíncrona.
 
 ```mermaid
 sequenceDiagram
@@ -318,7 +321,7 @@ sequenceDiagram
     Produtor->>Servidor OvyMQ: 1. Envia Mensagem (Payload)
     Servidor OvyMQ-->>Produtor: 2. Confirma Recebimento
     Servidor OvyMQ->>Consumidor: 3. Entrega Mensagem
-    Consumidor->>Consumidor: 4. Executa lógica de negócio (com retries)
+    Consumidor->>Consumidor: 4. Executa lógica de negócio (de forma assíncrona com retentativas)
     alt Processamento com Sucesso
         Consumidor->>ListenerAfterProcessingHandler: 5a. afterSuccess(payload)
     else Processamento Falhou
@@ -420,7 +423,7 @@ Você pode implementar a interface `ListenerAfterProcessingHandler` para executa
 **Exemplo de um Handler de DLQ:**
 ```java
 import io.github.jotabrc.ovy_mq_client.component.listener.ListenerAfterProcessingHandler;
-import lombok.extern.slf4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -481,6 +484,7 @@ A aplicação oferece um alto grau de personalização através de parâmetros n
 | Propriedade | Padrão | Descrição |
 | :--- | :--- | :--- |
 | `ovymq.client.processing.max-retries` | `3` | Número máximo de tentativas de reprocessamento em caso de falha. |
+| `ovymq.client.processing.exponential-timer` | `1000` | Atraso base (ms) para o backoff progressivo entre as retentativas. |
 | `ovymq.client.processing.timeout` | `150000` | **Padrão global:** Timeout (ms) para processamento de mensagem. |
 | `ovymq.task.shutdown.wait-delay` | `1000` | Intervalo (ms) de espera durante o *graceful shutdown* do cliente. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Tempo máximo (ms) de espera no *graceful shutdown* do cliente. |
