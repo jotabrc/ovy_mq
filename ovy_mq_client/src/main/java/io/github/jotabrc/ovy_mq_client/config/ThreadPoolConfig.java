@@ -14,29 +14,42 @@ public class ThreadPoolConfig {
 
     public static final String LISTENER_EXECUTOR = "listenerExecutor";
     public static final String SCHEDULED_EXECUTOR = "scheduledExecutor";
+    public static final String SCHEDULED_BACKOFF_EXECUTOR = "scheduledBackoffExecutor";
     public static final String PRODUCER_EXECUTOR = "producerExecutor";
 
     @Value("${ovy.executor.client-task.core-pool-size:1}")
     private Integer clientTaskCorePoolSize;
 
+    @Value("${ovy.executor.client-task.core-pool-size:1}")
+    private Integer backoffTaskCorePoolSize;
+
     @Value("${ovy.executor.listener.core-pool-size:3}")
     private Integer listenerExecutorCorePoolSize;
     @Value("${ovy.executor.listener-task.max-pool-size:10}")
     private Integer listenerExecutorMaxPoolSize;
-    @Value("${ovy.executor.listener-task.queue-capacity:25}")
+    @Value("${ovy.executor.listener-task.queue-capacity:100}")
     private Integer listenerExecutorQueueCapacity;
 
     @Value("${ovy.executor.producer.core-pool-size:1}")
     private Integer producerExecutorCorePoolSize;
-    @Value("${ovy.executor.producer-task.max-pool-size:1}")
+    @Value("${ovy.executor.producer-task.max-pool-size:10}")
     private Integer producerExecutorMaxPoolSize;
-    @Value("${ovy.executor.producer-task.queue-capacity:25}")
+    @Value("${ovy.executor.producer-task.queue-capacity:100}")
     private Integer producerExecutorQueueCapacity;
 
     @Bean(name = SCHEDULED_EXECUTOR)
     public ScheduledExecutorService scheduledExecutor() {
         return new ScheduledThreadPoolExecutor(clientTaskCorePoolSize, r -> {
             Thread thread = new Thread(r, "ClientTaskExecutor");
+            thread.setDaemon(true);
+            return thread;
+        });
+    }
+
+    @Bean(name = SCHEDULED_BACKOFF_EXECUTOR)
+    public ScheduledExecutorService scheduledBackoffExecutor() {
+        return new ScheduledThreadPoolExecutor(clientTaskCorePoolSize, r -> {
+            Thread thread = new Thread(r, "BackoffTaskExecutor");
             thread.setDaemon(true);
             return thread;
         });
