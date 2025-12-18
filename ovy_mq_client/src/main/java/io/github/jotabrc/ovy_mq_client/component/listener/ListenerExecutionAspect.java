@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -59,7 +60,7 @@ public class ListenerExecutionAspect {
         return () -> {
             try {
                 Object object = joinPoint.proceed();
-                updateClient(client);
+                executeWhenDone(client);
                 listenerAfterProcessingHandler.afterSuccess(joinPoint.getArgs()[0]);
                 return object;
             } catch (Throwable e) {
@@ -70,15 +71,12 @@ public class ListenerExecutionAspect {
         };
     }
 
-    private Object backoffExecution(ProceedingJoinPoint joinPoint, Client client, AtomicInteger retries) {
+    private ScheduledFuture<Object> backoffExecution(ProceedingJoinPoint joinPoint, Client client, AtomicInteger retries) {
         try {
             Callable<Object> callable = getCallable(joinPoint, client, retries);
-            long executionDelay = Objects.equals(retries.get(), 1)
-                    ? 0
-                    : exponentialTimer * retries.get() + 1;
 
             if (nonNull(callable)) {
-                return scheduledBackoffExecutor.schedule(callable, executionDelay, TimeUnit.MILLISECONDS);
+                return scheduleListenerExecution(retries, callable);
             } else {
                 executeOnFailure(joinPoint, client);
             }
@@ -88,7 +86,14 @@ public class ListenerExecutionAspect {
         }
     }
 
-    private void updateClient(Client client) {
+    private ScheduledFuture<Object> scheduleListenerExecution(AtomicInteger retries, Callable<Object> callable) {
+        long executionDelay = Objects.equals(retries.get(), 1)
+                ? 0
+                : exponentialTimer * retries.get() + 1;
+        return scheduledBackoffExecutor.schedule(callable, executionDelay, TimeUnit.MILLISECONDS);
+    }
+
+    private void executeWhenDone(Client client) {
         if (nonNull(client)) client.setIsAvailable(true);
         if (!client.getIsDestroying()) {
             client.setIsMessageInteractionActive(true);
@@ -97,7 +102,7 @@ public class ListenerExecutionAspect {
     }
 
     private void executeOnFailure(ProceedingJoinPoint joinPoint, Client client) {
-        updateClient(client);
+        executeWhenDone(client);
         OvyException.ListenerExecution exception = new OvyException.ListenerExecution("Error while executing listener: client=%s topic=%s after %d retries".formatted(client.getId(), client.getTopic(), maxRetries));
         listenerAfterProcessingHandler.afterFailure(joinPoint.getArgs()[0], exception);
     }
