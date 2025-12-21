@@ -13,12 +13,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class ApplicationShutdownManager extends ShutdownUtil implements SmartLifecycle {
 
-    private final AtomicBoolean isRunning = new AtomicBoolean(false);
-
     public ApplicationShutdownManager(SessionRegistry sessionRegistry) {
         super(sessionRegistry);
     }
 
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
     @Override
     public void stop(Runnable callback) {

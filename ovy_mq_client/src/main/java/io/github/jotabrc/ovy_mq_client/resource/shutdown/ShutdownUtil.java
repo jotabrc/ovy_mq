@@ -7,9 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 
-import java.util.concurrent.*;
-
-import static java.util.Objects.isNull;
+import java.util.concurrent.Callable;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,15 +21,13 @@ public class ShutdownUtil {
     protected Long maxWait;
 
     @Async
-    public void stopThis(SessionManager sessionManager, Long startTime) {
+    public void stopThis(SessionManager sessionManager) {
 
         log.info("Executing graceful shutdown");
         log.info("Phase 1: destroying tasks and marking client for destruction");
         sessionManager.destroy();
 
-        final long finalStartTime = isNull(startTime)
-                ? System.currentTimeMillis()
-                : startTime;
+        final long finalStartTime = System.currentTimeMillis();
 
         Callable<Boolean> callable = () -> {
             try {

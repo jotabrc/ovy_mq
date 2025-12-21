@@ -1,16 +1,16 @@
 package io.github.jotabrc.ovy_mq_client.payload.handler;
 
 import io.github.jotabrc.ovy_mq_client.payload.handler.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_client.resource.ShutdownClientComponent;
+import io.github.jotabrc.ovy_mq_client.resource.ApplicationShutdownManager;
 import io.github.jotabrc.ovy_mq_client.session.initialize.SessionInitializer;
 import io.github.jotabrc.ovy_mq_client.session.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_client.session.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
-import io.github.jotabrc.ovy_mq_core.util.Subscribe;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
+import io.github.jotabrc.ovy_mq_core.util.Subscribe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,7 +32,7 @@ public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
     private final LockProcessor lockProcessor;
     private final ClientRegistry clientRegistry;
     private final SessionRegistry sessionRegistry;
-    private final ShutdownClientComponent shutdownClientComponent;
+    private final ApplicationShutdownManager applicationShutdownManager;
     private final ObjectProvider<DefinitionMap> definitionProvider;
     private final SessionInitializer sessionInitializer;
 
@@ -80,8 +80,7 @@ public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
     private void scaleDown(int replicas, List<Client> clients) {
         while (replicas < 0) {
             Client clientToRemove = clients.removeLast();
-            sessionRegistry.getById(clientToRemove.getId()).ifPresent(sessionManager ->
-                    shutdownClientComponent.stopThis(sessionManager, null));
+            sessionRegistry.getById(clientToRemove.getId()).ifPresent(applicationShutdownManager::stopThis);
             ++replicas;
         }
     }
