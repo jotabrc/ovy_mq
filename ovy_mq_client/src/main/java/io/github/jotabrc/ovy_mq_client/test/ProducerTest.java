@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.test;
 
-import io.github.jotabrc.ovy_mq_client.component.producer.interfaces.OvyProducer;
+import io.github.jotabrc.ovy_mq_client.producer.interfaces.OvyProducer;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

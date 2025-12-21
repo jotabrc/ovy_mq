@@ -3,9 +3,8 @@ package io.github.jotabrc.ovy_mq.service.handler;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
-import io.github.jotabrc.ovy_mq_core.defaults.Value;
+import io.github.jotabrc.ovy_mq_core.constants.Mapping;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +35,9 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
 
     private void sendHealthCheckResponse(HealthStatus healthStatus) {
         DefinitionMap definition = definitionProvier.getObject()
-                .add(Key.HEADER_CLIENT_ID, healthStatus.getClientId())
-                .add(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_HEALTH_STATUS)
-                .add(Key.HEADER_CLIENT_TYPE, ClientType.SERVER.name());
+                .add(OvyMqConstants.CLIENT_ID, healthStatus.getClientId())
+                .add(OvyMqConstants.PAYLOAD_TYPE, OvyMqConstants.PAYLOAD_TYPE_HEALTH_STATUS)
+                .add(OvyMqConstants.CLIENT_TYPE, ClientType.SERVER.name());
         factoryResolver.create(definition, MessageHeaders.class)
                 .ifPresent(headers -> messagingTemplate.convertAndSendToUser(healthStatus.getClientId(),
                         Mapping.WS_HEALTH,

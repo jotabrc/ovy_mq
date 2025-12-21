@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_core.components.factories;
 
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
@@ -15,14 +15,13 @@ import java.util.UUID;
 public class ClientFactoryStrategy implements io.github.jotabrc.ovy_mq_core.components.factories.interfaces.ClientFactoryStrategy {
 
     public Client create(DefinitionMap definition) {
-        OvyListener listener = definition.extract(Key.FACTORY_OVY_LISTENER, OvyListener.class);
+        OvyListener listener = definition.extract(OvyMqConstants.OVY_LISTENER, OvyListener.class);
         return Client.builder()
-                .id(definition.extractOrGet(Key.HEADER_CLIENT_ID, UUID.randomUUID().toString()))
+                .id(definition.extractOrGet(OvyMqConstants.CLIENT_ID, UUID.randomUUID().toString()))
                 .topic(listener.topic())
-                .method(definition.extract(Key.FACTORY_CLIENT_METHOD, Method.class))
-                .beanName(definition.extract(Key.FACTORY_CLIENT_BEAN_NAME, String.class))
-                .isAvailable(definition.extract(Key.FACTORY_CLIENT_IS_AVAILABLE, Boolean.class))
-                .type(definition.extract(Key.HEADER_CLIENT_TYPE, ClientType.class))
+                .method(definition.extract(OvyMqConstants.CLIENT_METHOD, Method.class))
+                .beanName(definition.extract(OvyMqConstants.CLIENT_BEAN_NAME, String.class))
+                .type(definition.extract(OvyMqConstants.CLIENT_TYPE, ClientType.class))
                 .config(ListenerConfig.builder()
                         .processingTimeout(listener.processingTimeout())
                         .pollInitialDelay(listener.pollInitialDelay())

@@ -24,20 +24,24 @@ public class Client implements Serializable {
 
     private String id;
     private String topic;
+
+    private String beanName;
+    private Method method;
+
+    private ClientType type;
+    private ListenerConfig config;
+
+    @Builder.Default
+    private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
+    @Builder.Default
+    private OffsetDateTime lastExecution = OffsetDateTime.now();
+
     @Builder.Default
     private Boolean isAvailable = true;
     @Builder.Default
     private Boolean isMessageInteractionActive = false;
     @Builder.Default
     private Boolean isDestroying = false;
-    private String beanName;
-    private Method method;
-    private ClientType type;
-    private ListenerConfig config;
-    @Builder.Default
-    private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
-    @Builder.Default
-    private OffsetDateTime lastExecution = OffsetDateTime.now();
 
     public String getTopicForAwaitingProcessingQueue() {
         return TopicUtil.createTopicKey(this.topic, MessageStatus.AWAITING_PROCESSING);

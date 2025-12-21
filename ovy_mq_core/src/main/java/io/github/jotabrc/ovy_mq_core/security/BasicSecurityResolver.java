@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_core.security;
 
 import io.github.jotabrc.ovy_mq_core.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.security.interfaces.SecurityResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +36,11 @@ public class BasicSecurityResolver implements SecurityResolver {
 
     private Map<String, String> createAuthorization() {
         String basic = "Basic " + Base64.getEncoder().encodeToString((credentialConfig.getBcrypt()).getBytes(StandardCharsets.UTF_8));
-        return Map.of(Key.HEADER_AUTHORIZATION, basic);
+        return Map.of(OvyMqConstants.AUTHORIZATION, basic);
     }
 
     private Map<String, String> createClientTypeRole(String clientType) {
-        return Map.of(Key.HEADER_ROLE, clientType);
+        return Map.of(OvyMqConstants.ROLES, clientType);
     }
 
     private void addToList(Map<String, List<String>> headers, Map<String, String> map) {

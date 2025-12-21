@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.factory;
 
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class MessageHeadersFactory implements AbstractFactory<MessageHeaders> {
         headers.setLeaveMutable(true);
         headers.setContentType(MimeTypeUtils.APPLICATION_JSON);
         definition.convert(String.class).forEach(headers::addNativeHeader);
-        securityProvider.createSimple(definition.extract(Key.HEADER_CLIENT_TYPE, String.class))
+        securityProvider.createSimple(definition.extract(OvyMqConstants.CLIENT_TYPE, String.class))
                 .forEach(headers::addNativeHeader);
         return headers.getMessageHeaders();
     }

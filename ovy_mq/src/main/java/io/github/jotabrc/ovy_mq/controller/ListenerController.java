@@ -6,8 +6,8 @@ import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_CONFIG;
-import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_LISTENER;
+import static io.github.jotabrc.ovy_mq_core.constants.Mapping.WS_CONFIG;
+import static io.github.jotabrc.ovy_mq_core.constants.Mapping.WS_LISTENER;
 
 @RestController
 @RequiredArgsConstructor

@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.security.filter.chain;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,11 +20,11 @@ public class RoleChain extends AbstractChain {
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
-        String role = definition.extract(Key.HEADER_ROLE, String.class);
+        String role = definition.extract(OvyMqConstants.ROLES, String.class);
         if (isNull(role) || role.isBlank()) {
-            role = definition.extract(Key.HEADER_CLIENT_TYPE, String.class);
+            role = definition.extract(OvyMqConstants.CLIENT_TYPE, String.class);
         }
-        definition.add(Key.FILTER_ROLES, new ArrayList<>(List.of(role)));
+        definition.add(OvyMqConstants.FILTER_ROLES, new ArrayList<>(List.of(role)));
         return handleNext(definition);
     }
 

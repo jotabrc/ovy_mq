@@ -5,7 +5,7 @@ import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.security.handler.interfaces.AuthHandler;
 import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class BasicChain extends AbstractChain {
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
-        String auth = definition.extract(Key.HEADER_AUTHORIZATION, String.class);
+        String auth = definition.extract(OvyMqConstants.AUTHORIZATION, String.class);
 
         if (nonNull(auth) && !auth.isBlank()) {
             AuthHandler authHandler = authHandlerResolver.get(ChainType.AUTH_BASE64)

@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
-import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.*;
+import static io.github.jotabrc.ovy_mq_core.constants.Mapping.*;
 import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
@@ -40,9 +40,9 @@ public class MessageController {
     public void requestMessage(@Payload String topic, Principal principal) {
         if (nonNull(topic) && !topic.isBlank() && nonNull(principal)) {
             DefinitionMap definition = definitionProvider.getObject()
-                    .add(Key.HEADER_CLIENT_ID, principal.getName())
-                    .add(Key.HEADER_TOPIC, topic)
-                    .add(Key.HEADER_CLIENT_TYPE, ClientType.CONSUMER_MESSAGE_REQUEST_BASIC);
+                    .add(OvyMqConstants.CLIENT_ID, principal.getName())
+                    .add(OvyMqConstants.SUBSCRIBED_TOPIC, topic)
+                    .add(OvyMqConstants.CLIENT_TYPE, ClientType.CONSUMER_MESSAGE_REQUEST_BASIC);
             factoryResolver.create(definition, Client.class)
                             .ifPresent(client ->
                                     payloadDispatcher.execute(client, PayloadDispatcherCommand.REQUEST));
@@ -50,7 +50,7 @@ public class MessageController {
     }
 
     @MessageMapping(WS_MESSAGE + WS_CONFIRM)
-    public void confirmProcessing(@Payload MessagePayload messagePayload, @Header(Key.HEADER_TOPIC) String topic) {
+    public void confirmProcessing(@Payload MessagePayload messagePayload, @Header(OvyMqConstants.SUBSCRIBED_TOPIC) String topic) {
         if (nonNull(messagePayload) && nonNull(topic)) {
             messagePayload.setTopic(topic);
             payloadDispatcher.execute(messagePayload, PayloadDispatcherCommand.REMOVE);

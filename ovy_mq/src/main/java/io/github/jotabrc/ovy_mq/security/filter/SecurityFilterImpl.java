@@ -5,7 +5,7 @@ import io.github.jotabrc.ovy_mq_core.chain.ChainResolver;
 import io.github.jotabrc.ovy_mq_core.chain.BaseChain;
 import io.github.jotabrc.ovy_mq.security.filter.interfaces.SecurityFilter;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,11 +33,11 @@ public class SecurityFilterImpl implements SecurityFilter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         log.info("Authentication request received");
         HttpServletRequest req = (HttpServletRequest) servletRequest;
-        String auth = req.getHeader(Key.HEADER_AUTHORIZATION);
+        String auth = req.getHeader(OvyMqConstants.AUTHORIZATION);
 
         if (nonNull(auth) && !auth.isBlank()) {
             BaseChain baseChain = chainResolver.getByType(ChainType.DEFINITION_CREATOR)
-                    .orElseThrow(() -> new OvyException.SecurityFilterFailure("Definition handler not found"));
+                    .orElseThrow(() -> new OvyException.SecurityFilterFailure("DefinitionMapImpl handler not found"));
 
             baseChain.setNext(chainResolver.getByAuth(auth)
                             .orElseThrow(() -> new OvyException.SecurityFilterFailure("Authentication handler not found")))
@@ -48,12 +48,12 @@ public class SecurityFilterImpl implements SecurityFilter {
                     .setNext(chainResolver.getByType(ChainType.AUTHENTICATION_CREATOR)
                             .orElseThrow(() -> new OvyException.SecurityFilterFailure("Authentication creator handler not found")));
 
-            DefinitionMap definition = definitionProvider.getObject().add(Key.FILTER_SERVLET_REQUEST, req);
+            DefinitionMap definition = definitionProvider.getObject().add(OvyMqConstants.FILTER_SERVLET_REQUEST, req);
             definition = baseChain.handle(definition);
 
-            servletRequest.setAttribute(Key.HEADER_CLIENT_ID, definition.extract(Key.HEADER_CLIENT_ID, String.class));
-            servletRequest.setAttribute(Key.HEADER_TOPIC, definition.extract(Key.HEADER_TOPIC, String.class));
-            servletRequest.setAttribute(Key.HEADER_CLIENT_TYPE, definition.extract(Key.HEADER_CLIENT_TYPE, String.class));
+            servletRequest.setAttribute(OvyMqConstants.CLIENT_ID, definition.extract(OvyMqConstants.CLIENT_ID, String.class));
+            servletRequest.setAttribute(OvyMqConstants.SUBSCRIBED_TOPIC, definition.extract(OvyMqConstants.SUBSCRIBED_TOPIC, String.class));
+            servletRequest.setAttribute(OvyMqConstants.CLIENT_TYPE, definition.extract(OvyMqConstants.CLIENT_TYPE, String.class));
             try {
                 filterChain.doFilter(servletRequest, servletResponse);
                 log.info("Authenticated");

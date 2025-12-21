@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.security.handler;
 import io.github.jotabrc.ovy_mq.security.handler.interfaces.AuthHandler;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.config.CredentialConfig;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import jakarta.annotation.PostConstruct;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -57,7 +57,7 @@ public class AuthBasicHandler implements AuthHandler {
 
     @Override
     public Map<String, Object> createAuthorizationHeader() {
-        return Map.of(Key.HEADER_AUTHORIZATION, getBasic());
+        return Map.of(OvyMqConstants.AUTHORIZATION, getBasic());
     }
 
     private String getBasic() {

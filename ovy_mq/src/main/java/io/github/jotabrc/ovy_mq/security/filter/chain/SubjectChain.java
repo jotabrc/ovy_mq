@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +25,8 @@ public class SubjectChain extends AbstractChain {
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
-        String subject = definition.extract(Key.HEADER_CLIENT_ID, String.class);
-        String clientType = definition.extract(Key.HEADER_CLIENT_TYPE, String.class);
+        String subject = definition.extract(OvyMqConstants.CLIENT_ID, String.class);
+        String clientType = definition.extract(OvyMqConstants.CLIENT_TYPE, String.class);
 
         if ((isNull(subject) || subject.isBlank())
                 && nonNull(clientType) && Objects.equals(ClientType.CONFIGURER.name(), clientType)) {
@@ -35,7 +35,7 @@ public class SubjectChain extends AbstractChain {
         }
 
         if (nonNull(subject) && !subject.isBlank()) {
-            definition.add(Key.FILTER_SUBJECT, subject);
+            definition.add(OvyMqConstants.FILTER_SUBJECT, subject);
             return handleNext(definition);
         }
 

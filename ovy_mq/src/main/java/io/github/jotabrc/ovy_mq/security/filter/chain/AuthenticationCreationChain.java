@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.security.filter.chain;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +29,8 @@ public class AuthenticationCreationChain extends AbstractChain {
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
-        String subject = definition.extract(Key.FILTER_SUBJECT, String.class);
-        List<String> roles = definition.extractToList(Key.FILTER_ROLES, String.class);
+        String subject = definition.extract(OvyMqConstants.FILTER_SUBJECT, String.class);
+        List<String> roles = definition.extractToList(OvyMqConstants.FILTER_ROLES, String.class);
 
         if (nonNull(subject) && !subject.isBlank()
                 && nonNull(roles) && !roles.isEmpty()) {

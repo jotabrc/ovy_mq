@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq.security;
 
 import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.ServerClientConfigurer;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import lombok.AllArgsConstructor;
@@ -28,9 +28,9 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                    ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) {
-        Object clientIdAtt = request.getAttributes().get(Key.HEADER_CLIENT_ID);
-        Object topicAtt = request.getAttributes().get(Key.HEADER_TOPIC);
-        Object clientTypeAtt = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
+        Object clientIdAtt = request.getAttributes().get(OvyMqConstants.CLIENT_ID);
+        Object topicAtt = request.getAttributes().get(OvyMqConstants.SUBSCRIBED_TOPIC);
+        Object clientTypeAtt = request.getAttributes().get(OvyMqConstants.CLIENT_TYPE);
 
         try {
             if (clientIdAtt instanceof String clientId
@@ -38,9 +38,9 @@ public class AuthInterceptor implements HandshakeInterceptor {
                     && clientTypeAtt instanceof String clientType) {
                 if (!clientId.isBlank() && !topic.isBlank() && !clientType.isBlank()) {
                     ClientType type = ClientType.valueOf(clientType);
-                    attributes.put(Key.HEADER_CLIENT_ID, clientId);
-                    attributes.put(Key.HEADER_TOPIC, topic);
-                    attributes.put(Key.HEADER_CLIENT_TYPE, type);
+                    attributes.put(OvyMqConstants.CLIENT_ID, clientId);
+                    attributes.put(OvyMqConstants.SUBSCRIBED_TOPIC, topic);
+                    attributes.put(OvyMqConstants.CLIENT_TYPE, type);
                     log.info("Handshake received: client={} topic={} clientType={}", clientId, topic, clientType);
                     return true;
                 }
@@ -59,8 +59,8 @@ public class AuthInterceptor implements HandshakeInterceptor {
                                ServerHttpResponse response,
                                WebSocketHandler wsHandler,
                                Exception exception) {
-        Object clientId = request.getAttributes().get(Key.HEADER_CLIENT_ID);
-        Object clientType = request.getAttributes().get(Key.HEADER_CLIENT_TYPE);
+        Object clientId = request.getAttributes().get(OvyMqConstants.CLIENT_ID);
+        Object clientType = request.getAttributes().get(OvyMqConstants.CLIENT_TYPE);
         if (clientType instanceof String type && clientId instanceof String id) {
             if (Objects.equals(ClientType.CONFIGURER, ClientType.valueOf(type)) && !id.isBlank()) {
                 configClientContextHolder.add(ServerClientConfigurer.builder()

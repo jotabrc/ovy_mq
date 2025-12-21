@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.security.filter.chain;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,23 +25,23 @@ public class DefinitionChain extends AbstractChain {
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
-        HttpServletRequest req = definition.extract(Key.FILTER_SERVLET_REQUEST, HttpServletRequest.class);
-        String auth = req.getHeader(Key.HEADER_AUTHORIZATION);
-        String clientId = req.getHeader(Key.HEADER_CLIENT_ID);
-        String topic = req.getHeader(Key.HEADER_TOPIC);
-        String clientType = req.getHeader(Key.HEADER_CLIENT_TYPE);
-        String role = req.getHeader(Key.HEADER_ROLE);
+        HttpServletRequest req = definition.extract(OvyMqConstants.FILTER_SERVLET_REQUEST, HttpServletRequest.class);
+        String auth = req.getHeader(OvyMqConstants.AUTHORIZATION);
+        String clientId = req.getHeader(OvyMqConstants.CLIENT_ID);
+        String topic = req.getHeader(OvyMqConstants.SUBSCRIBED_TOPIC);
+        String clientType = req.getHeader(OvyMqConstants.CLIENT_TYPE);
+        String role = req.getHeader(OvyMqConstants.ROLES);
 
         if (nonNull(topic) && !topic.isBlank()
                 && nonNull(clientType) && !clientType.isBlank()
                 && ((nonNull(clientId) && !clientId.isBlank()) || Objects.equals(ClientType.CONFIGURER.name(), clientType))) {
 
             definition = definitionProvider.getObject()
-                    .add(Key.HEADER_AUTHORIZATION, auth)
-                    .add(Key.HEADER_CLIENT_ID, clientId)
-                    .add(Key.HEADER_TOPIC, topic)
-                    .add(Key.HEADER_CLIENT_TYPE, clientType)
-                    .add(Key.HEADER_ROLE, role);
+                    .add(OvyMqConstants.AUTHORIZATION, auth)
+                    .add(OvyMqConstants.CLIENT_ID, clientId)
+                    .add(OvyMqConstants.SUBSCRIBED_TOPIC, topic)
+                    .add(OvyMqConstants.CLIENT_TYPE, clientType)
+                    .add(OvyMqConstants.ROLES, role);
             return super.handleNext(definition);
         }
 

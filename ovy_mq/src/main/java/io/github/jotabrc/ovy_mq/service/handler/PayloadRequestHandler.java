@@ -1,12 +1,11 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
-import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.defaults.Mapping;
-import io.github.jotabrc.ovy_mq_core.defaults.Value;
+import io.github.jotabrc.ovy_mq_core.chain.ChainType;
+import io.github.jotabrc.ovy_mq_core.constants.Mapping;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
@@ -70,8 +69,8 @@ public class PayloadRequestHandler implements PayloadHandler<Client> {
         accessor.setLeaveMutable(true);
         authHandlerResolver.get(ChainType.AUTH_BASE64)
                 .ifPresent(authHandler -> {
-                    accessor.setNativeHeader(Key.HEADER_AUTHORIZATION, authHandler.createAuthorizationHeader().get(Key.HEADER_AUTHORIZATION).toString());
-                    accessor.setNativeHeader(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
+                    accessor.setNativeHeader(OvyMqConstants.AUTHORIZATION, authHandler.createAuthorizationHeader().get(OvyMqConstants.AUTHORIZATION).toString());
+                    accessor.setNativeHeader(OvyMqConstants.PAYLOAD_TYPE, OvyMqConstants.PAYLOAD_TYPE_MESSAGE_PAYLOAD);
                 });
         return accessor.getMessageHeaders();
     }

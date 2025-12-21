@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
@@ -18,7 +18,7 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
         return () -> {
-            Object clientId = attributes.get(Key.HEADER_CLIENT_ID);
+            Object clientId = attributes.get(OvyMqConstants.CLIENT_ID);
             if (nonNull(clientId)
                     && clientId instanceof String client
                     && !client.isBlank())

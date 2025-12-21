@@ -4,8 +4,7 @@ import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.defaults.Key;
-import io.github.jotabrc.ovy_mq_core.defaults.Value;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,7 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import static io.github.jotabrc.ovy_mq_core.defaults.Mapping.WS_CONFIG;
+import static io.github.jotabrc.ovy_mq_core.constants.Mapping.WS_CONFIG;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,9 +36,9 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
         configClientContextHolder.getId()
                 .ifPresentOrElse(clientId -> {
                     DefinitionMap definition = definitionProvider.getObject()
-                            .add(Key.HEADER_CLIENT_ID, clientId)
-                            .add(Key.HEADER_CLIENT_TYPE, ClientType.CONFIGURER.name())
-                            .add(Key.HEADER_PAYLOAD_TYPE, Value.PAYLOAD_TYPE_LISTENER_CONFIG);
+                            .add(OvyMqConstants.CLIENT_ID, clientId)
+                            .add(OvyMqConstants.CLIENT_TYPE, ClientType.CONFIGURER.name())
+                            .add(OvyMqConstants.PAYLOAD_TYPE, OvyMqConstants.PAYLOAD_TYPE_LISTENER_CONFIG);
                             factoryResolver.create(definition, MessageHeaders.class)
                                     .ifPresent(headers -> messagingTemplate.convertAndSendToUser(clientId,
                                             WS_CONFIG,
