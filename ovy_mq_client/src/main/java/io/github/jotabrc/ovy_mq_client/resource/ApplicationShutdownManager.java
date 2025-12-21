@@ -11,13 +11,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
-public class ResourceManager extends ShutdownUtil implements SmartLifecycle {
+public class ApplicationShutdownManager extends ShutdownUtil implements SmartLifecycle {
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    public ResourceManager(SessionRegistry sessionRegistry) {
+    public ApplicationShutdownManager(SessionRegistry sessionRegistry) {
         super(sessionRegistry);
     }
+
 
     @Override
     public void stop(Runnable callback) {

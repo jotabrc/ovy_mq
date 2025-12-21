@@ -14,11 +14,15 @@ public class ThreadPoolConfig {
 
     public static final String LISTENER_EXECUTOR = "listenerExecutor";
     public static final String SCHEDULED_EXECUTOR = "scheduledExecutor";
+    public static final String SCHEDULED_SHUTDOWN_EXECUTOR = "scheduledShutdownExecutor";
     public static final String SCHEDULED_BACKOFF_EXECUTOR = "scheduledBackoffExecutor";
     public static final String PRODUCER_EXECUTOR = "producerExecutor";
 
     @Value("${ovy.executor.client-task.core-pool-size:5}")
     private Integer clientTaskCorePoolSize;
+
+    @Value("${ovy.executor.client-task.shutdown.core-pool-size:3}")
+    private Integer clientTaskShutdownCorePoolSize;
 
     @Value("${ovy.executor.client-task.core-pool-size:5}")
     private Integer backoffTaskCorePoolSize;
@@ -50,6 +54,15 @@ public class ThreadPoolConfig {
     public ScheduledExecutorService scheduledBackoffExecutor() {
         return new ScheduledThreadPoolExecutor(clientTaskCorePoolSize, r -> {
             Thread thread = new Thread(r, "BackoffTaskExecutor");
+            thread.setDaemon(true);
+            return thread;
+        });
+    }
+
+    @Bean(name = SCHEDULED_SHUTDOWN_EXECUTOR)
+    public ScheduledExecutorService scheduledShutdownExecutor() {
+        return new ScheduledThreadPoolExecutor(clientTaskShutdownCorePoolSize, r -> {
+            Thread thread = new Thread(r, "ClientShutdownExecutor");
             thread.setDaemon(true);
             return thread;
         });

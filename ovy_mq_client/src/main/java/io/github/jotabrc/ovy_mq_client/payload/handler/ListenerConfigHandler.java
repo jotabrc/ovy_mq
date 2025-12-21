@@ -80,7 +80,8 @@ public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
     private void scaleDown(int replicas, List<Client> clients) {
         while (replicas < 0) {
             Client clientToRemove = clients.removeLast();
-            sessionRegistry.getById(clientToRemove.getId()).ifPresent(shutdownClientComponent::stop);
+            sessionRegistry.getById(clientToRemove.getId()).ifPresent(sessionManager ->
+                    shutdownClientComponent.stopThis(sessionManager, null));
             ++replicas;
         }
     }
