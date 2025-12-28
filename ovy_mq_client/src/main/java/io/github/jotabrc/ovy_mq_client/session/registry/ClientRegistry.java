@@ -2,8 +2,6 @@ package io.github.jotabrc.ovy_mq_client.session.registry;
 
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
-import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
-import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -45,34 +43,5 @@ public class ClientRegistry {
                 .filter(client -> Objects.equals(topic, client.getTopic()))
                 .collect(Collectors.toCollection(ArrayList::new));
         return lockProcessor.getLockAndExecute(callable, topic, null, null);
-    }
-
-    @Deprecated
-    public Client getByClientIdOrThrow(String clientId) {
-        Callable<Client> callable = () -> clients.values()
-                .stream()
-                .flatMap(Collection::stream)
-                .filter(client -> Objects.equals(clientId, client.getId()))
-                .findFirst()
-                .orElseThrow(() -> new OvyException.NotFound("Client %s not found".formatted(clientId)));
-        return lockProcessor.getLockAndExecute(callable, null, null, clientId);
-    }
-
-    @Deprecated
-    public List<Client> getAllAvailableClients() {
-        return clients.values()
-                .stream()
-                .flatMap(Collection::stream)
-                .filter(client -> Objects.equals(ClientType.CONSUMER, client.getType()))
-                .filter(Client::getIsAvailable)
-                .toList();
-    }
-
-    @Deprecated
-    public List<Client> getAllClients() {
-        return clients.values()
-                .stream()
-                .flatMap(Collection::stream)
-                .toList();
     }
 }
