@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.session.stomp.manager;
+package io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler;
 
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.session.stomp.StompSessionHandler;

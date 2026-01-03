@@ -21,28 +21,30 @@ public class ApplicationShutdownManager extends ShutdownUtil implements SmartLif
 
     @Override
     public void stop(Runnable callback) {
-        sessionRegistry.getAll().values().forEach(SessionManager::destroy);
         log.info("Executing graceful shutdown");
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
         while (true) {
             try {
-                boolean allSessionsReadyToDisconnect = sessionRegistry.getAll().values().stream().allMatch(SessionManager::canDisconnect);
-                if (allSessionsReadyToDisconnect) {
-                    log.info("All sessions ready to disconnect");
+                for (SessionManager sessionManager : sessionRegistry.getAll().values()) {
+                    boolean hasDisconnected = sessionManager.destroy(false);
+                    if (hasDisconnected) sessionRegistry.removeById(sessionManager.getClientId());
+                }
+                if (sessionRegistry.getAll().isEmpty()) {
+                    log.info("All sessions disconnected");
                     break;
                 }
-                if (elapsedTime(startTime) > maxWait) {
+                if (super.isMaxWaitExceeded(startTime)) {
                     log.info("Waiting graceful shutdown time exceeded {} ms", maxWait);
+                    sessionRegistry.getAll().values().forEach(sessionManager -> sessionManager.destroy(true));
                     break;
                 }
-                log.info("Waiting clients to shutdown: elapsed-time={} sec", elapsedTime(startTime) / 1000);
+                log.info("Waiting clients to shutdown: elapsed-time={} sec", super.elapsedTime(startTime) / 1000);
                 Thread.sleep(waitDelay);
             } catch (InterruptedException e) {
                 log.error("Error while executing graceful shutdown", e);
             }
         }
 
-        sessionRegistry.getAll().values().forEach(SessionManager::disconnect);
         log.info("Shutdown completed");
         isRunning.set(false);
         callback.run();

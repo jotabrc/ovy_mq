@@ -20,7 +20,8 @@ public class HealthStatus implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String clientId;
-    private Boolean alive;
+    @Builder.Default
+    private Boolean alive = false;
     private OffsetDateTime receivedAt;
     private OffsetDateTime requestedAt;
 

@@ -10,9 +10,8 @@ public interface SessionManager {
     void initializeManagers();
     void initializeSession();
     boolean isConnected();
-    boolean canDisconnect();
-    void disconnect();
-    void setClient(Client client);
-    void setSubscriptions(List<String> subscriptions);
-    void destroy();
+    boolean disconnect(boolean force);
+    void defineMembers(Client client, List<String> subscriptions);
+    String getClientId();
+    boolean destroy(boolean force);
 }

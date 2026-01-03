@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq_client;
 
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.session.stomp.manager.HealthCheckManager;
-import io.github.jotabrc.ovy_mq_client.session.stomp.manager.ListenerPollManager;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.HealthCheckManager;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.ListenerPollManager;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.RequiredArgsConstructor;

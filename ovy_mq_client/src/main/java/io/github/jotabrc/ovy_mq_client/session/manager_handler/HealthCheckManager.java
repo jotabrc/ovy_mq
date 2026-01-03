@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.session.stomp.manager;
+package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
 import io.github.jotabrc.ovy_mq_client.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
@@ -39,19 +39,19 @@ public class HealthCheckManager extends AbstractManager {
     public ScheduledFuture<?> execute() {
         scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
                     log.info("Executing health check: {}", client.getId());
-                    reconnectIfNeeded(isLastHealthCheckExpired(this.client));
-                    HealthStatus healthStatus = buildHealthStatus();
-                    clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_HEALTH_CHECK, healthStatus, this.sessionManager);
-                }, ValueUtil.get(client.getHealthCheckInitialDelay(), this.initialDelay, client.useGlobalValues()),
+                    reconnectWhenRequired(isLastHealthCheckExpired(this.client));
+                    clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_HEALTH_CHECK, buildHealthStatus(), this.sessionManager);
+                },
+                ValueUtil.get(client.getHealthCheckInitialDelay(), this.initialDelay, client.useGlobalValues()),
                 ValueUtil.get(client.getHealthCheckFixedDelay(), this.fixedDelay, client.useGlobalValues()),
                 TimeUnit.MILLISECONDS);
         return scheduledFuture;
     }
 
-    private void reconnectIfNeeded(boolean force) {
+    private void reconnectWhenRequired(boolean force) {
         log.info("Session connection status: alive={} client={}", this.sessionManager.isConnected(), client.getId());
         if (!sessionManager.isConnected() || force) {
-            this.sessionManager.disconnect();
+            this.sessionManager.disconnect(force);
             this.sessionManager.initializeSession();
         }
     }
@@ -62,10 +62,9 @@ public class HealthCheckManager extends AbstractManager {
                 .isAfter(client.getLastHealthCheck());
     }
 
-    private static HealthStatus buildHealthStatus() {
+    private HealthStatus buildHealthStatus() {
         return HealthStatus.builder()
                 .requestedAt(OffsetDateTime.now())
-                .alive(false)
                 .build();
     }
 }

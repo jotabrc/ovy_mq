@@ -5,8 +5,8 @@ import io.github.jotabrc.ovy_mq_client.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.SessionTimeoutManagerResolver;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.session.stomp.manager.ManagerFactory;
-import io.github.jotabrc.ovy_mq_client.session.stomp.manager.ManagerHandler;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactory;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
@@ -41,13 +41,13 @@ import static java.util.Objects.nonNull;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
 
-    private final ManagerHandler managerHandler;
+    private final ManagerFactoryResolver managerFactoryResolver;
     private final DispatcherFacade dispatcherFacade;
     private final ObjectProviderFacade objectProviderFacade;
     private final AbstractFactoryResolver abstractFactoryResolver;
     private final SessionTimeoutManagerResolver sessionTimeoutManagerResolver;
 
-    private StompSession session;
+    private StompSession stompSession;
     private Client client;
     private List<String> subscriptions;
     private CompletableFuture<SessionManager> connectionFuture;
@@ -64,7 +64,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
             abstractFactoryResolver.create(definition, StompHeaders.class)
                     .ifPresent(headers -> {
                         if (this.isConnected()) {
-                            this.session.send(headers, payload);
+                            this.stompSession.send(headers, payload);
                         } else {
                             log.error("Failed to send message: client={} client-type={} sessionManager-connected={}", client.getId(), client.getType(), this.isConnected());
                         }
@@ -76,7 +76,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public void initializeManagers() {
         if (nonNull(this.client)) {
-            scheduledFutures.addAll(managerHandler.initialize(client, this,
+            scheduledFutures.addAll(managerFactoryResolver.initialize(client, this,
                     ManagerFactory.HEALTH_CHECK,
                     ManagerFactory.LISTENER_POLL));
         } else throw new IllegalStateException("Cannot initialize any manager's with null Client");
@@ -98,44 +98,45 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public boolean isConnected() {
-        return nonNull(session) && this.session.isConnected();
+        return nonNull(stompSession) && this.stompSession.isConnected();
     }
 
     @Override
-    public boolean canDisconnect() {
-        return this.client.canDisconnect();
+    public boolean disconnect(boolean force) {
+        if ((nonNull(this.stompSession) && this.isConnected() && this.client.canDisconnect())
+                || force) {
+            this.stompSession.disconnect();
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public void disconnect() {
-        if (nonNull(this.session) && this.isConnected() && this.canDisconnect())
-            this.session.disconnect();
-    }
-
-    @Override
-    public void setClient(Client client) {
-        if (isNull(this.client)) {
+    public void defineMembers(Client client, List<String> subscriptions) {
+        if (isNull(this.client) && isNull(this.subscriptions) && nonNull(subscriptions)) {
             this.client = client;
-        }
-    }
-
-    @Override
-    public void setSubscriptions(List<String> subscriptions) {
-        if (isNull(this.subscriptions) && nonNull(subscriptions)) {
             this.subscriptions = subscriptions;
+        } else {
+            throw new IllegalStateException("Client and Subscriptions must be defined once");
         }
     }
 
     @Override
-    public void destroy() {
+    public String getClientId() {
+        return nonNull(this.client) ? client.getId() : "";
+    }
+
+    @Override
+    public boolean destroy(boolean force) {
         if (!scheduledFutures.isEmpty()) {
-            log.info("Destroying session for client: {}. Cancelling {} scheduled tasks.", client.getId(), scheduledFutures.size());
+            log.info("Destroying stompSession for client: {}. Cancelling {} scheduled tasks.", client.getId(), scheduledFutures.size());
             this.client.setIsDestroying(true);
             scheduledFutures.forEach(scheduledFuture -> {
                 if (!scheduledFuture.isDone() && !scheduledFuture.isCancelled()) scheduledFuture.cancel(true);
             });
             scheduledFutures.clear();
         }
+        return this.disconnect(force);
     }
 
     @NotNull
@@ -157,7 +158,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void afterConnected(@NotNull StompSession session, @NotNull StompHeaders connectedHeaders) {
-        this.session = session;
+        this.stompSession = session;
         this.subscribe();
         if (nonNull(this.connectionFuture) && !this.connectionFuture.isDone()) {
             this.connectionFuture.complete(this);
@@ -165,7 +166,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     }
 
     private void subscribe() {
-        subscriptions.forEach(destination -> this.session.subscribe(destination, this));
+        subscriptions.forEach(destination -> this.stompSession.subscribe(destination, this));
     }
 
     @Override

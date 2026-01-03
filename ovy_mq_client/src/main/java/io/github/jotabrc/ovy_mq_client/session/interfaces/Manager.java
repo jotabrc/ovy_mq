@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.session.stomp.manager;
+package io.github.jotabrc.ovy_mq_client.session.interfaces;
 
 import java.util.concurrent.ScheduledFuture;
 

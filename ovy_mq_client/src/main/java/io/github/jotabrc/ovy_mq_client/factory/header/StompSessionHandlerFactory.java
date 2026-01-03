@@ -18,8 +18,8 @@ public class StompSessionHandlerFactory implements AbstractFactory<StompSessionH
     @Override
     public StompSessionHandler create(DefinitionMap definition) {
         StompSessionHandler sessionManager = provider.getObject();
-        sessionManager.setClient(definition.extract(OvyMqConstants.CLIENT_OBJECT, Client.class));
-        sessionManager.setSubscriptions(definition.extractToList(OvyMqConstants.SUBSCRIPTIONS, String.class));
+        sessionManager.defineMembers(definition.extract(OvyMqConstants.CLIENT_OBJECT, Client.class),
+                definition.extractToList(OvyMqConstants.SUBSCRIPTIONS, String.class));
         return sessionManager;
     }
 

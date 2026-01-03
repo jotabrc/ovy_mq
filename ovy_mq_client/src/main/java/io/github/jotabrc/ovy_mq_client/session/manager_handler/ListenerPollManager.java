@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.session.stomp.manager;
+package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
 import io.github.jotabrc.ovy_mq_client.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;

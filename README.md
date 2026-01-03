@@ -62,6 +62,7 @@ The platform allows client applications to consume messages declaratively using 
 
 *   **WebSocket/STOMP Communication**: Full-duplex and efficient communication.
 *   **Declarative Consumers**: Create message consumers with the simple `@OvyListener` annotation.
+*   **Resilient Connection**: Automatic connection retries with configurable timeout, making the client resilient to network failures.
 *   **Asynchronous Retry with Backoff**: In case of processing failure, the system automatically retries the operation asynchronously with a progressive backoff delay, preventing thread blocking and increasing resilience.
 *   **Extensible Hooks**: Provides the `ListenerAfterProcessingHandler` interface to handle processing success or failure, enabling custom logic like Dead-Letter Queues (DLQ).
 *   **Modular Architecture**:
@@ -294,6 +295,7 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 
 *   **Comunicação via WebSocket/STOMP**: Comunicação full-duplex e eficiente.
 *   **Consumidores Declarativos**: Crie consumidores de mensagens com a simples anotação `@OvyListener`.
+*   **Conexão Resiliente**: Retentativas de conexão automáticas com timeout configurável, tornando o cliente resiliente a falhas de rede.
 *   **Retry Assíncrono com Backoff**: Em caso de falha no processamento, o sistema automaticamente tenta reexecutar a operação de forma assíncrona com um atraso progressivo (backoff), evitando o bloqueio de threads e aumentando a resiliência.
 *   **Hooks Extensíveis**: Fornece a interface `ListenerAfterProcessingHandler` para tratar o sucesso ou a falha do processamento, permitindo lógicas customizadas como Dead-Letter Queues (DLQ).
 *   **Arquitetura Modular**:

@@ -25,6 +25,7 @@ public class SessionRegistry {
         return Optional.ofNullable(this.sessions.get(clientId));
     }
 
+    @Deprecated(since = "0.7.0")
     public Optional<SessionManager> getByIdAndReconnectIfDisconnected(String clientId) {
         return Optional.ofNullable(this.sessions.get(clientId));
     }

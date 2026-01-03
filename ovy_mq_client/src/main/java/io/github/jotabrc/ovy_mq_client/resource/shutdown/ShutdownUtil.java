@@ -23,46 +23,41 @@ public class ShutdownUtil {
     @Async
     public void stopThis(SessionManager sessionManager) {
 
-        log.info("Executing graceful shutdown");
-        log.info("Phase 1: destroying tasks and marking client for destruction");
-        sessionManager.destroy();
-
-        final long finalStartTime = System.currentTimeMillis();
+        log.info("Executing graceful shutdown: client={}", sessionManager.getClientId());
+        final long startTime = System.currentTimeMillis();
 
         Callable<Boolean> callable = () -> {
             try {
-                if (sessionManager.canDisconnect()) {
-                    log.info("Client ready to disconnect");
-                    log.info("Phase 2: disconnecting session");
-                    sessionManager.disconnect();
-                    log.info("Graceful shutdown completed");
+                if (sessionManager.destroy(false)) {
+                    log.info("Graceful shutdown completed: client={}", sessionManager.getClientId());
                     return true;
                 }
-                if (isMaxWaitExceeded(finalStartTime)) {
-                    log.info("Waiting graceful shutdown time exceeded {} ms", maxWait);
-                    return true;
+                if (isMaxWaitExceeded(startTime)) {
+                    log.info("Waiting graceful shutdown time exceeded {} ms: client={}", maxWait, sessionManager.getClientId());
+                    sessionManager.destroy(true);
+                    return false;
                 }
-                log.info("Waiting clients to shutdown: elapsed-time={} sec", elapsedTime(finalStartTime) / 1000);
+                log.info("Waiting clients to shutdown elapsed-time={} sec: client={}", elapsedTime(startTime) / 1000, sessionManager.getClientId());
                 Thread.sleep(waitDelay);
             } catch (InterruptedException e) {
-                log.error("Error while executing graceful shutdown", e);
+                log.error("Error while executing graceful shutdown: client={}", sessionManager.getClientId(), e);
             }
             return false;
         };
 
         boolean isDone = false;
-        while (!isDone && !isMaxWaitExceeded(finalStartTime)) {
+        while (!isDone && !isMaxWaitExceeded(startTime)) {
             try {
                 isDone = callable.call();
             } catch (Exception e) {
                 log.error("Error executing graceful shutdown");
-                sessionManager.disconnect();
+                sessionManager.destroy(true);
             }
         }
     }
 
-    protected boolean isMaxWaitExceeded(long finalStartTime) {
-        return elapsedTime(finalStartTime) > maxWait;
+    protected boolean isMaxWaitExceeded(long startTime) {
+        return elapsedTime(startTime) > maxWait;
     }
 
     protected long elapsedTime(long startTime) {
