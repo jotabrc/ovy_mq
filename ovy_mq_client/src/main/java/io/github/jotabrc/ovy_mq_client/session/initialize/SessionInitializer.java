@@ -33,7 +33,7 @@ public class SessionInitializer {
                     if (!Objects.equals(ClientType.PRODUCER, client.getType())) {
                         sessionRegistry.addOrReplace(client.getId(), sessionManager);
                     }
-                    sessionManager.initializeHandler();
+                    sessionManager.initializeManagers();
                     return sessionManager;
                 });
     }

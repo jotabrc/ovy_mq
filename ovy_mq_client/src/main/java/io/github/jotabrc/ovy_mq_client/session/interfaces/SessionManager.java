@@ -7,7 +7,7 @@ import java.util.List;
 public interface SessionManager {
 
     SessionManager send(String destination, Object payload);
-    void initializeHandler();
+    void initializeManagers();
     void initializeSession();
     boolean isConnected();
     boolean canDisconnect();

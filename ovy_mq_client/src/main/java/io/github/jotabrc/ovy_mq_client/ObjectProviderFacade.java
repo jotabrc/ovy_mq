@@ -24,14 +24,14 @@ public class ObjectProviderFacade {
     public HealthCheckManager getHealthCheckManager(Client client, SessionManager sessionManager) {
         HealthCheckManager healthCheckManager = healthCheckManagerObjectProvider.getObject();
         healthCheckManager.setClient(client);
-        healthCheckManager.setSession(sessionManager);
+        healthCheckManager.setSessionManager(sessionManager);
         return healthCheckManager;
     }
 
     public ListenerPollManager getListenerPollManager(Client client, SessionManager sessionManager) {
         ListenerPollManager listenerPollManager = listenerPollManagerObjectProvider.getObject();
         listenerPollManager.setClient(client);
-        listenerPollManager.setSession(sessionManager);
+        listenerPollManager.setSessionManager(sessionManager);
         return listenerPollManager;
     }
 }

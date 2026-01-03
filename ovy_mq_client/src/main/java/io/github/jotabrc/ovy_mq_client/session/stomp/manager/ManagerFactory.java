@@ -12,5 +12,5 @@ public enum ManagerFactory {
     HEALTH_CHECK(ObjectProviderFacade::getHealthCheckManager),
     LISTENER_POLL(ObjectProviderFacade::getListenerPollManager);
 
-    public final AbstractTriFunctionFactory<ObjectProviderFacade, Client, SessionManager, AbstractManager> getAndThen;
+    public final AbstractTriFunctionFactory<ObjectProviderFacade, Client, SessionManager, Manager> getAndThen;
 }

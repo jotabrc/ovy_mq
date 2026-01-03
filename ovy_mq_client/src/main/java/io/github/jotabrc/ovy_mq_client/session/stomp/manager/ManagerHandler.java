@@ -19,7 +19,7 @@ public class ManagerHandler {
     public List<ScheduledFuture<?>> initialize(Client client, SessionManager sessionManager, ManagerFactory... factories) {
         List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
         for (ManagerFactory managerFactory : factories) {
-            AbstractManager manager = managerFactory.getAndThen.create(objectProviderFacade, client, sessionManager);
+            Manager manager = managerFactory.getAndThen.create(objectProviderFacade, client, sessionManager);
             scheduledFutures.add(manager.execute());
         }
         return scheduledFutures;

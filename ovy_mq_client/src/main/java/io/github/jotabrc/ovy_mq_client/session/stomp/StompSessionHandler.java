@@ -51,7 +51,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     private Client client;
     private List<String> subscriptions;
     private CompletableFuture<SessionManager> connectionFuture;
-    private List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
+    private final List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
 
     @Override
     public SessionManager send(String destination, Object payload) {
@@ -74,12 +74,12 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     }
 
     @Override
-    public void initializeHandler() {
+    public void initializeManagers() {
         if (nonNull(this.client)) {
             scheduledFutures.addAll(managerHandler.initialize(client, this,
                     ManagerFactory.HEALTH_CHECK,
                     ManagerFactory.LISTENER_POLL));
-        } else throw new IllegalStateException("SessionManager initialized without a Client");
+        } else throw new IllegalStateException("Cannot initialize any manager's with null Client");
     }
 
     @Override
@@ -121,7 +121,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void setSubscriptions(List<String> subscriptions) {
-        if (isNull(this.subscriptions) || this.subscriptions.isEmpty()) {
+        if (isNull(this.subscriptions) && nonNull(subscriptions)) {
             this.subscriptions = subscriptions;
         }
     }
