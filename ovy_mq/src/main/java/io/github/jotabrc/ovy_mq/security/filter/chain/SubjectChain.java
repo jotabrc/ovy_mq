@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.security.filter.chain;
 
-import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
+import io.github.jotabrc.ovy_mq.registry.ClientConfigurerContextHolder;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
@@ -21,7 +21,7 @@ import static java.util.Objects.nonNull;
 @Component
 public class SubjectChain extends AbstractChain {
 
-    private final ConfigClientContextHolder configClientContextHolder;
+    private final ClientConfigurerContextHolder clientConfigurerContextHolder;
 
     @Override
     public DefinitionMap handle(DefinitionMap definition) {
@@ -30,7 +30,7 @@ public class SubjectChain extends AbstractChain {
 
         if ((isNull(subject) || subject.isBlank())
                 && nonNull(clientType) && Objects.equals(ClientType.CONFIGURER.name(), clientType)) {
-            subject = configClientContextHolder.getId()
+            subject = clientConfigurerContextHolder.getId()
                     .orElseThrow(() -> new OvyException.SecurityFilterFailure("Config client not available"));
         }
 

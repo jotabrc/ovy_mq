@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
-import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
+import io.github.jotabrc.ovy_mq.registry.ClientConfigurerContextHolder;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
@@ -22,7 +22,7 @@ import static io.github.jotabrc.ovy_mq_core.constants.Mapping.WS_CONFIG;
 public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConfig> {
 
     private final AbstractFactoryResolver factoryResolver;
-    private final ConfigClientContextHolder configClientContextHolder;
+    private final ClientConfigurerContextHolder clientConfigurerContextHolder;
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
@@ -33,7 +33,7 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
     }
 
     private void sendConfig(ListenerConfig listenerConfig) {
-        configClientContextHolder.getId()
+        clientConfigurerContextHolder.getId()
                 .ifPresentOrElse(clientId -> {
                     DefinitionMap definition = definitionProvider.getObject()
                             .add(OvyMqConstants.CLIENT_ID, clientId)
@@ -45,7 +45,7 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
                                             listenerConfig,
                                             headers));
                         },
-                        () -> log.info("ServerClientConfigurer not found, unable to send configuration to client."));
+                        () -> log.info("ClientConfigurer not found, unable to send configuration to client."));
     }
 
     @Override

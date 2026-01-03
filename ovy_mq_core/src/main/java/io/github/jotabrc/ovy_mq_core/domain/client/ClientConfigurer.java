@@ -11,7 +11,7 @@ import java.util.Objects;
 @Setter
 @Getter
 @Builder
-public class ServerClientConfigurer implements Serializable {
+public class ClientConfigurer implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -23,7 +23,7 @@ public class ServerClientConfigurer implements Serializable {
     public boolean equals(Object o) {
         if (Objects.isNull(o) || !Objects.equals(getClass(), o.getClass())) return false;
 
-        ServerClientConfigurer client = (ServerClientConfigurer) o;
+        ClientConfigurer client = (ClientConfigurer) o;
         return id.equals(client.id);
     }
 

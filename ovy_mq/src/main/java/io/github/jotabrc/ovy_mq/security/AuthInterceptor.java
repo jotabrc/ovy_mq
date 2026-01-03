@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq.security;
 
-import io.github.jotabrc.ovy_mq.registry.ConfigClientContextHolder;
+import io.github.jotabrc.ovy_mq.registry.ClientConfigurerContextHolder;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
-import io.github.jotabrc.ovy_mq_core.domain.client.ServerClientConfigurer;
+import io.github.jotabrc.ovy_mq_core.domain.client.ClientConfigurer;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.Objects;
 @Component
 public class AuthInterceptor implements HandshakeInterceptor {
 
-    private final ConfigClientContextHolder configClientContextHolder;
+    private final ClientConfigurerContextHolder clientConfigurerContextHolder;
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request,
@@ -63,7 +63,7 @@ public class AuthInterceptor implements HandshakeInterceptor {
         Object clientType = request.getAttributes().get(OvyMqConstants.CLIENT_TYPE);
         if (clientType instanceof String type && clientId instanceof String id) {
             if (Objects.equals(ClientType.CONFIGURER, ClientType.valueOf(type)) && !id.isBlank()) {
-                configClientContextHolder.add(ServerClientConfigurer.builder()
+                clientConfigurerContextHolder.add(ClientConfigurer.builder()
                         .id(id)
                         .type(ClientType.valueOf(clientType.toString()))
                         .build());
