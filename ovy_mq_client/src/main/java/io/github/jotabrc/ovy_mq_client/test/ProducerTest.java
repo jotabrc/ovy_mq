@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class ProducerTest implements CommandLineRunner {
 
-    private final OvyProducer ovyProducer;
+    private final OvyProducer stompOvyProducer;
 
     @Override
     public void run(String... args) throws Exception {
@@ -26,7 +26,7 @@ public class ProducerTest implements CommandLineRunner {
         AtomicInteger counter = new AtomicInteger(0);
         while (counter.getAndIncrement() < 1000) {
             log.info("saving message.......................");
-            ovyProducer.send(MessagePayload.builder()
+            stompOvyProducer.send(MessagePayload.builder()
                             .topic("bar")
                             .payload("" + counter.get())
                             .build());
@@ -35,7 +35,7 @@ public class ProducerTest implements CommandLineRunner {
         counter = new AtomicInteger(0);
         while (counter.getAndIncrement() < 1000) {
             log.info("saving message.......................");
-            ovyProducer.send(MessagePayload.builder()
+            stompOvyProducer.send(MessagePayload.builder()
                     .topic("foo")
                     .payload("" + counter.get())
                     .build());

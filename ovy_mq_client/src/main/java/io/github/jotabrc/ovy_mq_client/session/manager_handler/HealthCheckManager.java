@@ -1,6 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
 import io.github.jotabrc.ovy_mq_client.message.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManagerInitializer;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
@@ -49,10 +51,12 @@ public class HealthCheckManager extends AbstractManager {
     }
 
     private void reconnectWhenRequired(boolean force) {
-        log.info("Session connection status: alive={} client={}", this.sessionManager.isConnected(), client.getId());
-        if (!sessionManager.isConnected() || force) {
-            this.sessionManager.disconnect(force);
-            this.sessionManager.initializeSession();
+        SessionConnection sessionConnection = (SessionConnection) this.sessionManager;
+        SessionManagerInitializer sessionManagerInitializer = (SessionManagerInitializer) this.sessionManager;
+        log.info("Session connection status: alive={} client={}", sessionConnection.isConnected(), client.getId());
+        if (!sessionConnection.isConnected() || force) {
+            sessionConnection.disconnect(force);
+            sessionManagerInitializer.initializeSession();
         }
     }
 

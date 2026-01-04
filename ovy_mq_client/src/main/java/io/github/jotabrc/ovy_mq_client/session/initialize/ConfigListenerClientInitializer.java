@@ -1,12 +1,12 @@
 package io.github.jotabrc.ovy_mq_client.session.initialize;
 
-import io.github.jotabrc.ovy_mq_client.session.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
-import io.github.jotabrc.ovy_mq_core.util.Subscribe;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
+import io.github.jotabrc.ovy_mq_core.util.Subscribe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConfigListenerClientInitializer implements ApplicationRunner {
 
+    private final SessionInitializerResolver sessionInitializerResolver;
     private final ClientRegistry clientRegistry;
-    private final SessionInitializer sessionInitializer;
     private final AbstractFactoryResolver factoryResolver;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
@@ -38,7 +38,8 @@ public class ConfigListenerClientInitializer implements ApplicationRunner {
                     DefinitionMap sessionDefinition = definitionProvider.getObject()
                             .add(OvyMqConstants.CLIENT_OBJECT, client)
                             .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.CONFIGURER_SUBSCRIPTION);
-                    sessionInitializer.createSessionAndConnect(client, sessionDefinition);
+                    sessionInitializerResolver.get()
+                            .ifPresent(sessionInitializer -> sessionInitializer.createSessionAndConnect(client, sessionDefinition));
                     clientRegistry.save(client);
                 });
     }

@@ -22,12 +22,12 @@ public class ClientConfigurerRegistry {
     public void add(ClientConfigurer clientConfigurer) {
         if (shouldAdd(clientConfigurer)) {
             log.info("Registry: config-client={}", clientConfigurer.getId());
-            client = clientConfigurer;
+            this.client = clientConfigurer;
         }
     }
 
     private boolean shouldAdd(ClientConfigurer clientConfigurer) {
-        return isNull(client)
+        return isNull(this.client)
                 && nonNull(clientConfigurer)
                 && nonNull(clientConfigurer.getId())
                 && nonNull(clientConfigurer.getType())
@@ -35,6 +35,6 @@ public class ClientConfigurerRegistry {
     }
 
     public Optional<ClientConfigurer> get() {
-        return Optional.ofNullable(client);
+        return Optional.ofNullable(this.client);
     }
 }

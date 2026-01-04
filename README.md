@@ -65,10 +65,11 @@ The platform allows client applications to consume messages declaratively using 
 *   **Resilient Connection**: Automatic connection retries with configurable timeout, making the client resilient to network failures.
 *   **Asynchronous Retry with Backoff**: In case of processing failure, the system automatically retries the operation asynchronously with a progressive backoff delay, preventing thread blocking and increasing resilience.
 *   **Extensible Hooks**: Provides the `ListenerAfterProcessingHandler` interface to handle processing success or failure, enabling custom logic like Dead-Letter Queues (DLQ).
-*   **Modular Architecture**:
+*   **Modular and Extensible Architecture**:
     *   `ovy_mq_core`: Shared entities, DTOs, and interfaces.
     *   `ovy_mq_client`: Client library for integration with your applications.
     *   `ovy_mq`: The message queue server.
+    *   The session management architecture is designed to be extensible, allowing for the future addition of other communication protocols.
 *   **Consumer Auto-Scaling**: The server can dynamically instruct clients to increase or decrease the number of consumers for a topic.
 *   **Health Checks**: Built-in mechanism to monitor the health of client connections.
 *   **Graceful Shutdown**: Ensures that in-flight messages are not lost when the application shuts down.
@@ -257,6 +258,7 @@ The application offers a high degree of customization through parameters in the 
 | `ovymq.client.processing.timeout` | `150000` | **Global default:** Message processing timeout (ms). |
 | `ovymq.task.shutdown.wait-delay` | `1000` | Client's wait interval (ms) during graceful shutdown. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Client's maximum wait time (ms) during graceful shutdown. |
+| `ovymq.session-manager.session-type.stomp-enabled` | `true` | Enables the STOMP session type. |
 | `ovymq.session-manager.connection.timeout` | `150000` | **Global default:** Connection timeout (ms). |
 | `ovymq.session-manager.connection.max-retries`| `10` | **Global default:** Maximum reconnection attempts. |
 | `ovymq.task.health-check.initial.delay` | `10000` | **Global default:** Initial delay (ms) for health check. |
@@ -298,10 +300,11 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 *   **Conexão Resiliente**: Retentativas de conexão automáticas com timeout configurável, tornando o cliente resiliente a falhas de rede.
 *   **Retry Assíncrono com Backoff**: Em caso de falha no processamento, o sistema automaticamente tenta reexecutar a operação de forma assíncrona com um atraso progressivo (backoff), evitando o bloqueio de threads e aumentando a resiliência.
 *   **Hooks Extensíveis**: Fornece a interface `ListenerAfterProcessingHandler` para tratar o sucesso ou a falha do processamento, permitindo lógicas customizadas como Dead-Letter Queues (DLQ).
-*   **Arquitetura Modular**:
+*   **Arquitetura Modular e Extensível**:
     *   `ovy_mq_core`: Entidades, DTOs e interfaces compartilhadas.
     *   `ovy_mq_client`: Biblioteca cliente para integração com suas aplicações.
     *   `ovy_mq`: O servidor de mensageria.
+    *   A arquitetura de gerenciamento de sessão é projetada para ser extensível, permitindo a adição futura de outros protocolos de comunicação.
 *   **Auto-Scaling de Consumidores**: O servidor pode instruir os clientes a aumentar ou diminuir o número de consumidores para um tópico dinamicamente.
 *   **Health Checks**: Mecanismo integrado para monitorar a saúde das conexões dos clientes.
 *   **Graceful Shutdown**: Garante que mensagens em processamento não sejam perdidas durante o desligamento da aplicação.
@@ -490,6 +493,7 @@ A aplicação oferece um alto grau de personalização através de parâmetros n
 | `ovymq.client.processing.timeout` | `150000` | **Padrão global:** Timeout (ms) para processamento de mensagem. |
 | `ovymq.task.shutdown.wait-delay` | `1000` | Intervalo (ms) de espera durante o *graceful shutdown* do cliente. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Tempo máximo (ms) de espera no *graceful shutdown* do cliente. |
+| `ovymq.session-manager.session-type.stomp-enabled` | `true` | Habilita o tipo de sessão STOMP. |
 | `ovymq.session-manager.connection.timeout` | `150000` | **Padrão global:** Timeout (ms) para conexão. |
 | `ovymq.session-manager.connection.max-retries`| `10` | **Padrão global:** Máximo de tentativas de reconexão. |
 | `ovymq.task.health-check.initial.delay` | `10000` | **Padrão global:** Atraso inicial (ms) para *health check*. |

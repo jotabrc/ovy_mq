@@ -1,14 +1,16 @@
 package io.github.jotabrc.ovy_mq_client.message;
 
-import io.github.jotabrc.ovy_mq_client.session.registry.SessionRegistry;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionMessageSender;
+import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,14 +24,13 @@ public class ClientMessageDispatcher {
                 .ifPresent(session -> send(client, topic, destination, payload, session));
     }
 
-    public void send(Client client, String topic, String destination, Object payload, SessionManager session) {
+    public void send(Client client, String topic, String destination, Object payload, SessionManager sessionManager) {
         try {
-            Optional.ofNullable(session)
-                    .filter(SessionManager::isConnected)
-                    .ifPresent(sessionManager -> {
-                        logInfo(client, topic, destination);
-                        session.send(destination, payload);
-                    });
+            if (nonNull(sessionManager) && ((SessionConnection) sessionManager).isConnected()) {
+                SessionMessageSender sessionMessageSender = (SessionMessageSender) sessionManager;
+                logInfo(client, topic, destination);
+                sessionMessageSender.send(destination, payload);
+            }
         } catch (Exception e) {
             throw new OvyException.MessageDispatcher("Error sending message type=%s client=%s topic=%s: %s"
                     .formatted(destination, client.getId(), topic, e.getMessage()));

@@ -1,7 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.resource.shutdown;
 
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.session.registry.SessionRegistry;
+import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,16 +26,17 @@ public class ShutdownUtil {
 
         log.info("Executing graceful shutdown: client={}", sessionManager.getClientId());
         final long startTime = System.currentTimeMillis();
+        SessionConnection sessionConnection = (SessionConnection) sessionManager;
 
         Callable<Boolean> callable = () -> {
             try {
-                if (sessionManager.destroy(false)) {
+                if (sessionConnection.destroy(false)) {
                     log.info("Graceful shutdown completed: client={}", sessionManager.getClientId());
                     return true;
                 }
                 if (isMaxWaitExceeded(startTime)) {
                     log.info("Waiting graceful shutdown time exceeded {} ms: client={}", maxWait, sessionManager.getClientId());
-                    sessionManager.destroy(true);
+                    sessionConnection.destroy(true);
                     return false;
                 }
                 log.info("Waiting clients to shutdown elapsed-time={} sec: client={}", elapsedTime(startTime) / 1000, sessionManager.getClientId());
@@ -51,7 +53,7 @@ public class ShutdownUtil {
                 isDone = callable.call();
             } catch (Exception e) {
                 log.error("Error executing graceful shutdown");
-                sessionManager.destroy(true);
+                sessionConnection.destroy(true);
             }
         }
     }

@@ -3,6 +3,7 @@ package io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler;
 import io.github.jotabrc.ovy_mq_client.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.ConnectionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionTimeoutManager;
 import io.github.jotabrc.ovy_mq_client.session.stomp.StompSessionHandler;
@@ -57,7 +58,8 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
 
         if (headers.isPresent()) {
             Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect = stompConnectionManager -> {
-                if (!sessionManager.isConnected()) {
+                SessionConnection sessionConnection = (SessionConnection) sessionManager;
+                if (!sessionConnection.isConnected()) {
                     client.setLastHealthCheck(OffsetDateTime.now());
                     return stompConnectionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers.get(), (StompSessionHandler) sessionManager)
                             .thenApply(stompSession -> sessionManager);
@@ -91,7 +93,8 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
 
         connect.apply(stompConnectionManager)
                 .whenComplete((sessionManager, throwable) -> {
-                    if (isNull(throwable) && nonNull(sessionManager) && sessionManager.isConnected()) {
+                    SessionConnection sessionConnection = (SessionConnection) sessionManager;
+                    if (isNull(throwable) && nonNull(sessionManager) && sessionConnection.isConnected()) {
                         finalFuture.complete(sessionManager);
                         log.info("Connected to server: client={} topic={}", client.getId(), client.getTopic());
                     } else {

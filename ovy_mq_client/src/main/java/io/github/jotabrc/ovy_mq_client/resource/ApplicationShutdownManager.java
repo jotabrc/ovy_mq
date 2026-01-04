@@ -1,8 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.resource;
 
 import io.github.jotabrc.ovy_mq_client.resource.shutdown.ShutdownUtil;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.session.registry.SessionRegistry;
+import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,8 @@ public class ApplicationShutdownManager extends ShutdownUtil implements SmartLif
         while (true) {
             try {
                 for (SessionManager sessionManager : sessionRegistry.getAll().values()) {
-                    boolean hasDisconnected = sessionManager.destroy(false);
+                    SessionConnection sessionConnection = (SessionConnection) sessionManager;
+                    boolean hasDisconnected = sessionConnection.destroy(false);
                     if (hasDisconnected) sessionRegistry.removeById(sessionManager.getClientId());
                 }
                 if (sessionRegistry.getAll().isEmpty()) {
@@ -35,7 +37,8 @@ public class ApplicationShutdownManager extends ShutdownUtil implements SmartLif
                 }
                 if (super.isMaxWaitExceeded(startTime)) {
                     log.info("Waiting graceful shutdown time exceeded {} ms", maxWait);
-                    sessionRegistry.getAll().values().forEach(sessionManager -> sessionManager.destroy(true));
+                    sessionRegistry.getAll().values()
+                            .forEach(sessionManager -> ((SessionConnection) sessionManager).destroy(true));
                     break;
                 }
                 log.info("Waiting clients to shutdown: elapsed-time={} sec", super.elapsedTime(startTime) / 1000);

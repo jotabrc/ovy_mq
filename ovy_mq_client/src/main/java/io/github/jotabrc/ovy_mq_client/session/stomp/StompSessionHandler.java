@@ -4,7 +4,10 @@ import io.github.jotabrc.ovy_mq_client.DispatcherFacade;
 import io.github.jotabrc.ovy_mq_client.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.SessionTimeoutManagerResolver;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManagerInitializer;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionMessageSender;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactory;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
@@ -39,7 +42,7 @@ import static java.util.Objects.nonNull;
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager {
+public class StompSessionHandler extends StompSessionHandlerAdapter implements SessionManager, SessionConnection, SessionMessageSender, SessionManagerInitializer {
 
     private final ManagerFactoryResolver managerFactoryResolver;
     private final DispatcherFacade dispatcherFacade;
@@ -52,26 +55,6 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     private List<String> subscriptions;
     private CompletableFuture<SessionManager> connectionFuture;
     private final List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
-
-    @Override
-    public SessionManager send(String destination, Object payload) {
-        synchronized (this) {
-            DefinitionMap definition = objectProviderFacade.getDefinitionMap()
-                    .add(OvyMqConstants.DESTINATION, destination)
-                    .add(OvyMqConstants.SUBSCRIBED_TOPIC, client.getTopic())
-                    .add(OvyMqConstants.CLIENT_TYPE, client.getType().name())
-                    .add(OvyMqConstants.CLIENT_ID, client.getId());
-            abstractFactoryResolver.create(definition, StompHeaders.class)
-                    .ifPresent(headers -> {
-                        if (this.isConnected()) {
-                            this.stompSession.send(headers, payload);
-                        } else {
-                            log.error("Failed to send message: client={} client-type={} sessionManager-connected={}", client.getId(), client.getType(), this.isConnected());
-                        }
-                    });
-            return this;
-        }
-    }
 
     @Override
     public void initializeManagers() {
@@ -89,26 +72,12 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
         sessionTimeoutManagerResolver.get(SessionType.STOMP)
                 .ifPresent(sessionTimeoutManager -> sessionTimeoutManager.execute(this, client, connectionFuture)
                         .whenComplete(((sessionManager, throwable) -> {
-                            if (nonNull(sessionManager) && sessionManager.isConnected() && isNull(throwable))
+                            SessionConnection sessionConnection = (SessionConnection) sessionManager;
+                            if (nonNull(sessionManager) && sessionConnection.isConnected() && isNull(throwable))
                                 log.info("Session initialized: client={} topic={}", client.getId(), client.getTopic());
                             else
                                 log.info("Session failed to initialize: client={} topic={}", client.getId(), client.getTopic());
                         })));
-    }
-
-    @Override
-    public boolean isConnected() {
-        return nonNull(stompSession) && this.stompSession.isConnected();
-    }
-
-    @Override
-    public boolean disconnect(boolean force) {
-        if ((nonNull(this.stompSession) && this.isConnected() && this.client.canDisconnect())
-                || force) {
-            this.stompSession.disconnect();
-            return true;
-        }
-        return false;
     }
 
     @Override
@@ -124,19 +93,6 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public String getClientId() {
         return nonNull(this.client) ? client.getId() : "";
-    }
-
-    @Override
-    public boolean destroy(boolean force) {
-        if (!scheduledFutures.isEmpty()) {
-            log.info("Destroying stompSession for client: {}. Cancelling {} scheduled tasks.", client.getId(), scheduledFutures.size());
-            this.client.setIsDestroying(true);
-            scheduledFutures.forEach(scheduledFuture -> {
-                if (!scheduledFuture.isDone() && !scheduledFuture.isCancelled()) scheduledFuture.cancel(true);
-            });
-            scheduledFutures.clear();
-        }
-        return this.disconnect(force);
     }
 
     @NotNull
@@ -177,5 +133,52 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
     @Override
     public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
         log.error("Error while handling payload: {}", exception.getMessage(), exception);
+    }
+
+    @Override
+    public boolean isConnected() {
+        return nonNull(stompSession) && this.stompSession.isConnected();
+    }
+
+    @Override
+    public boolean disconnect(boolean force) {
+        if ((nonNull(this.stompSession) && this.isConnected() && this.client.canDisconnect())
+                || force) {
+            this.stompSession.disconnect();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean destroy(boolean force) {
+        if (!scheduledFutures.isEmpty()) {
+            log.info("Destroying stompSession for client: {}. Cancelling {} scheduled tasks.", client.getId(), scheduledFutures.size());
+            this.client.setIsDestroying(true);
+            scheduledFutures.forEach(scheduledFuture -> {
+                if (!scheduledFuture.isDone() && !scheduledFuture.isCancelled()) scheduledFuture.cancel(true);
+            });
+            scheduledFutures.clear();
+        }
+        return this.disconnect(force);
+    }
+
+    @Override
+    public void send(String destination, Object payload) {
+        synchronized (this) {
+            DefinitionMap definition = objectProviderFacade.getDefinitionMap()
+                    .add(OvyMqConstants.DESTINATION, destination)
+                    .add(OvyMqConstants.SUBSCRIBED_TOPIC, client.getTopic())
+                    .add(OvyMqConstants.CLIENT_TYPE, client.getType().name())
+                    .add(OvyMqConstants.CLIENT_ID, client.getId());
+            abstractFactoryResolver.create(definition, StompHeaders.class)
+                    .ifPresent(headers -> {
+                        if (this.isConnected()) {
+                            this.stompSession.send(headers, payload);
+                        } else {
+                            log.error("Failed to send message: client={} client-type={} sessionManager-connected={}", client.getId(), client.getType(), this.isConnected());
+                        }
+                    });
+        }
     }
 }

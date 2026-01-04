@@ -1,14 +1,14 @@
 package io.github.jotabrc.ovy_mq_client.listener.discovery;
 
-import io.github.jotabrc.ovy_mq_client.session.initialize.SessionInitializer;
-import io.github.jotabrc.ovy_mq_client.session.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.registry.ClientRegistry;
+import io.github.jotabrc.ovy_mq_client.session.initialize.SessionInitializerResolver;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
-import io.github.jotabrc.ovy_mq_core.util.Subscribe;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
+import io.github.jotabrc.ovy_mq_core.util.Subscribe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -27,25 +27,25 @@ import static java.util.Objects.nonNull;
 @Component
 public class ListenerDiscovery implements BeanPostProcessor {
 
-    private final SessionInitializer sessionInitializer;
+    private final SessionInitializerResolver sessionInitializerResolver;
     private final ClientRegistry clientRegistry;
     private final AbstractFactoryResolver factoryResolver;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-            Class<?> beanClass = bean.getClass();
+        Class<?> beanClass = bean.getClass();
 
-            for (Method method : beanClass.getMethods()) {
-                OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
-                if (nonNull(listener)) {
-                    log.info("Listener found: topic={} replicas={}", listener.topic(), listener.quantity());
-                    AtomicInteger i = new AtomicInteger(0);
-                    while (i.incrementAndGet() <= listener.quantity()) {
-                        createClient(beanName, method, listener, i);
-                    }
+        for (Method method : beanClass.getMethods()) {
+            OvyListener listener = AnnotationUtils.findAnnotation(method, OvyListener.class);
+            if (nonNull(listener)) {
+                log.info("Listener found: topic={} replicas={}", listener.topic(), listener.quantity());
+                AtomicInteger i = new AtomicInteger(0);
+                while (i.incrementAndGet() <= listener.quantity()) {
+                    createClient(beanName, method, listener, i);
                 }
             }
+        }
         return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
     }
 
@@ -67,6 +67,7 @@ public class ListenerDiscovery implements BeanPostProcessor {
         DefinitionMap sessionDefinition = definitionProvider.getObject()
                 .add(OvyMqConstants.CLIENT_OBJECT, client)
                 .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.CONSUMER_SUBSCRIPTION.apply(client.getTopic()));
-        sessionInitializer.createSessionAndConnect(client, sessionDefinition);
+        sessionInitializerResolver.get()
+                .ifPresent(sessionInitializer -> sessionInitializer.createSessionAndConnect(client, sessionDefinition));
     }
 }

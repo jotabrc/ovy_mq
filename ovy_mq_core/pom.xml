@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.github.jotabrc</groupId>
 	<artifactId>ovy_mq_core</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>ovy_mq_core</name>
 	<description>OstroVeda Yatra - Message Queue - Client</description>
 	<url/>
