@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.resource.shutdown;
+package io.github.jotabrc.ovy_mq.shutdown;
 
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;

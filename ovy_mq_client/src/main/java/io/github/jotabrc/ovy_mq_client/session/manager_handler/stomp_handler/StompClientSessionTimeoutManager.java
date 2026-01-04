@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler;
 
-import io.github.jotabrc.ovy_mq_client.ObjectProviderFacade;
+import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.ConnectionManager;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;

@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client;
+package io.github.jotabrc.ovy_mq_client.facade;
 
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.HealthCheckManager;

@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.resource.shutdown;
+package io.github.jotabrc.ovy_mq_client.shutdown;
 
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;

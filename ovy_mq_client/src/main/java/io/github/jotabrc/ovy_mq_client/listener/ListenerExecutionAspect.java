@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.listener;
 
-import io.github.jotabrc.ovy_mq_client.message.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;

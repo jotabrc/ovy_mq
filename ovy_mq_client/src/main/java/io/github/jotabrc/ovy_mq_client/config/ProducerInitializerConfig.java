@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.config;
 
-import io.github.jotabrc.ovy_mq_client.ObjectProviderFacade;
+import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.producer.StompOvyProducer;
 import io.github.jotabrc.ovy_mq_client.producer.interfaces.OvyProducer;
 import io.github.jotabrc.ovy_mq_client.session.initialize.SessionInitializerResolver;

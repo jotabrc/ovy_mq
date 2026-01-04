@@ -1,8 +1,8 @@
-package io.github.jotabrc.ovy_mq_client.payload;
+package io.github.jotabrc.ovy_mq_client.messaging.payload;
 
-import io.github.jotabrc.ovy_mq_client.payload.handler.interfaces.PayloadConfirmationHandler;
+import io.github.jotabrc.ovy_mq_client.messaging.payload.handler.interfaces.PayloadConfirmationHandler;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.payload.registry.PayloadConfirmationHandlerRegistry;
+import io.github.jotabrc.ovy_mq_client.messaging.payload.registry.PayloadConfirmationHandlerRegistry;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

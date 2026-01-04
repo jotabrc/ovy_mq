@@ -1,9 +1,9 @@
-package io.github.jotabrc.ovy_mq_client.payload.handler;
+package io.github.jotabrc.ovy_mq_client.messaging.payload.handler;
 
-import io.github.jotabrc.ovy_mq_client.ObjectProviderFacade;
+import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.registry.ClientRegistry;
 import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
-import io.github.jotabrc.ovy_mq_client.resource.ApplicationShutdownManager;
+import io.github.jotabrc.ovy_mq_client.shutdown.ApplicationShutdownManager;
 import io.github.jotabrc.ovy_mq_client.session.initialize.SessionInitializerResolver;
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;

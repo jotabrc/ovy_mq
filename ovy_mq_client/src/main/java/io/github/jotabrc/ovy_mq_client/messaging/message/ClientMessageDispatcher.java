@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_client.message;
+package io.github.jotabrc.ovy_mq_client.messaging.message;
 
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;

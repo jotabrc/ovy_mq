@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.session.stomp;
 
-import io.github.jotabrc.ovy_mq_client.DispatcherFacade;
-import io.github.jotabrc.ovy_mq_client.ObjectProviderFacade;
+import io.github.jotabrc.ovy_mq_client.facade.DispatcherFacade;
+import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.SessionTimeoutManagerResolver;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
