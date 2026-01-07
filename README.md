@@ -18,6 +18,7 @@
   <li><a href="#-english-documentation">English Documentation</a>
     <ul>
       <li><a href="#about-the-project">About The Project</a></li>
+      <li><a href="#simplified-general-flow">Simplified General Flow</a></li>
       <li><a href="#system-flows">System Flows</a></li>
       <li><a href="#getting-started">Getting Started</a></li>
       <li><a href="#usage">Usage</a></li>
@@ -30,6 +31,7 @@
   <li><a href="#-documentação-em-português">Portuguese Documentation</a>
     <ul>
       <li><a href="#sobre-o-projeto">Sobre o Projeto</a></li>
+      <li><a href="#fluxo-geral-simplificado">Fluxo Geral Simplificado</a></li>
       <li><a href="#fluxos-do-sistema">Fluxos do Sistema</a></li>
       <li><a href="#começando">Começando</a></li>
       <li><a href="#uso">Uso</a></li>
@@ -56,7 +58,9 @@
 
 Ovy MQ is a high-performance Message Queue system built in Java using the Spring framework. The project is designed to be modular, facilitating maintenance and scalability, with communication based on the STOMP protocol over WebSockets.
 
-The platform allows client applications to consume messages declaratively using the `@OvyListener` annotation, abstracting away the complexity of connection and session management. The server handles the consumer lifecycle, message routing, and provides features like auto-scaling of listeners and health checks.
+The platform allows client applications to consume messages declaratively using the `@OvyListener` annotation, abstracting away the complexity of connection and session management. The server handles message routing and provides features like auto-scaling of listeners and health checks.
+
+**Auto-Scaling** is managed directly by the client. The server provides an endpoint for dynamic reconfiguration, where administrators can define new parameters (such as number of replicas, timeouts, etc.). When the server receives this configuration, it sends it to the connected clients, which then execute the *scale up* or *scale down* logic locally. (Note: Automatic scale management by the client is not yet fully implemented).
 
 #### Key Features
 
@@ -74,6 +78,53 @@ The platform allows client applications to consume messages declaratively using 
 *   **Health Checks**: Built-in mechanism to monitor the health of client connections.
 *   **Graceful Shutdown**: Ensures that in-flight messages are not lost when the application shuts down.
 *   **Reaper Task**: Re-queues messages that were sent to a client but never received a confirmation (ACK), ensuring message delivery even in case of client failures.
+
+### Simplified General Flow
+
+The diagram below represents the simplified general flow of the system, highlighting the responsibilities of the Server and the Client and their interactions.
+
+**Server**:
+*   **Message Management**: Acts as a central repository, receiving messages from producers, storing them, and managing their distribution.
+*   **Configuration Management**: Exposes endpoints for dynamic topic reconfiguration (e.g., changing the number of replicas/consumers).
+*   **Orchestration**: Sends configuration updates to clients, instructing them to adapt.
+
+**Client**:
+*   **Discovery**: Scans and automatically registers methods annotated with `@OvyListener`.
+*   **Lifecycle**: Manages the creation and maintenance of consumers.
+*   **Scaling**: Executes *Scale Up* and *Scale Down* operations in response to configurations received from the server.
+*   **Consumption**: Continuously polls for messages for each active consumer from the server.
+
+```mermaid
+graph TD
+    subgraph External [External]
+        Producer[Producer]
+        Admin[Administrator]
+    end
+
+    subgraph Server [OvyMQ Server]
+        MsgStore[Message Store]
+        ConfigEndpoint[Configuration Endpoint]
+        Distributor[Message Distributor]
+    end
+
+    subgraph Client [OvyMQ Client]
+        Discovery[Discovery @OvyListener]
+        ScaleComp[Scaling Manager]
+        Consumers[Active Consumers]
+    end
+
+    Producer -->|Sends Message| MsgStore
+    Admin -->|Reconfigures Topic| ConfigEndpoint
+    
+    ConfigEndpoint -->|Sends Configuration| ScaleComp
+    MsgStore --> Distributor
+    
+    Discovery -->|Registers| ScaleComp
+    ScaleComp -->|Scale Up/Down| Consumers
+    
+    Consumers -->|Poll Message| Distributor
+    Distributor -->|Delivers Message| Consumers
+```
 
 ### System Flows
 
@@ -291,7 +342,9 @@ This project is distributed under the MIT License. See the `LICENSE` file for mo
 
 Ovy MQ é um sistema de mensageria (Message Queue) de alta performance, construído em Java com o framework Spring. O projeto é desenhado de forma modular para facilitar a manutenção e escalabilidade, e a comunicação é baseada no protocolo STOMP sobre WebSockets.
 
-A plataforma permite que aplicações cliente consumam mensagens de forma declarativa com a anotação `@OvyListener`, abstraindo a complexidade da gestão de conexões e sessões. O servidor gerencia o ciclo de vida dos consumidores, o roteamento de mensagens e oferece funcionalidades como auto-scaling de listeners e health checks.
+A plataforma permite que aplicações cliente consumam mensagens de forma declarativa com a anotação `@OvyListener`, abstraindo a complexidade da gestão de conexões e sessões. O servidor gerencia o roteamento de mensagens e oferece funcionalidades como auto-scaling de listeners e health checks.
+
+O **Auto-Scaling** é gerenciado diretamente pelo cliente. O servidor fornece um endpoint para reconfiguração dinâmica, onde administradores podem definir novos parâmetros (como número de réplicas, timeouts, etc.). Quando o servidor recebe essa configuração, ele a envia para os clientes conectados, que então executam a lógica de *scale up* ou *scale down* localmente. (Nota: O gerenciamento automático de escala pelo cliente ainda não está totalmente implementado).
 
 #### Principais Funcionalidades
 
@@ -309,6 +362,53 @@ A plataforma permite que aplicações cliente consumam mensagens de forma declar
 *   **Health Checks**: Mecanismo integrado para monitorar a saúde das conexões dos clientes.
 *   **Graceful Shutdown**: Garante que mensagens em processamento não sejam perdidas durante o desligamento da aplicação.
 *   **Tarefa Reaper**: Re-enfileira mensagens que foram enviadas a um cliente, mas cuja confirmação (ACK) nunca foi recebida, garantindo a entrega da mensagem mesmo em caso de falhas do cliente.
+
+### Fluxo Geral Simplificado
+
+O diagrama abaixo representa o fluxo geral simplificado do sistema, destacando as responsabilidades do Servidor e do Cliente e suas interações.
+
+**Servidor**:
+*   **Gestão de Mensagens**: Atua como repositório central, recebendo mensagens de produtores, armazenando-as e gerenciando sua distribuição.
+*   **Gestão de Configuração**: Expõe endpoints para reconfiguração dinâmica de tópicos (ex: alteração do número de réplicas/consumidores).
+*   **Orquestração**: Envia atualizações de configuração para os clientes, instruindo-os a se adaptarem.
+
+**Cliente**:
+*   **Descoberta**: Realiza a varredura e registro automático de métodos anotados com `@OvyListener`.
+*   **Ciclo de Vida**: Gerencia a criação e manutenção dos consumidores.
+*   **Scaling**: Executa operações de *Scale Up* e *Scale Down* em resposta às configurações recebidas do servidor.
+*   **Consumo**: Realiza o *polling* contínuo de mensagens para cada consumidor ativo junto ao servidor.
+
+```mermaid
+graph TD
+    subgraph External [Externo]
+        Producer[Produtor]
+        Admin[Administrador]
+    end
+
+    subgraph Server [Servidor OvyMQ]
+        MsgStore[Armazenamento de Mensagens]
+        ConfigEndpoint[Endpoint de Configuração]
+        Distributor[Distribuidor de Mensagens]
+    end
+
+    subgraph Client [Cliente OvyMQ]
+        Discovery[Descoberta @OvyListener]
+        ScaleComp[Gerenciador de Scaling]
+        Consumers[Consumidores Ativos]
+    end
+
+    Producer -->|Envia Mensagem| MsgStore
+    Admin -->|Reconfigura Tópico| ConfigEndpoint
+    
+    ConfigEndpoint -->|Envia Configuração| ScaleComp
+    MsgStore --> Distributor
+    
+    Discovery -->|Registra| ScaleComp
+    ScaleComp -->|Scale Up/Down| Consumers
+    
+    Consumers -->|Poll de Mensagem| Distributor
+    Distributor -->|Entrega Mensagem| Consumers
+```
 
 ### Fluxos do Sistema
 

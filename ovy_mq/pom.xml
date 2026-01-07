@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.5</version>
+		<version>3.5.7</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.github.jotabrc</groupId>
 	<artifactId>OVY_Mq</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.1-SNAPSHOT</version>
 	<name>OVY_Mq</name>
 	<description>OstroVeda Yatra - Message Queue</description>
 	<url/>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>io.github.jotabrc</groupId>
             <artifactId>ovy_mq_core</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.1.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
