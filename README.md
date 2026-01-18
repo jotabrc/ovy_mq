@@ -317,13 +317,13 @@ The application offers a high degree of customization through parameters in the 
 | `ovymq.task.health-check.expiration-time` | `120000` | **Global default:** Health check expiration time (ms). |
 | `ovymq.task.listener-poll.initial-delay` | `10000` | **Global default:** Initial delay (ms) for `poll`. |
 | `ovymq.task.listener-poll.fixed-delay` | `35000` | **Global default:** `poll` interval (ms). |
-| `ovy.executor.client-task.core-pool-size` | `1` | Threads for client's scheduled tasks. |
-| `ovy.executor.listener.core-pool-size` | `3` | Threads for listener execution (`@OvyListener`). |
-| `ovy.executor.listener-task.max-pool-size` | `10` | Maximum threads for listeners. |
-| `ovy.executor.listener-task.queue-capacity`| `25` | Queue size for listener tasks. |
-| `ovy.executor.producer.core-pool-size` | `1` | Threads for message sending. |
-| `ovy.executor.producer-task.max-pool-size` | `1` | Maximum threads for message sending. |
-| `ovy.executor.producer-task.queue-capacity` | `25` | Queue size for message sending tasks. |
+| `ovymq.executor.client-task.core-pool-size` | `1` | Threads for client's scheduled tasks. |
+| `ovymq.executor.listener.core-pool-size` | `3` | Threads for listener execution (`@OvyListener`). |
+| `ovymq.executor.listener-task.max-pool-size` | `10` | Maximum threads for listeners. |
+| `ovymq.executor.listener-task.queue-capacity`| `25` | Queue size for listener tasks. |
+| `ovymq.executor.producer.core-pool-size` | `1` | Threads for message sending. |
+| `ovymq.executor.producer-task.max-pool-size` | `1` | Maximum threads for message sending. |
+| `ovymq.executor.producer-task.queue-capacity` | `25` | Queue size for message sending tasks. |
 
 ### Contributing
 
@@ -601,13 +601,13 @@ A aplicação oferece um alto grau de personalização através de parâmetros n
 | `ovymq.task.health-check.expiration-time` | `120000` | **Padrão global:** Tempo (ms) de expiração do *health check*. |
 | `ovymq.task.listener-poll.initial-delay` | `10000` | **Padrão global:** Atraso inicial (ms) para `poll`. |
 | `ovymq.task.listener-poll.fixed-delay` | `35000` | **Padrão global:** Intervalo (ms) do `poll`. |
-| `ovy.executor.client-task.core-pool-size` | `1` | Threads para tarefas agendadas do cliente. |
-| `ovy.executor.listener.core-pool-size` | `3` | Threads para execução dos listeners (`@OvyListener`). |
-| `ovy.executor.listener-task.max-pool-size` | `10` | Máximo de threads para os listeners. |
-| `ovy.executor.listener-task.queue-capacity`| `25` | Tamanho da fila para tarefas dos listeners. |
-| `ovy.executor.producer.core-pool-size` | `1` | Threads para envio de mensagens. |
-| `ovy.executor.producer-task.max-pool-size` | `1` | Máximo de threads para envio de mensagens. |
-| `ovy.executor.producer-task.queue-capacity` | `25` | Tamanho da fila para envio de mensagens. |
+| `ovymq.executor.client-task.core-pool-size` | `1` | Threads para tarefas agendadas do cliente. |
+| `ovymq.executor.listener.core-pool-size` | `3` | Threads para execução dos listeners (`@OvyListener`). |
+| `ovymq.executor.listener-task.max-pool-size` | `10` | Máximo de threads para os listeners. |
+| `ovymq.executor.listener-task.queue-capacity`| `25` | Tamanho da fila para tarefas dos listeners. |
+| `ovymq.executor.producer.core-pool-size` | `1` | Threads para envio de mensagens. |
+| `ovymq.executor.producer-task.max-pool-size` | `1` | Máximo de threads para envio de mensagens. |
+| `ovymq.executor.producer-task.queue-capacity` | `25` | Tamanho da fila para envio de mensagens. |
 
 ### Como Contribuir
 
