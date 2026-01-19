@@ -46,4 +46,11 @@ public class OvyMqConstants {
 
     // ListenerConfigHandler Lock key
     public static final Function<String, String> LOCK_KEY_VALUE = "key:listener:config:handler:"::concat;
+
+    // Objects
+    public static final String OBJECT_HEALTH_STATUS = "OBJECT-HEALTH-STATUS";
+    public static final String OBJECT_LISTENER_CONFIG = "OBJECT-LISTENER-CONFIG";
+    public static final String OBJECT_REAPER_TIME_MS = "OBJECT-REAPER-TIME-MS";
+    public static final String OBJECT_MESSAGE_PAYLOAD = "OBJECT-MESSAGE-PAYLOAD";
+    public static final String OBJECT_CLIENT = "OBJECT-CLIENT";
 }

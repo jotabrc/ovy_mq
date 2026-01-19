@@ -8,25 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.Objects.isNull;
-
 @Component
 public class PayloadHandlerRegistry {
 
-    private final Map<Class<?>, Map<PayloadDispatcherCommand,PayloadHandler<?>>> handlers;
+    private final Map<io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand, PayloadHandler> handlers = new HashMap<>();
 
-    public PayloadHandlerRegistry(List<PayloadHandler<?>> availableHandlers) {
-        this.handlers = new HashMap<>();
-        for (PayloadHandler<?> h : availableHandlers) {
-            handlers.compute(h.supports(), (key, map) -> {
-                if (isNull(map)) map = new HashMap<>();
-                map.putIfAbsent(h.command(), h);
-                return map;
-            });
+    public PayloadHandlerRegistry(List<PayloadHandler> availableHandlers) {
+        for (PayloadHandler handler : availableHandlers) {
+            this.handlers.putIfAbsent(handler.command(), handler);
         }
     }
 
-    public Optional<PayloadHandler<?>> getHandler(Class<?> classType, PayloadDispatcherCommand command) {
-        return Optional.ofNullable(handlers.get(classType).get(command));
+    public Optional<PayloadHandler> getHandler(io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command) {
+        return Optional.ofNullable(this.handlers.get(command));
     }
 }

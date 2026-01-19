@@ -5,6 +5,7 @@ import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolve
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.Mapping;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +20,15 @@ import java.time.OffsetDateTime;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
+public class PayloadHealthCheckHandler implements PayloadHandler {
 
     private final AbstractFactoryResolver factoryResolver;
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectProvider<DefinitionMap> definitionProvier;
 
     @Override
-    public void handle(HealthStatus healthStatus) {
+    public void handle(OvyAction ovyAction) {
+        HealthStatus healthStatus = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_HEALTH_STATUS, HealthStatus.class);
         log.info("Sending health status: client={}", healthStatus.getClientId());
         healthStatus.setReceivedAt(OffsetDateTime.now());
         healthStatus.setAlive(true);
@@ -47,12 +49,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler<HealthStatus> {
     }
 
     @Override
-    public Class<HealthStatus> supports() {
-        return HealthStatus.class;
-    }
-
-    @Override
-    public PayloadDispatcherCommand command() {
-        return PayloadDispatcherCommand.HEALTH_CHECK;
+    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
+        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.HEALTH_CHECK;
     }
 }

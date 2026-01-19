@@ -1,7 +1,6 @@
 package io.github.jotabrc.ovy_mq.task;
 
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
-import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,6 +28,6 @@ public class MessageQueueReaperTask {
     @Scheduled(fixedDelayString = "${ovymq.task.reaper.delay}")
     public void execute() {
         log.info("Reaper task execution started with fixed delay of {} ms", delay);
-        payloadDispatcher.execute(delay, PayloadDispatcherCommand.REAPER);
+        payloadDispatcher.execute(delay, io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.REAPER);
     }
 }

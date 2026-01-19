@@ -1,10 +1,10 @@
 package io.github.jotabrc.ovy_mq.controller;
 
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
-import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
@@ -17,6 +17,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.Optional;
 
 import static io.github.jotabrc.ovy_mq_core.constants.Mapping.*;
 import static java.util.Objects.nonNull;
@@ -29,10 +30,17 @@ public class MessageController {
     private final AbstractFactoryResolver factoryResolver;
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
+    @MessageMapping(WS_CLIENT)
+    public void process(@Payload OvyAction ovyAction) {
+        Optional.ofNullable(ovyAction)
+                .ifPresent(action -> action.getCommands()
+                        .forEach(wsCommand -> payloadDispatcher.execute(ovyAction, wsCommand)));
+    }
+
     @MessageMapping(WS_SAVE)
     public void saveMessage(@Payload MessagePayload messagePayload) {
         if (nonNull(messagePayload)) {
-            payloadDispatcher.execute(messagePayload, PayloadDispatcherCommand.SAVE);
+            payloadDispatcher.execute(messagePayload, io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.SAVE);
         }
     }
 
@@ -45,7 +53,7 @@ public class MessageController {
                     .add(OvyMqConstants.CLIENT_TYPE, ClientType.CONSUMER_MESSAGE_REQUEST_BASIC);
             factoryResolver.create(definition, Client.class)
                             .ifPresent(client ->
-                                    payloadDispatcher.execute(client, PayloadDispatcherCommand.REQUEST));
+                                    payloadDispatcher.execute(client, io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.REQUEST));
         }
     }
 
@@ -53,7 +61,7 @@ public class MessageController {
     public void confirmProcessing(@Payload MessagePayload messagePayload, @Header(OvyMqConstants.SUBSCRIBED_TOPIC) String topic) {
         if (nonNull(messagePayload) && nonNull(topic)) {
             messagePayload.setTopic(topic);
-            payloadDispatcher.execute(messagePayload, PayloadDispatcherCommand.REMOVE);
+            payloadDispatcher.execute(messagePayload, io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.REMOVE);
         }
     }
 
@@ -61,7 +69,7 @@ public class MessageController {
     public void healthCheck(@Payload HealthStatus healthStatus, Principal principal) {
         if (nonNull(healthStatus) && nonNull(principal)) {
             healthStatus.setClientId(principal.getName());
-            payloadDispatcher.execute(healthStatus, PayloadDispatcherCommand.HEALTH_CHECK);
+            payloadDispatcher.execute(healthStatus, io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.HEALTH_CHECK);
         }
     }
 }

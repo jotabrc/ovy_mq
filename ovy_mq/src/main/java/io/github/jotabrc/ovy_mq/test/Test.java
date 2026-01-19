@@ -1,7 +1,6 @@
 package io.github.jotabrc.ovy_mq.test;
 
 import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcher;
-import io.github.jotabrc.ovy_mq.service.handler.PayloadDispatcherCommand;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -23,7 +22,7 @@ public class Test implements CommandLineRunner {
                             .topic("bar")
                             .payload("" + counter.get())
                             .build(),
-                    PayloadDispatcherCommand.SAVE);
+                    io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.SAVE);
         }
 
         counter = new AtomicInteger(0);
@@ -32,7 +31,7 @@ public class Test implements CommandLineRunner {
                             .topic("foo")
                             .payload("" + counter.get())
                             .build(),
-                    PayloadDispatcherCommand.SAVE);
+                    io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.SAVE);
         }
     }
 }

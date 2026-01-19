@@ -5,6 +5,7 @@ public class Mapping {
     private Mapping() {
     }
 
+    public static final String WS_CLIENT = "/client";
     public static final String WS_USER = "/user";
     public static final String WS_REQUEST = "/request";
     public static final String WS_QUEUE = "/queue";

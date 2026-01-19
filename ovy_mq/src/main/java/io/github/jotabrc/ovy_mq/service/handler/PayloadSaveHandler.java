@@ -2,6 +2,8 @@ package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +18,13 @@ import static java.util.Objects.isNull;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class PayloadSaveHandler implements PayloadHandler<MessagePayload> {
+public class PayloadSaveHandler implements PayloadHandler {
 
     private final MessageRepository messageRepository;
 
     @Override
-    public void handle(MessagePayload messagePayload) {
+    public void handle(OvyAction ovyAction) {
+        MessagePayload messagePayload = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_MESSAGE_PAYLOAD, MessagePayload.class);
         updateMessageMetadata(messagePayload);
         log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
         messageRepository.saveToQueue(messagePayload);
@@ -33,12 +36,7 @@ public class PayloadSaveHandler implements PayloadHandler<MessagePayload> {
     }
 
     @Override
-    public Class<MessagePayload> supports() {
-        return MessagePayload.class;
-    }
-
-    @Override
-    public PayloadDispatcherCommand command() {
-        return PayloadDispatcherCommand.SAVE;
+    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
+        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.SAVE;
     }
 }

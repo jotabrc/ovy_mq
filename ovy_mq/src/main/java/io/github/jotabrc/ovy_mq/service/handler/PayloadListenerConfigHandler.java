@@ -5,6 +5,7 @@ import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ import static io.github.jotabrc.ovy_mq_core.constants.Mapping.WS_CONFIG;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConfig> {
+public class PayloadListenerConfigHandler implements PayloadHandler {
 
     private final AbstractFactoryResolver factoryResolver;
     private final ClientConfigurerContextHolder clientConfigurerContextHolder;
@@ -27,8 +28,9 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
     private final ObjectProvider<DefinitionMap> definitionProvider;
 
     @Override
-    public void handle(ListenerConfig listenerConfig) {
+    public void handle(OvyAction ovyAction) {
         // todo: log new config
+        ListenerConfig listenerConfig = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_LISTENER_CONFIG, ListenerConfig.class);
         sendConfig(listenerConfig);
     }
 
@@ -49,12 +51,7 @@ public class PayloadListenerConfigHandler implements PayloadHandler<ListenerConf
     }
 
     @Override
-    public Class<ListenerConfig> supports() {
-        return ListenerConfig.class;
-    }
-
-    @Override
-    public PayloadDispatcherCommand command() {
-        return PayloadDispatcherCommand.LISTENER_CONFIG;
+    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
+        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.LISTENER_CONFIG;
     }
 }

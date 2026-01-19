@@ -1,5 +1,7 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
@@ -10,12 +12,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class PayloadReaperHandler implements PayloadHandler<Long> {
+public class PayloadReaperHandler implements PayloadHandler {
 
     private final MessageRepository messageRepository;
 
     @Override
-    public void handle(Long ms) {
+    public void handle(OvyAction ovyAction) {
+        Long ms = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_REAPER_TIME_MS, Long.class);
         log.info("Reaping all messages in SENT QUEUE for longer than={}ms without success confirmation.", ms);
         messageRepository.getMessagesByLastUsedDateGreaterThen(ms)
                 .forEach(payload -> {
@@ -28,12 +31,7 @@ public class PayloadReaperHandler implements PayloadHandler<Long> {
     }
 
     @Override
-    public Class<Long> supports() {
-        return Long.class;
-    }
-
-    @Override
-    public PayloadDispatcherCommand command() {
-        return PayloadDispatcherCommand.REAPER;
+    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
+        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.REAPER;
     }
 }
