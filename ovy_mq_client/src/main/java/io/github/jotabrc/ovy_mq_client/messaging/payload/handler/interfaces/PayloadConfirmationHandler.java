@@ -7,7 +7,6 @@ public interface PayloadConfirmationHandler<T> {
 
     void acknowledge(SessionManager session,
                      Client client,
-                     String destination,
                      T payload);
 
     Class<?> supports();

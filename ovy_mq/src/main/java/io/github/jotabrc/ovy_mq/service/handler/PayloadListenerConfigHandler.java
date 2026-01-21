@@ -1,11 +1,13 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.registry.ClientConfigurerContextHolder;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +28,12 @@ public class PayloadListenerConfigHandler implements PayloadHandler {
     private final ClientConfigurerContextHolder clientConfigurerContextHolder;
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectProvider<DefinitionMap> definitionProvider;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void handle(OvyAction ovyAction) {
         // todo: log new config
-        ListenerConfig listenerConfig = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_LISTENER_CONFIG, ListenerConfig.class);
+        ListenerConfig listenerConfig = ovyAction.getPayloadAs(ListenerConfig.class, objectMapper);
         sendConfig(listenerConfig);
     }
 
@@ -51,7 +54,7 @@ public class PayloadListenerConfigHandler implements PayloadHandler {
     }
 
     @Override
-    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
-        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.LISTENER_CONFIG;
+    public OvyCommand command() {
+        return OvyCommand.SEND_LISTENER_CONFIG;
     }
 }

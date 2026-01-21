@@ -13,9 +13,12 @@ import static java.util.Objects.nonNull;
 @Builder
 @Setter
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
 public class MessagePayload implements Serializable {
+
+    public MessagePayload() {
+        this.messageStatus = MessageStatus.AWAITING_PROCESSING;
+    }
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -23,7 +26,8 @@ public class MessagePayload implements Serializable {
     private String id;
     private Object payload;
     private String topic;
-    private MessageStatus messageStatus;
+    @Builder.Default
+    private MessageStatus messageStatus = MessageStatus.AWAITING_PROCESSING;
     private OffsetDateTime createdDate;
     @JsonIgnore
     private OffsetDateTime processingStartedAt;
@@ -51,7 +55,7 @@ public class MessagePayload implements Serializable {
     }
 
     @JsonIgnore
-    public String getTopic() {
+    public String getTopicKey() {
         return (success)
                 ? TopicUtil.createTopicKeyForSent(this.topic)
                 : TopicUtil.createTopicKey(this.topic, this.messageStatus);

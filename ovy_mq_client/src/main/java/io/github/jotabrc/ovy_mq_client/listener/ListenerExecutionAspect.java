@@ -1,6 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.listener;
 
+import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
@@ -12,6 +15,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,7 +23,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.jotabrc.ovy_mq_core.constants.Mapping.REQUEST_MESSAGE;
+import static io.github.jotabrc.ovy_mq_core.constants.Mapping.SEND_COMMAND_TO_SERVER;
 import static java.util.Objects.nonNull;
 
 @Aspect
@@ -38,6 +42,7 @@ public class ListenerExecutionAspect {
     private final ListenerExecutionContextHolder listenerExecutionContextHolder;
     private final ClientMessageDispatcher clientMessageDispatcher;
     private final ScheduledExecutorService scheduledBackoffExecutor;
+    private final ObjectProviderFacade objectProviderFacade;
 
     @Around("@annotation(ovyListener)")
     public Object listenerExecutorAspect(ProceedingJoinPoint joinPoint, OvyListener ovyListener) {
@@ -97,8 +102,16 @@ public class ListenerExecutionAspect {
         if (nonNull(client)) client.setIsAvailable(true);
         if (!client.getIsDestroying()) {
             client.setIsMessageInteractionActive(true);
-            clientMessageDispatcher.send(client, client.getTopic(), REQUEST_MESSAGE, client.getTopic());
+            OvyAction ovyAction = buildAction(client);
+            clientMessageDispatcher.send(client, client.getTopic(), SEND_COMMAND_TO_SERVER, ovyAction);
         }
+    }
+
+    private OvyAction buildAction(Client client) {
+        return OvyAction.builder()
+                .commands(List.of(OvyCommand.REQUEST_MESSAGE_PAYLOAD))
+                .payload(client.getBasicClient())
+                .build();
     }
 
     private void executeOnFailure(ProceedingJoinPoint joinPoint, Client client) {

@@ -3,6 +3,8 @@ package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManagerInitializer;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
@@ -15,11 +17,12 @@ import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.jotabrc.ovy_mq_core.constants.Mapping.REQUEST_HEALTH_CHECK;
+import static io.github.jotabrc.ovy_mq_core.constants.Mapping.SEND_COMMAND_TO_SERVER;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,7 +45,11 @@ public class HealthCheckManager extends AbstractManager {
         scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
                     log.info("Executing health check: {}", client.getId());
                     reconnectWhenRequired(isLastHealthCheckExpired(this.client));
-                    clientMessageDispatcher.send(this.client, this.client.getTopic(), REQUEST_HEALTH_CHECK, buildHealthStatus(), this.sessionManager);
+                    OvyAction ovyAction = OvyAction.builder()
+                            .commands(List.of(OvyCommand.REQUEST_HEALTH_CHECK))
+                            .payload(buildHealthStatus(client.getId()))
+                            .build();
+                    clientMessageDispatcher.send(this.client, this.client.getTopic(), SEND_COMMAND_TO_SERVER, ovyAction, this.sessionManager);
                 },
                 ValueUtil.get(client.getHealthCheckInitialDelay(), this.initialDelay, client.useGlobalValues()),
                 ValueUtil.get(client.getHealthCheckFixedDelay(), this.fixedDelay, client.useGlobalValues()),
@@ -66,9 +73,10 @@ public class HealthCheckManager extends AbstractManager {
                 .isAfter(client.getLastHealthCheck());
     }
 
-    private HealthStatus buildHealthStatus() {
+    private HealthStatus buildHealthStatus(String clientId) {
         return HealthStatus.builder()
                 .requestedAt(OffsetDateTime.now())
+                .clientId(clientId)
                 .build();
     }
 }

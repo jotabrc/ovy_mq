@@ -5,8 +5,8 @@ import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.SessionTimeoutManagerResolver;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManagerInitializer;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManagerInitializer;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionMessageSender;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactory;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactoryResolver;
@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 
-import static io.github.jotabrc.ovy_mq_core.constants.Mapping.CONFIRM_PAYLOAD_RECEIVED;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -82,11 +81,11 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void defineMembers(Client client, List<String> subscriptions) {
-        if (isNull(this.client) && isNull(this.subscriptions) && nonNull(subscriptions)) {
+        if (isNull(this.client) && isNull(this.subscriptions) && nonNull(subscriptions) && nonNull(client.getType())) {
             this.client = client;
             this.subscriptions = subscriptions;
         } else {
-            throw new IllegalStateException("Client and Subscriptions must be defined once");
+            throw new IllegalStateException("Client and Subscriptions must be defined once with Client type provided");
         }
     }
 
@@ -108,7 +107,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter implements S
 
     @Override
     public void handleFrame(@NotNull StompHeaders headers, Object object) {
-        dispatcherFacade.acknowledgePayload(this, client, CONFIRM_PAYLOAD_RECEIVED, object);
+        dispatcherFacade.acknowledgePayload(this, client, object);
         dispatcherFacade.handlePayload(client, object, headers);
     }
 

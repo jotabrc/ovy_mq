@@ -1,5 +1,6 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
@@ -7,6 +8,7 @@ import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.constants.Mapping;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
@@ -29,10 +31,11 @@ public class PayloadRequestHandler implements PayloadHandler {
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final AuthHandlerResolver authHandlerResolver;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void handle(OvyAction ovyAction) {
-        Client client = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_CLIENT, Client.class);
+        Client client = ovyAction.getPayloadAs(Client.class, objectMapper);
         log.info("Message request: client={}", client.getId());
         if (nonNull(client.getId())) {
             messageRepository.pollFromQueue(client.getTopicForAwaitingProcessingQueue())
@@ -46,7 +49,7 @@ public class PayloadRequestHandler implements PayloadHandler {
             sendMessageToConsumer(messagePayload, client);
             messagePayload.updateMessageStatusTo(MessageStatus.SENT);
         } catch (Exception e) {
-            log.warn("Error while sending message: requeue message={} client={} topic={}:{}. Error-message: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), messagePayload.getMessageStatus(), e.getMessage(), e);
+            log.warn("Error while sending message: requeue message={} client={} topic={}:{}. Error-message: {}", messagePayload.getId(), client.getId(), messagePayload.getTopicKey(), messagePayload.getMessageStatus(), e.getMessage(), e);
         } finally {
             messageRepository.saveToQueue(messagePayload);
         }
@@ -78,7 +81,7 @@ public class PayloadRequestHandler implements PayloadHandler {
     }
 
     @Override
-    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
-        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.REQUEST;
+    public OvyCommand command() {
+        return OvyCommand.REQUEST_MESSAGE_PAYLOAD;
     }
 }

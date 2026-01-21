@@ -1,9 +1,10 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +22,13 @@ import static java.util.Objects.isNull;
 public class PayloadSaveHandler implements PayloadHandler {
 
     private final MessageRepository messageRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void handle(OvyAction ovyAction) {
-        MessagePayload messagePayload = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_MESSAGE_PAYLOAD, MessagePayload.class);
+        MessagePayload messagePayload = ovyAction.getPayloadAs(MessagePayload.class, objectMapper);
         updateMessageMetadata(messagePayload);
-        log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
+        log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopicKey());
         messageRepository.saveToQueue(messagePayload);
     }
 
@@ -36,7 +38,7 @@ public class PayloadSaveHandler implements PayloadHandler {
     }
 
     @Override
-    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
-        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.SAVE;
+    public OvyCommand command() {
+        return OvyCommand.SAVE_MESSAGE_PAYLOAD;
     }
 }

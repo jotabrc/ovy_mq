@@ -14,8 +14,8 @@ public class ProducerClientFactoryStrategy implements io.github.jotabrc.ovy_mq_c
     public Client create(DefinitionMap definition) {
         return Client.builder()
                 .id(definition.extractOrGet(OvyMqConstants.CLIENT_ID, UUID.randomUUID().toString()))
-                .topic(definition.extract(OvyMqConstants.SUBSCRIBED_TOPIC, String.class))
-                .type(definition.extract(OvyMqConstants.CLIENT_TYPE, ClientType.class))
+                .topic(OvyMqConstants.ROLE_SERVER)
+                .type(ClientType.PRODUCER)
                 .build();
     }
 

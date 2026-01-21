@@ -1,9 +1,10 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.repository.MessageRepository;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
-import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,18 +18,19 @@ import static java.util.Objects.nonNull;
 public class PayloadRemoveHandler implements PayloadHandler {
 
     private final MessageRepository messageRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void handle(OvyAction ovyAction) {
-        MessagePayload messagePayload = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_MESSAGE_PAYLOAD, MessagePayload.class);
+        MessagePayload messagePayload = ovyAction.getPayloadAs(MessagePayload.class, objectMapper);
         if (nonNull(messagePayload) && messagePayload.hasIdentifiers()) {
-            log.info("Removing message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
-            messageRepository.removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
+            log.info("Removing message={} topic={}", messagePayload.getId(), messagePayload.getTopicKey());
+            messageRepository.removeFromQueue(messagePayload.getTopicKey(), messagePayload.getId());
         }
     }
 
     @Override
-    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
-        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.REMOVE;
+    public OvyCommand command() {
+        return OvyCommand.REMOVE_MESSAGE_PAYLOAD;
     }
 }

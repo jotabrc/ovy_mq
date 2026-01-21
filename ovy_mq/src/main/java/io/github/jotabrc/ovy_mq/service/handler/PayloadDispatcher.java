@@ -15,9 +15,9 @@ public class PayloadDispatcher {
 
     public void execute(OvyAction ovyAction) {
         ovyAction.getCommands()
-                .forEach(wsCommand -> payloadHandlerRegistry.getHandler(wsCommand)
+                .forEach(ovyCommand -> payloadHandlerRegistry.getHandler(ovyCommand)
                         .ifPresentOrElse(handler -> execute(handler, ovyAction),
-                                () -> log.warn("No handler available for payload-class-{}", wsCommand)));
+                                () -> log.warn("No handler available for command={}", ovyCommand)));
     }
 
     private void execute(PayloadHandler handler, OvyAction ovyAction) {

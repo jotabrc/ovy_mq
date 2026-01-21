@@ -1,11 +1,13 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.Mapping;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +27,11 @@ public class PayloadHealthCheckHandler implements PayloadHandler {
     private final AbstractFactoryResolver factoryResolver;
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectProvider<DefinitionMap> definitionProvier;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void handle(OvyAction ovyAction) {
-        HealthStatus healthStatus = ovyAction.getDefinitionMap().extract(OvyMqConstants.OBJECT_HEALTH_STATUS, HealthStatus.class);
+        HealthStatus healthStatus = ovyAction.getPayloadAs(HealthStatus.class, objectMapper);
         log.info("Sending health status: client={}", healthStatus.getClientId());
         healthStatus.setReceivedAt(OffsetDateTime.now());
         healthStatus.setAlive(true);
@@ -49,7 +52,7 @@ public class PayloadHealthCheckHandler implements PayloadHandler {
     }
 
     @Override
-    public io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command() {
-        return io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand.HEALTH_CHECK;
+    public OvyCommand command() {
+        return OvyCommand.REQUEST_HEALTH_CHECK;
     }
 }

@@ -19,7 +19,7 @@ public class DispatcherFacade {
         payloadHandlerDispatcher.execute(client, payload, headers);
     }
 
-    public void acknowledgePayload(SessionManager sessionManager, Client client, String destination, Object payload) {
-        payloadConfirmationHandlerDispatcher.execute(sessionManager, client, destination, payload);
+    public void acknowledgePayload(SessionManager sessionManager, Client client, Object payload) {
+        payloadConfirmationHandlerDispatcher.execute(sessionManager, client, payload);
     }
 }

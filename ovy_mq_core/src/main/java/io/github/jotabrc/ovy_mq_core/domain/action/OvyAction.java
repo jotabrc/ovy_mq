@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_core.domain.action;
 
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 
 import java.io.Serial;
@@ -20,11 +20,17 @@ public class OvyAction implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private List<OvyCommand> commands;
-    public DefinitionMap definitionMap;
+    private Object payload;
+
+    public <R> R getPayloadAs(Class<R> type, ObjectMapper objectMapper) {
+        return nonNull(this.payload)
+                ? objectMapper.convertValue(this.payload, type)
+                : null;
+    }
 
     public List<OvyCommand> getCommands() {
         return (nonNull(this.commands) && !this.commands.isEmpty())
-                ? this.getCommands()
+                ? this.commands
                 : Collections.emptyList();
     }
 }

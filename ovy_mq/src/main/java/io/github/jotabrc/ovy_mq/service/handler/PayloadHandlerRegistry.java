@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq.service.handler;
 
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
+import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.Optional;
 @Component
 public class PayloadHandlerRegistry {
 
-    private final Map<io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand, PayloadHandler> handlers = new HashMap<>();
+    private final Map<OvyCommand, PayloadHandler> handlers = new HashMap<>();
 
     public PayloadHandlerRegistry(List<PayloadHandler> availableHandlers) {
         for (PayloadHandler handler : availableHandlers) {
@@ -19,7 +20,7 @@ public class PayloadHandlerRegistry {
         }
     }
 
-    public Optional<PayloadHandler> getHandler(io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand command) {
+    public Optional<PayloadHandler> getHandler(OvyCommand command) {
         return Optional.ofNullable(this.handlers.get(command));
     }
 }

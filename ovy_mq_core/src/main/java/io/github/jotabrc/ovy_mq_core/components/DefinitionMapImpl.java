@@ -1,11 +1,15 @@
 package io.github.jotabrc.ovy_mq_core.components;
 
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +19,18 @@ import java.util.stream.Collectors;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-@RequiredArgsConstructor
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class DefinitionMapImpl implements DefinitionMap {
 
-    private final Map<String, Object> definitions = new HashMap<>();
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private Map<String, Object> definitions = new HashMap<>();
 
     @Override
     public DefinitionMap add(String key, Object value) {

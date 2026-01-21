@@ -50,7 +50,7 @@ public class OvyMqConstants {
     // Objects
     public static final String OBJECT_HEALTH_STATUS = "OBJECT-HEALTH-STATUS";
     public static final String OBJECT_LISTENER_CONFIG = "OBJECT-LISTENER-CONFIG";
-    public static final String OBJECT_REAPER_TIME_MS = "OBJECT-REAPER-TIME-MS";
+    public static final String OBJECT_REAPER_TIME_MS = "OBJECT-REAPER_MESSAGE_PAYLOAD-TIME-MS";
     public static final String OBJECT_MESSAGE_PAYLOAD = "OBJECT-MESSAGE-PAYLOAD";
     public static final String OBJECT_CLIENT = "OBJECT-CLIENT";
 }

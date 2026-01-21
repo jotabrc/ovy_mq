@@ -25,8 +25,7 @@ public class ProducerInitializerConfig {
                                        AbstractFactoryResolver factoryResolver,
                                        ObjectProviderFacade objectProviderFacade) {
         DefinitionMap definition = objectProviderFacade.getDefinitionMap()
-                .add(OvyMqConstants.CLIENT_TYPE, ClientType.PRODUCER)
-                .add(OvyMqConstants.SUBSCRIBED_TOPIC, OvyMqConstants.ROLE_SERVER);
+                .add(OvyMqConstants.CLIENT_TYPE, ClientType.PRODUCER);
         return factoryResolver.create(definition, Client.class)
                 .flatMap(client -> {
                     DefinitionMap sessionDefinition = objectProviderFacade.getDefinitionMap()
@@ -34,7 +33,7 @@ public class ProducerInitializerConfig {
                             .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.PRODUCER_SUBSCRIPTION);
                     return sessionInitializerResolver.get()
                             .flatMap(sessionInitializer -> sessionInitializer.createSessionAndConnect(client, sessionDefinition)
-                            .map(StompOvyProducer::new));
+                                    .map(sessionManager -> new StompOvyProducer(sessionManager, objectProviderFacade)));
                 }).orElseThrow(() -> new IllegalStateException("Error while creating OvyProducer not available"));
     }
 }

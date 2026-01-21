@@ -17,18 +17,16 @@ public class PayloadConfirmationHandlerDispatcher {
 
     public void execute(SessionManager session,
                         Client client,
-                        String destination,
                         Object payload) {
         payloadConfirmationHandlerRegistry.getHandler(payload.getClass())
-                .ifPresentOrElse(handler -> execute(handler, session, client, destination, payload),
+                .ifPresentOrElse(handler -> execute(handler, session, client, payload),
                         () -> log.warn("No handler available for payload-class={} operation=Payload-Acknowledge", payload.getClass()));
     }
 
     private <T> void execute(PayloadConfirmationHandler<T> handler,
                              SessionManager session,
                              Client client,
-                             String destination,
                              Object payload) {
-        handler.acknowledge(session, client, destination, (T) payload);
+        handler.acknowledge(session, client, (T) payload);
     }
 }

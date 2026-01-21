@@ -1,9 +1,10 @@
 package io.github.jotabrc.ovy_mq_core.components.interfaces;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public interface DefinitionMap {
+public interface DefinitionMap extends Serializable {
 
     DefinitionMap add(String key, Object value);
     Object get(String key);

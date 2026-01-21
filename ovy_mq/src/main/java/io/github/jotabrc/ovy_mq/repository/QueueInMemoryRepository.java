@@ -30,8 +30,8 @@ public class QueueInMemoryRepository implements MessageRepository {
 
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
-        log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopic());
-        messages.computeIfAbsent(messagePayload.getTopic(), k -> new ConcurrentLinkedQueue<>()).offer(messagePayload);
+        log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopicKey());
+        messages.computeIfAbsent(messagePayload.getTopicKey(), k -> new ConcurrentLinkedQueue<>()).offer(messagePayload);
         return messagePayload;
     }
 
@@ -77,11 +77,11 @@ public class QueueInMemoryRepository implements MessageRepository {
     @Override
     public void removeAndRequeue(MessagePayload messagePayload) {
         Callable<Void> callable = () -> {
-            removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
+            removeFromQueue(messagePayload.getTopicKey(), messagePayload.getId());
             saveToQueue(messagePayload);
             return null;
         };
-        lockProcessor.getLockAndExecute(callable, messagePayload.getTopic(), messagePayload.getId(), null);
+        lockProcessor.getLockAndExecute(callable, messagePayload.getTopicKey(), messagePayload.getId(), null);
     }
 
     @Override

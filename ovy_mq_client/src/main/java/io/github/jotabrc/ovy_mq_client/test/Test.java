@@ -12,7 +12,7 @@ public class Test {
 
     private final TestRepo repo;
 
-    @OvyListener(topic = "bar", quantity = 1000, pollInitialDelay = 15000, healthCheckInitialDelay = 15000, processingTimeout = 180000)
+    @OvyListener(topic = "bar", quantity = 1, pollInitialDelay = 15000, healthCheckInitialDelay = 15000, processingTimeout = 180000)
     public void bar(Object object) {
         try {
             Thread.sleep(Random.from(new Random()).nextInt(100, 29000));
@@ -22,7 +22,7 @@ public class Test {
         repo.save(TestObj.builder().objeto(object.toString()).build());
     }
 
-    @OvyListener(topic = "foo", quantity = 1000, processingTimeout = 180000)
+    @OvyListener(topic = "foo", quantity = 1, processingTimeout = 180000)
     public void foo(Object object) {
         try {
             Thread.sleep(Random.from(new Random()).nextInt(100, 29000));

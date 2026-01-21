@@ -52,7 +52,7 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
         CompletableFuture.runAsync(() -> execute(messagePayload, client), listenerExecutor)
                 .orTimeout(ValueUtil.get(client.getProcessingTimeout(), timeout, client.useGlobalValues()), TimeUnit.MILLISECONDS)
                 .exceptionally(e -> {
-                    log.error("Listener task failed: client={} message={} topic={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), e);
+                    log.error("Listener task failed: client={} message={} topic={}", client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), e);
                     return null;
                 });
     }
@@ -61,12 +61,12 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
         try {
             client.setIsAvailable(false);
             listenerExecutionContextHolder.setThreadLocal(client);
-            log.info("Executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName());
+            log.info("Executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getBeanName(), client.getMethod().getName());
             listenerInvocator.invoke(client, messagePayload.getPayload());
         } catch (Throwable e) {
-            log.warn("Error while executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName(), e);
+            log.warn("Error while executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getBeanName(), client.getMethod().getName(), e);
             client.setIsAvailable(true);
-            throw new OvyException.ListenerInvocationExecution("Error while executing client=%s: message=%s topic=%s class=%s method=%s".formatted(client.getId(), messagePayload.getId(), messagePayload.getTopic(), client.getBeanName(), client.getMethod().getName()));
+            throw new OvyException.ListenerInvocationExecution("Error while executing client=%s: message=%s topic=%s class=%s method=%s".formatted(client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getBeanName(), client.getMethod().getName()));
         }
     }
 
