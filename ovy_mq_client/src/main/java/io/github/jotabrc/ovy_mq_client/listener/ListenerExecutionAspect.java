@@ -103,7 +103,7 @@ public class ListenerExecutionAspect {
         if (!client.getIsDestroying()) {
             client.setIsMessageInteractionActive(true);
             OvyAction ovyAction = buildAction(client);
-            clientMessageDispatcher.send(client, client.getTopic(), SEND_COMMAND_TO_SERVER, ovyAction);
+            clientMessageDispatcher.send(client, SEND_COMMAND_TO_SERVER, ovyAction);
         }
     }
 

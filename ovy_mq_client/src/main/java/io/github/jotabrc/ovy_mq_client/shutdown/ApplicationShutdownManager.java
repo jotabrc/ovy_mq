@@ -1,8 +1,8 @@
 package io.github.jotabrc.ovy_mq_client.shutdown;
 
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
 import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
@@ -13,8 +13,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class ApplicationShutdownManager extends ShutdownUtil implements SmartLifecycle {
 
-    public ApplicationShutdownManager(SessionRegistry sessionRegistry) {
+    private final ClientState clientState;
+
+    public ApplicationShutdownManager(SessionRegistry sessionRegistry, ClientState clientState) {
         super(sessionRegistry);
+        this.clientState = clientState;
     }
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
@@ -25,10 +28,10 @@ public class ApplicationShutdownManager extends ShutdownUtil implements SmartLif
         final long startTime = System.currentTimeMillis();
         while (true) {
             try {
-                for (SessionManager sessionManager : sessionRegistry.getAll().values()) {
-                    SessionConnection sessionConnection = (SessionConnection) sessionManager;
-                    boolean hasDisconnected = sessionConnection.destroy(false);
-                    if (hasDisconnected) sessionRegistry.removeById(sessionManager.getClientId());
+                for (ClientAdapter clientAdapter : sessionRegistry.getAll().values()) {
+                    ClientState clientState = clientAdapter.getClientState();
+                    boolean hasDisconnected = clientState.destroy(false);
+                    if (hasDisconnected) sessionRegistry.removeById(clientAdapter.getClientHelper().getClientId());
                 }
                 if (sessionRegistry.getAll().isEmpty()) {
                     log.info("All sessions disconnected");
@@ -37,7 +40,7 @@ public class ApplicationShutdownManager extends ShutdownUtil implements SmartLif
                 if (super.isMaxWaitExceeded(startTime)) {
                     log.info("Waiting graceful shutdown time exceeded {} ms", maxWait);
                     sessionRegistry.getAll().values()
-                            .forEach(sessionManager -> ((SessionConnection) sessionManager).destroy(true));
+                            .forEach(sessionManager -> clientState.destroy(true));
                     break;
                 }
                 log.info("Waiting clients to shutdown: elapsed-time={} sec", super.elapsedTime(startTime) / 1000);

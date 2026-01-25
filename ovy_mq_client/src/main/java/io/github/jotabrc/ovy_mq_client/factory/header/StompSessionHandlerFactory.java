@@ -1,30 +1,25 @@
 package io.github.jotabrc.ovy_mq_client.factory.header;
 
-import io.github.jotabrc.ovy_mq_client.session.stomp.StompSessionHandler;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler.StompClientSessionHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
-import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
-import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class StompSessionHandlerFactory implements AbstractFactory<StompSessionHandler> {
+public class StompSessionHandlerFactory implements AbstractFactory<StompClientSessionHandler> {
 
-    private final ObjectProvider<StompSessionHandler> provider;
+    private final ObjectProvider<StompClientSessionHandler> provider;
 
     @Override
-    public StompSessionHandler create(DefinitionMap definition) {
-        StompSessionHandler sessionManager = provider.getObject();
-        sessionManager.defineMembers(definition.extract(OvyMqConstants.CLIENT_OBJECT, Client.class),
-                definition.extractToList(OvyMqConstants.SUBSCRIPTIONS, String.class));
-        return sessionManager;
+    public StompClientSessionHandler create(DefinitionMap definition) {
+        return provider.getObject();
     }
 
     @Override
-    public Class<StompSessionHandler> supports() {
-        return StompSessionHandler.class;
+    public Class<StompClientSessionHandler> supports() {
+        return StompClientSessionHandler.class;
     }
 }

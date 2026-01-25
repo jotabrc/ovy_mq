@@ -2,15 +2,13 @@ package io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler;
 
 import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.ConnectionManager;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionTimeoutManager;
-import io.github.jotabrc.ovy_mq_client.session.stomp.StompSessionHandler;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientHelper;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
-import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +31,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
+public class StompClientSessionTimeoutManager implements SessionTimeoutManager<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> {
 
     @Value("${ovymq.session-manager.connection.max-retries:10}")
     protected Integer maxRetries;
@@ -43,69 +41,63 @@ public class StompClientSessionTimeoutManager implements SessionTimeoutManager {
 
     private final ObjectProviderFacade objectProviderFacade;
     private final AbstractFactoryResolver abstractFactoryResolver;
-    private final ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler> stompConnectionManager;
+    private final ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> stompClientState;
     private final ScheduledExecutorService scheduledExecutor;
 
     @Override
-    public CompletableFuture<SessionManager> execute(SessionManager sessionManager, Client client, CompletableFuture<SessionManager> finalFuture) {
+    public CompletableFuture<ClientHelper<?>> execute(ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter) {
         DefinitionMap definition = objectProviderFacade.getDefinitionMap()
                 .add(OvyMqConstants.DESTINATION, OvyMqConstants.DESTINATION_SERVER)
-                .add(OvyMqConstants.SUBSCRIBED_TOPIC, client.getTopic())
-                .add(OvyMqConstants.CLIENT_TYPE, client.getType().name())
-                .add(OvyMqConstants.CLIENT_ID, client.getId());
+                .add(OvyMqConstants.SUBSCRIBED_TOPIC, clientAdapter.getClientHelper().getClient().getTopic())
+                .add(OvyMqConstants.CLIENT_TYPE, clientAdapter.getClientHelper().getClient().getType().name())
+                .add(OvyMqConstants.CLIENT_ID, clientAdapter.getClientHelper().getClient().getId());
 
         var headers = abstractFactoryResolver.create(definition, WebSocketHttpHeaders.class);
 
         if (headers.isPresent()) {
-            Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect = stompConnectionManager -> {
-                SessionConnection sessionConnection = (SessionConnection) sessionManager;
-                if (!sessionConnection.isConnected()) {
-                    client.setLastHealthCheck(OffsetDateTime.now());
-                    return stompConnectionManager.connect("ws://localhost:9090/" + WS_REGISTRY, headers.get(), (StompSessionHandler) sessionManager)
-                            .thenApply(stompSession -> sessionManager);
+            Function<ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler>, CompletableFuture<ClientHelper<?>>>
+                    connect = stompClientState -> {
+                if (!clientAdapter.getClientState().isConnected()) {
+                    clientAdapter.getClientHelper().getClient().setLastHealthCheck(OffsetDateTime.now());
+                    return stompClientState.connect("ws://localhost:9090/" + WS_REGISTRY, headers.get(), (StompClientSessionHandler) clientAdapter.getClientSession())
+                            .thenApply(stompSession -> clientAdapter.getClientHelper());
                 }
-                return CompletableFuture.completedFuture(sessionManager);
+                return CompletableFuture.completedFuture(clientAdapter.getClientHelper());
             };
 
-            return execute(connect, client, finalFuture);
+            connect(connect, clientAdapter, 1);
+            return clientAdapter.getClientHelper().getConnectionFuture();
         }
         return CompletableFuture.failedFuture(new IllegalStateException("Headers factory is not present"));
     }
 
-    private CompletableFuture<SessionManager> execute(Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect, Client client, CompletableFuture<SessionManager> finalFuture) {
-        connect(finalFuture, connect, client, 1);
-        return finalFuture;
+    private void connect(Function<ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler>, CompletableFuture<ClientHelper<?>>> connect,
+                         ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter,
+                         int attempt) {
+        if (attempt > ValueUtil.get(clientAdapter.getClientHelper().getClient().getConnectionMaxRetries(), this.maxRetries, clientAdapter.getClientHelper().getClient().useGlobalValues())) {
+            clientAdapter.getClientHelper().getConnectionFuture().completeExceptionally(new TimeoutException("Connection failed attempt=%d".formatted(attempt)));
+            return;
+        }
+
+        connect.apply(stompClientState)
+                .whenComplete((clientHelper, throwable) -> {
+                    if (isNull(throwable) && nonNull(clientHelper) && clientAdapter.getClientState().isConnected()) {
+                        clientAdapter.getClientHelper().getConnectionFuture().complete(clientHelper);
+                        log.info("Connected to server: client={} topic={}", clientAdapter.getClientHelper().getClient().getId(), clientAdapter.getClientHelper().getClient().getTopic());
+                    } else {
+                        log.info("Connection attempt failed: client={} topic={}", clientAdapter.getClientHelper().getClient().getId(), clientAdapter.getClientHelper().getClient().getTopic(), throwable);
+                    }
+                });
+
+        if (clientAdapter.getClientHelper().getConnectionFuture().isDone()) return;
+
+        scheduledExecutor.schedule(() -> connect(connect, clientAdapter, attempt + 1),
+                ValueUtil.get(clientAdapter.getClientHelper().getClient().getConnectionTimeout(), this.timeout, clientAdapter.getClientHelper().getClient().useGlobalValues()),
+                TimeUnit.MILLISECONDS);
     }
 
     @Override
     public SessionType supports() {
         return SessionType.STOMP;
-    }
-
-    private void connect(CompletableFuture<SessionManager> finalFuture,
-                         Function<ConnectionManager<StompSession, WebSocketHttpHeaders, StompSessionHandler>, CompletableFuture<SessionManager>> connect,
-                         Client client,
-                         int attempt) {
-        if (attempt > ValueUtil.get(client.getConnectionMaxRetries(), this.maxRetries, client.useGlobalValues())) {
-            finalFuture.completeExceptionally(new TimeoutException("Connection failed attempt=%d".formatted(attempt)));
-            return;
-        }
-
-        connect.apply(stompConnectionManager)
-                .whenComplete((sessionManager, throwable) -> {
-                    SessionConnection sessionConnection = (SessionConnection) sessionManager;
-                    if (isNull(throwable) && nonNull(sessionManager) && sessionConnection.isConnected()) {
-                        finalFuture.complete(sessionManager);
-                        log.info("Connected to server: client={} topic={}", client.getId(), client.getTopic());
-                    } else {
-                        log.info("Connection attempt failed: client={} topic={}", client.getId(), client.getTopic(), throwable);
-                    }
-                });
-
-        if (finalFuture.isDone()) return;
-
-        scheduledExecutor.schedule(() -> connect(finalFuture, connect, client, attempt + 1),
-                ValueUtil.get(client.getConnectionTimeout(), this.timeout, client.useGlobalValues()),
-                TimeUnit.MILLISECONDS);
     }
 }

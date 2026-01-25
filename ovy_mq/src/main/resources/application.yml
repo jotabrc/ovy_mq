@@ -19,6 +19,3 @@ logging:
     io.github.jotabrc.ovy_mq: TRACE
   pattern:
     console: "%date [%thread] [%-5level] %logger{40} - %message%n"
-
-ovymq.task.shutdown.wait-delay: 1000
-ovymq.task.shutdown.max-wait: 180000

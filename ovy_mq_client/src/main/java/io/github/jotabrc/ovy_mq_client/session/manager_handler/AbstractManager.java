@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
 import io.github.jotabrc.ovy_mq_client.session.interfaces.Manager;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 
 import java.util.concurrent.ScheduledFuture;
@@ -9,9 +9,9 @@ import java.util.concurrent.ScheduledFuture;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-public abstract class AbstractManager implements Manager {
+public abstract class AbstractManager<T, U, V> implements Manager {
 
-    protected SessionManager sessionManager;
+    protected ClientAdapter<T, U, V> clientAdapter;
     protected Client client;
     protected ScheduledFuture<?> scheduledFuture;
 
@@ -22,9 +22,9 @@ public abstract class AbstractManager implements Manager {
         }
     }
 
-    public void setSessionManager(SessionManager sessionManager) {
-        if (isNull(this.sessionManager)) {
-            this.sessionManager = sessionManager;
+    public void setClientAdapter(ClientAdapter<T, U, V> clientAdapter) {
+        if (isNull(this.clientAdapter)) {
+            this.clientAdapter = clientAdapter;
         }
     }
 

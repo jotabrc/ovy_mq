@@ -1,24 +1,24 @@
 package io.github.jotabrc.ovy_mq_client.producer;
 
-import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.producer.interfaces.OvyProducer;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionMessageSender;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler.StompClientSessionHandler;
 import io.github.jotabrc.ovy_mq_core.constants.Mapping;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.web.socket.WebSocketHttpHeaders;
 
 import java.util.List;
 
 import static java.util.Objects.isNull;
 
 @RequiredArgsConstructor
-public class StompOvyProducer implements OvyProducer {
+public class StompOvyProducer implements OvyProducer<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> {
 
-    private final SessionManager sessionManager;
-    private final ObjectProviderFacade objectProviderFacade;
+    private final ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter;
 
     //    @Async(ThreadPoolConfig.PRODUCER_EXECUTOR) todo
     @Override
@@ -26,7 +26,7 @@ public class StompOvyProducer implements OvyProducer {
         if (isNull(payload))
             throw new IllegalArgumentException("Payload required to send message");
         OvyAction ovyAction = buildAction(topic, payload);
-        ((SessionMessageSender) this.sessionManager).send(Mapping.SEND_COMMAND_TO_SERVER, ovyAction);
+        clientAdapter.getClientMessageSender().send(Mapping.SEND_COMMAND_TO_SERVER, ovyAction);
     }
 
     private OvyAction buildAction(String topic, Object payload) {

@@ -1,9 +1,13 @@
 package io.github.jotabrc.ovy_mq_client.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.producer.StompOvyProducer;
 import io.github.jotabrc.ovy_mq_client.producer.interfaces.OvyProducer;
 import io.github.jotabrc.ovy_mq_client.session.initialize.SessionInitializerResolver;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactory;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler.StompClientSessionHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
 import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
@@ -14,6 +18,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,19 +29,26 @@ import org.springframework.context.annotation.Configuration;
 public class ProducerInitializerConfig {
 
     @Bean
-    public OvyProducer stompOvyProduce(SessionInitializerResolver sessionInitializerResolver,
-                                       AbstractFactoryResolver factoryResolver,
-                                       ObjectProviderFacade objectProviderFacade) {
+    public OvyProducer<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> stompOvyProduce(SessionInitializerResolver sessionInitializerResolver,
+                                                                                                      AbstractFactoryResolver factoryResolver,
+                                                                                                      ObjectProviderFacade objectProviderFacade) {
         DefinitionMap definition = objectProviderFacade.getDefinitionMap()
                 .add(OvyMqConstants.CLIENT_TYPE, ClientType.PRODUCER);
         return factoryResolver.create(definition, Client.class)
                 .flatMap(client -> {
-                    DefinitionMap sessionDefinition = objectProviderFacade.getDefinitionMap()
+
+                    DefinitionMap handlerDefinition = objectProviderFacade.getDefinitionMap()
                             .add(OvyMqConstants.CLIENT_OBJECT, client)
-                            .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.PRODUCER_SUBSCRIPTION);
+                            .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.PRODUCER_SUBSCRIPTION)
+                            .add(OvyMqConstants.MANAGERS, List.of(ManagerFactory.HEALTH_CHECK));
+
+
                     return sessionInitializerResolver.get()
-                            .flatMap(sessionInitializer -> sessionInitializer.createSessionAndConnect(client, sessionDefinition)
-                                    .map(sessionManager -> new StompOvyProducer(sessionManager, objectProviderFacade)));
+                            .flatMap(sessionInitializer -> sessionInitializer.createAndInitialize(client,
+                                            handlerDefinition,
+                                            new TypeReference<ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler>>() {
+                                            })
+                                    .map(StompOvyProducer::new));
                 }).orElseThrow(() -> new IllegalStateException("Error while creating OvyProducer not available"));
     }
 }

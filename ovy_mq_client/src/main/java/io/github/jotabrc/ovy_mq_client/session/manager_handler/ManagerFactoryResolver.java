@@ -2,7 +2,7 @@ package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
 import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.Manager;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,12 +17,15 @@ public class ManagerFactoryResolver {
 
     private final ObjectProviderFacade objectProviderFacade;
 
-    public List<ScheduledFuture<?>> initialize(Client client, SessionManager sessionManager, ManagerFactory... factories) {
+    public <T, U, V> List<ScheduledFuture<?>> initialize(ClientAdapter<T, U, V> clientAdapter, List<ManagerFactory> factories) {
         List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
+        Client client = clientAdapter.getClientHelper().getClient();
+
         for (ManagerFactory managerFactory : factories) {
-            Manager manager = managerFactory.getAndThen.create(objectProviderFacade, client, sessionManager);
+            Manager manager = managerFactory.getAndThen.create(objectProviderFacade, client, clientAdapter);
             scheduledFutures.add(manager.execute());
         }
+
         return scheduledFutures;
     }
 }

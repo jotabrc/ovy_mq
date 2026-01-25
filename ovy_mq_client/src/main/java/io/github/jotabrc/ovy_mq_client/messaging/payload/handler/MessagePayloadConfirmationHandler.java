@@ -2,7 +2,6 @@ package io.github.jotabrc.ovy_mq_client.messaging.payload.handler;
 
 import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.messaging.payload.handler.interfaces.PayloadConfirmationHandler;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.constants.Mapping;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
@@ -22,11 +21,10 @@ public class MessagePayloadConfirmationHandler implements PayloadConfirmationHan
     private final ClientMessageDispatcher clientMessageDispatcher;
 
     @Override
-    public void acknowledge(SessionManager session,
-                            Client client,
+    public void acknowledge(Client client,
                             MessagePayload payload) {
         OvyAction ovyAction = buildAction(payload);
-        clientMessageDispatcher.send(client, client.getTopic(), Mapping.SEND_COMMAND_TO_SERVER, ovyAction, session);
+        clientMessageDispatcher.send(client, Mapping.SEND_COMMAND_TO_SERVER, ovyAction);
         client.setIsMessageInteractionActive(false);
     }
 

@@ -8,28 +8,6 @@ logging:
 spring.application.shutdown: graceful
 spring.lifecycle.timeout-per-shutdown-phase: 600s
 
-# Global values
-ovymq.client.processing.timeout: 150000
-ovymq.client.processing.max-retries: 3
-
-ovymq.task.shutdown.wait-delay: 1000
-ovymq.task.shutdown.max-wait: 180000
-
-ovymq.task.listener-poll.initial-delay: 10000
-ovymq.task.listener-poll.fixed-delay: 35000
-
-ovymq.task.health-check.initial.delay: 10000
-ovymq.task.health-check.fixed-delay: 60000
-ovymq.task.health-check.expiration-time: 120000
-
-ovymq.session-manager.connection.max-retries: 50
-ovymq.session-manager.connection.timeout: 10000
-
-ovymq.config-client.timeout: 150000
-ovymq.config-client.initial-delay: 10000
-ovymq.config-client.fixed-delay: 35000
-
-
 spring:
   application.name: OVY_Mq_client
   config:

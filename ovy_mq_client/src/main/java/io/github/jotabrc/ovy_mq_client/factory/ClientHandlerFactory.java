@@ -1,0 +1,30 @@
+package io.github.jotabrc.ovy_mq_client.factory;
+
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler.StompClientSessionHandler;
+import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+
+@RequiredArgsConstructor
+@Component
+public class ClientHandlerFactory {
+
+    private final ObjectProvider<ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler>> clientAdapterProvider;
+
+    public ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> buildHandlerForStomp(Client client, DefinitionMap definition) {
+        var clientAdapter = clientAdapterProvider.getObject();
+        clientAdapter.getClientHelper().setClient(client);
+        clientAdapter.getClientHelper().setSubscriptions(definition.extractToList(OvyMqConstants.SUBSCRIPTIONS, String.class));
+        clientAdapter.getClientInitializer().setClientAdapter(clientAdapter);
+        clientAdapter.getClientSession().setClientAdapter(clientAdapter);
+        clientAdapter.getClientMessageSender().setClientAdapter(clientAdapter);
+        clientAdapter.getClientState().setClientAdapter(clientAdapter);
+        return clientAdapter;
+    }
+}

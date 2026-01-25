@@ -2,7 +2,6 @@ package io.github.jotabrc.ovy_mq_client.facade;
 
 import io.github.jotabrc.ovy_mq_client.messaging.payload.PayloadConfirmationHandlerDispatcher;
 import io.github.jotabrc.ovy_mq_client.messaging.payload.PayloadHandlerDispatcher;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -19,7 +18,7 @@ public class DispatcherFacade {
         payloadHandlerDispatcher.execute(client, payload, headers);
     }
 
-    public void acknowledgePayload(SessionManager sessionManager, Client client, Object payload) {
-        payloadConfirmationHandlerDispatcher.execute(sessionManager, client, payload);
+    public void acknowledgePayload(Client client, Object payload) {
+        payloadConfirmationHandlerDispatcher.execute(client, payload);
     }
 }

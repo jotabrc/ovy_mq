@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
 import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler.StompClientSessionHandler;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
@@ -9,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketHttpHeaders;
 
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,7 +25,7 @@ import static io.github.jotabrc.ovy_mq_core.constants.Mapping.SEND_COMMAND_TO_SE
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ListenerPollManager extends AbstractManager {
+public class StompListenerPollManager extends AbstractManager<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> {
 
     private final ClientMessageDispatcher clientMessageDispatcher;
     private final ScheduledExecutorService scheduledExecutor;
@@ -38,7 +41,7 @@ public class ListenerPollManager extends AbstractManager {
                     if (client.getIsAvailable()) {
                         log.info("Requesting message: client={} topic={}", this.client.getId(), this.client.getTopic());
                         OvyAction ovyAction = buildAction();
-                        clientMessageDispatcher.send(this.client, this.client.getTopic(), SEND_COMMAND_TO_SERVER, ovyAction);
+                        clientMessageDispatcher.send(this.clientAdapter, SEND_COMMAND_TO_SERVER, ovyAction);
                     }
                 }, ValueUtil.get(this.client.getPollInitialDelay(), this.initialDelay, this.client.useGlobalValues()),
                 ValueUtil.get(this.client.getPollFixedDelay(), this.fixedDelay, this.client.useGlobalValues()),

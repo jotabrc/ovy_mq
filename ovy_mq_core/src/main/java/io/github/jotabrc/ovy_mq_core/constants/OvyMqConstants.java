@@ -18,6 +18,7 @@ public class OvyMqConstants {
     // Factory
     public static final String CLIENT_OBJECT = "client-object";
     public static final String SUBSCRIPTIONS = "client-subscriptions";
+    public static final String MANAGERS = "client-managers";
     public static final String CLIENT_METHOD = "client-method";
     public static final String CLIENT_BEAN_NAME = "client-bean-name";
     public static final String CLIENT_IS_AVAILABLE = "client-is-available";

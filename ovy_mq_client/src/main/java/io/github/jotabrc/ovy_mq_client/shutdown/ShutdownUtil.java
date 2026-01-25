@@ -1,8 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.shutdown;
 
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionConnection;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.SessionManager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientHelper;
 import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,27 +23,27 @@ public class ShutdownUtil {
     protected Long maxWait;
 
     @Async
-    public void stopThis(SessionManager sessionManager) {
-
-        log.info("Executing graceful shutdown: client={}", sessionManager.getClientId());
+    public <T, U, V> void stopThis(ClientAdapter<T, U, V> clientAdapter) {
+        ClientHelper<T> clientHelper = clientAdapter.getClientHelper();;
+        log.info("Executing graceful shutdown: client={}", clientHelper.getClientId());
         final long startTime = System.currentTimeMillis();
-        SessionConnection sessionConnection = (SessionConnection) sessionManager;
+        ClientState<T, U, V> clientState = clientAdapter.getClientState();
 
         Callable<Boolean> callable = () -> {
             try {
-                if (sessionConnection.destroy(false)) {
-                    log.info("Graceful shutdown completed: client={}", sessionManager.getClientId());
+                if (clientState.destroy(false)) {
+                    log.info("Graceful shutdown completed: client={}", clientHelper.getClientId());
                     return true;
                 }
                 if (isMaxWaitExceeded(startTime)) {
-                    log.info("Waiting graceful shutdown time exceeded {} ms: client={}", maxWait, sessionManager.getClientId());
-                    sessionConnection.destroy(true);
+                    log.info("Waiting graceful shutdown time exceeded {} ms: client={}", maxWait, clientHelper.getClientId());
+                    clientState.destroy(true);
                     return false;
                 }
-                log.info("Waiting clients to shutdown elapsed-time={} sec: client={}", elapsedTime(startTime) / 1000, sessionManager.getClientId());
+                log.info("Waiting clients to shutdown elapsed-time={} sec: client={}", elapsedTime(startTime) / 1000, clientHelper.getClientId());
                 Thread.sleep(waitDelay);
             } catch (InterruptedException e) {
-                log.error("Error while executing graceful shutdown: client={}", sessionManager.getClientId(), e);
+                log.error("Error while executing graceful shutdown: client={}", clientHelper.getClientId(), e);
             }
             return false;
         };
@@ -53,7 +54,7 @@ public class ShutdownUtil {
                 isDone = callable.call();
             } catch (Exception e) {
                 log.error("Error executing graceful shutdown");
-                sessionConnection.destroy(true);
+                clientState.destroy(true);
             }
         }
     }
