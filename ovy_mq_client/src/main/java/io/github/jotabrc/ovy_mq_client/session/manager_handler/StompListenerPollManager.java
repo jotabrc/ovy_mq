@@ -34,9 +34,9 @@ public class StompListenerPollManager implements Manager<StompSession, WebSocket
     private final ClientMessageDispatcher clientMessageDispatcher;
     private final ScheduledExecutorService scheduledExecutor;
 
-    @Value("${ovymq.task.listener-poll.initial-delay:10000}")
+    @Value("${ovymq.task.listener-poll.initial-delay:5000}")
     private Long initialDelay;
-    @Value("${ovymq.task.listener-poll.fixed-delay:35000}")
+    @Value("${ovymq.task.listener-poll.fixed-delay:5000}")
     private Long fixedDelay;
 
     @Override

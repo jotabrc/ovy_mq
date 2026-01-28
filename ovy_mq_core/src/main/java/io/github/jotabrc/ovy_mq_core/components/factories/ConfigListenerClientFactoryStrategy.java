@@ -15,7 +15,7 @@ public class ConfigListenerClientFactoryStrategy implements ClientFactoryStrateg
     public Client create(DefinitionMap definition) {
         return Client.builder()
                 .id(definition.extractOrGet(OvyMqConstants.CLIENT_ID, UUID.randomUUID().toString()))
-                .topic(definition.extract(OvyMqConstants.SUBSCRIBED_TOPIC, String.class))
+                .topic(ClientType.CONFIGURER.name() + OvyMqConstants.ROLE_SERVER)
                 .type(definition.extract(OvyMqConstants.CLIENT_TYPE, ClientType.class))
                 .build();
     }

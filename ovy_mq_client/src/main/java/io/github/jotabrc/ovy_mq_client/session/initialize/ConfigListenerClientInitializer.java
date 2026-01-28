@@ -39,8 +39,7 @@ public class ConfigListenerClientInitializer implements ApplicationRunner {
 
     private void initialize() {
         DefinitionMap definition = definitionProvider.getObject()
-                .add(OvyMqConstants.CLIENT_TYPE, ClientType.CONFIGURER)
-                .add(OvyMqConstants.SUBSCRIBED_TOPIC, OvyMqConstants.ROLE_SERVER);
+                .add(OvyMqConstants.CLIENT_TYPE, ClientType.CONFIGURER);
         factoryResolver.create(definition, Client.class)
                 .ifPresent(client -> {
                     DefinitionMap sessionDefinition = definitionProvider.getObject()

@@ -49,13 +49,7 @@ public class StompClientInitializer implements ClientInitializer<StompSession, W
         sessionTimeoutManagerResolver.get(SessionType.STOMP)
                 .ifPresent(sessionTimeoutManager -> {
                     this.clientHelper.setConnectionFuture(new CompletableFuture<>());
-                    sessionTimeoutManager.execute(clientHelper.getClient(), clientState, clientHelper, clientSession)
-                            .whenComplete((sessionManager, throwable) -> {
-                                if (nonNull(sessionManager) && this.clientState.isConnected() && isNull(throwable))
-                                    log.info("Session initialized: client={} topic={}", this.clientHelper.getClient().getId(), this.clientHelper.getClient().getTopic());
-                                else
-                                    log.info("Session failed to initialize: client={} topic={}", this.clientHelper.getClient().getId(), this.clientHelper.getClient().getTopic());
-                            });
+                    sessionTimeoutManager.execute(clientHelper.getClient(), clientState, clientHelper, clientSession);
                 });
         return this.clientHelper.getConnectionFuture();
     }
