@@ -15,16 +15,30 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 @Component
 public class ClientHandlerFactory {
 
-    private final ObjectProvider<ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler>> clientAdapterProvider;
+    private final ObjectProvider<ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler>> stompClientAdapterProvider;
 
     public ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> buildHandlerForStomp(Client client, DefinitionMap definition) {
-        var clientAdapter = clientAdapterProvider.getObject();
-        clientAdapter.getClientHelper().setClient(client);
-        clientAdapter.getClientHelper().setSubscriptions(definition.extractToList(OvyMqConstants.SUBSCRIPTIONS, String.class));
-        clientAdapter.getClientInitializer().setClientAdapter(clientAdapter);
-        clientAdapter.getClientSession().setClientAdapter(clientAdapter);
-        clientAdapter.getClientMessageSender().setClientAdapter(clientAdapter);
-        clientAdapter.getClientState().setClientAdapter(clientAdapter);
+        var clientAdapter = stompClientAdapterProvider.getObject();
+
+        var clientHelper = clientAdapter.getClientHelper();
+        var clientInitializer = clientAdapter.getClientInitializer();
+        var clientState = clientAdapter.getClientState();
+        var clientMessageSender = clientAdapter.getClientMessageSender();
+        var clientSession = clientAdapter.getClientSession();
+
+        clientInitializer.setClientHelper(clientHelper);
+        clientInitializer.setClientState(clientState);
+        clientInitializer.setClientSession(clientSession);
+
+        clientState.setClientHelper(clientHelper);
+
+        clientMessageSender.setClientHelper(clientHelper);
+        clientMessageSender.setClientState(clientState);
+
+        clientSession.setClientHelper(clientHelper);
+
+        clientHelper.setClient(client);
+        clientHelper.setSubscriptions(definition.extractToList(OvyMqConstants.SUBSCRIPTIONS, String.class));
         return clientAdapter;
     }
 }

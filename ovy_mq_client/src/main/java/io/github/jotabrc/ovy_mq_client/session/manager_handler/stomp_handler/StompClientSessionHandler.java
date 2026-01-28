@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler;
 
 import io.github.jotabrc.ovy_mq_client.facade.DispatcherFacade;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientHelper;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientSession;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
@@ -30,7 +30,7 @@ import static java.util.Objects.nonNull;
 public class StompClientSessionHandler extends StompSessionHandlerAdapter implements ClientSession<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> {
 
     private final DispatcherFacade dispatcherFacade;
-    private ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter;
+    private ClientHelper<StompSession> clientHelper;
 
     @Override
     public Type getPayloadType(StompHeaders headers) {
@@ -44,24 +44,24 @@ public class StompClientSessionHandler extends StompSessionHandlerAdapter implem
 
     @Override
     public void handleFrame(StompHeaders headers, Object object) {
-        dispatcherFacade.acknowledgePayload(this.clientAdapter.getClientHelper().getClient(), object);
-        dispatcherFacade.handlePayload(this.clientAdapter.getClientHelper().getClient(), object, headers);
+        dispatcherFacade.acknowledgePayload(this.clientHelper.getClient(), object);
+        dispatcherFacade.handlePayload(this.clientHelper.getClient(), object, headers);
     }
 
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-        this.clientAdapter.getClientHelper().setSession(session);
+        this.clientHelper.setSession(session);
 
         this.subscribe();
-        if (nonNull(this.clientAdapter.getClientHelper().getConnectionFuture())
-                && !this.clientAdapter.getClientHelper().getConnectionFuture().isDone()) {
-            this.clientAdapter.getClientHelper().getConnectionFuture().complete(clientAdapter.getClientHelper());
+        if (nonNull(this.clientHelper.getConnectionFuture())
+                && !this.clientHelper.getConnectionFuture().isDone()) {
+            this.clientHelper.getConnectionFuture().complete(clientHelper);
         }
     }
 
     private void subscribe() {
-        this.clientAdapter.getClientHelper().getSubscriptions()
-                .forEach(destination -> this.clientAdapter.getClientHelper().getSession().subscribe(destination, this));
+        this.clientHelper.getSubscriptions()
+                .forEach(destination -> this.clientHelper.getSession().subscribe(destination, this));
     }
 
     @Override
@@ -75,7 +75,8 @@ public class StompClientSessionHandler extends StompSessionHandlerAdapter implem
     }
 
     @Override
-    public void setClientAdapter(ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter) {
-        if (isNull(this.clientAdapter)) this.clientAdapter = clientAdapter;
+    public void setClientHelper(ClientHelper<StompSession> clientHelper) {
+        if (isNull(this.clientHelper) && nonNull(clientHelper))
+            this.clientHelper = clientHelper;
     }
 }

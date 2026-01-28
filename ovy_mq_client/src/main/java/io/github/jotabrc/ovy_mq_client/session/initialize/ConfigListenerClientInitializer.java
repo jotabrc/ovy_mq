@@ -46,7 +46,7 @@ public class ConfigListenerClientInitializer implements ApplicationRunner {
                     DefinitionMap sessionDefinition = definitionProvider.getObject()
                             .add(OvyMqConstants.CLIENT_OBJECT, client)
                             .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.CONFIGURER_SUBSCRIPTION)
-                            .add(OvyMqConstants.MANAGERS, List.of(ManagerFactory.HEALTH_CHECK));
+                            .add(OvyMqConstants.MANAGERS, List.of(ManagerFactory.STOMP_HEALTH_CHECK));
                     sessionInitializerResolver.get()
                             .ifPresent(sessionInitializer -> sessionInitializer.createAndInitialize(client, sessionDefinition, new TypeReference<ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler>>() {
                             }));

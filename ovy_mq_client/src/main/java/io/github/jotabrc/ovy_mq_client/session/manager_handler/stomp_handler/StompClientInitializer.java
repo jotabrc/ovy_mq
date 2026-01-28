@@ -2,9 +2,10 @@ package io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler;
 
 import io.github.jotabrc.ovy_mq_client.session.SessionTimeoutManagerResolver;
 import io.github.jotabrc.ovy_mq_client.session.SessionType;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientHelper;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientInitializer;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientSession;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactory;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.ManagerFactoryResolver;
 import lombok.RequiredArgsConstructor;
@@ -31,34 +32,49 @@ public class StompClientInitializer implements ClientInitializer<StompSession, W
 
     private final ManagerFactoryResolver managerFactoryResolver;
     private final SessionTimeoutManagerResolver sessionTimeoutManagerResolver;
-    private ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter;
+    private ClientHelper<StompSession> clientHelper;
+    private ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientState;
+    private ClientSession<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientSession;
 
     @Override
     public List<ScheduledFuture<?>> initializeManagers(List<ManagerFactory> factories) {
-        if (nonNull(this.clientAdapter.getClientHelper().getClient())) {
-            return new ArrayList<>(managerFactoryResolver.initialize(this.clientAdapter, factories));
+        if (nonNull(this.clientHelper.getClient())) {
+            return new ArrayList<>(managerFactoryResolver.initialize(this, clientState, clientHelper.getClient(), factories));
         } else throw new IllegalStateException("Cannot initialize any manager's with null Client");
     }
 
     @Override
-    public CompletableFuture<ClientHelper<?>> initializeSession() {
-        log.info("Initializing-clientHelper client={}", this.clientAdapter.getClientHelper().getClient().getId());
+    public CompletableFuture<ClientHelper<StompSession>> initializeSession() {
+        log.info("Initializing-clientHelper client={}", this.clientHelper.getClient().getId());
         sessionTimeoutManagerResolver.get(SessionType.STOMP)
                 .ifPresent(sessionTimeoutManager -> {
-                    this.clientAdapter.getClientHelper().setConnectionFuture(new CompletableFuture<>());
-                    sessionTimeoutManager.execute(this.clientAdapter)
+                    this.clientHelper.setConnectionFuture(new CompletableFuture<>());
+                    sessionTimeoutManager.execute(clientHelper.getClient(), clientState, clientHelper, clientSession)
                             .whenComplete((sessionManager, throwable) -> {
-                                if (nonNull(sessionManager) && this.clientAdapter.getClientState().isConnected() && isNull(throwable))
-                                    log.info("Session initialized: client={} topic={}", this.clientAdapter.getClientHelper().getClient().getId(), this.clientAdapter.getClientHelper().getClient().getTopic());
+                                if (nonNull(sessionManager) && this.clientState.isConnected() && isNull(throwable))
+                                    log.info("Session initialized: client={} topic={}", this.clientHelper.getClient().getId(), this.clientHelper.getClient().getTopic());
                                 else
-                                    log.info("Session failed to initialize: client={} topic={}", this.clientAdapter.getClientHelper().getClient().getId(), this.clientAdapter.getClientHelper().getClient().getTopic());
+                                    log.info("Session failed to initialize: client={} topic={}", this.clientHelper.getClient().getId(), this.clientHelper.getClient().getTopic());
                             });
                 });
-        return this.clientAdapter.getClientHelper().getConnectionFuture();
+        return this.clientHelper.getConnectionFuture();
     }
 
     @Override
-    public void setClientAdapter(ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter) {
-        if (isNull(this.clientAdapter)) this.clientAdapter = clientAdapter;
+    public void setClientHelper(ClientHelper<StompSession> clientHelper) {
+        if (isNull(this.clientHelper) && nonNull(clientHelper))
+            this.clientHelper = clientHelper;
+    }
+
+    @Override
+    public void setClientState(ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientState) {
+        if (isNull(this.clientState) && nonNull(clientState))
+            this.clientState = clientState;
+    }
+
+    @Override
+    public void setClientSession(ClientSession<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientSession) {
+        if (isNull(this.clientSession) && nonNull(clientSession))
+            this.clientSession = clientSession;
     }
 }

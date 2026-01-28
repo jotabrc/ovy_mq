@@ -74,7 +74,7 @@ public class ListenerDiscovery implements BeanPostProcessor {
         DefinitionMap definition = objectProviderFacade.getDefinitionMap()
                 .add(OvyMqConstants.CLIENT_OBJECT, client)
                 .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.CONSUMER_SUBSCRIPTION.apply(client.getTopic()))
-                .add(OvyMqConstants.MANAGERS, List.of(ManagerFactory.HEALTH_CHECK, ManagerFactory.LISTENER_POLL));
+                .add(OvyMqConstants.MANAGERS, List.of(ManagerFactory.STOMP_HEALTH_CHECK, ManagerFactory.STOMP_LISTENER_POLL));
         sessionInitializerResolver.get()
                 .ifPresent(clientHandlerInitializer -> clientHandlerInitializer.createAndInitialize(client,
                         definition,

@@ -40,7 +40,7 @@ public class ProducerInitializerConfig {
                     DefinitionMap handlerDefinition = objectProviderFacade.getDefinitionMap()
                             .add(OvyMqConstants.CLIENT_OBJECT, client)
                             .add(OvyMqConstants.SUBSCRIPTIONS, Subscribe.PRODUCER_SUBSCRIPTION)
-                            .add(OvyMqConstants.MANAGERS, List.of(ManagerFactory.HEALTH_CHECK));
+                            .add(OvyMqConstants.MANAGERS, List.of(ManagerFactory.STOMP_HEALTH_CHECK));
 
 
                     return sessionInitializerResolver.get()

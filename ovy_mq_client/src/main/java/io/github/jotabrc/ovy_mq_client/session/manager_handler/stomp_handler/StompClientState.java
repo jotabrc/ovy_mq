@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler;
 
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientHelper;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import static java.util.Objects.nonNull;
 public class StompClientState implements ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> {
 
     private final WebSocketStompClient webSocketStompClient;
-    private ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter;
+    private ClientHelper<StompSession> clientHelper;
 
     @Override
     public CompletableFuture<StompSession> connect(String url, WebSocketHttpHeaders headers, StompClientSessionHandler sessionHandler) {
@@ -32,15 +32,15 @@ public class StompClientState implements ClientState<StompSession, WebSocketHttp
 
     @Override
     public boolean isConnected() {
-        return nonNull(this.clientAdapter.getClientHelper().getSession()) && this.clientAdapter.getClientHelper().getSession().isConnected();
+        return nonNull(this.clientHelper.getSession()) && this.clientHelper.getSession().isConnected();
     }
 
     @Override
     public boolean disconnect(boolean force) {
-        if ((nonNull(this.clientAdapter.getClientHelper().getSession()) && this.isConnected() && this.clientAdapter.getClientHelper().getClient().canDisconnect())
+        if ((nonNull(this.clientHelper.getSession()) && this.isConnected() && this.clientHelper.getClient().canDisconnect())
                 || force) {
-            this.clientAdapter.getClientHelper().getSession().disconnect();
-            if (this.clientAdapter.getClientHelper().getClient().getIsDestroying()) this.stop();
+            this.clientHelper.getSession().disconnect();
+            if (this.clientHelper.getClient().getIsDestroying()) this.stop();
             return true;
         }
         return false;
@@ -53,19 +53,20 @@ public class StompClientState implements ClientState<StompSession, WebSocketHttp
 
     @Override
     public boolean destroy(boolean force) {
-        if (!this.clientAdapter.getClientHelper().getScheduledFutures().isEmpty()) {
-            log.info("Destroying stompSession for client: {}. Cancelling {} scheduled tasks.", this.clientAdapter.getClientHelper().getClient().getId(), this.clientAdapter.getClientHelper().getScheduledFutures().size());
-            this.clientAdapter.getClientHelper().getClient().setIsDestroying(true);
-            this.clientAdapter.getClientHelper().getScheduledFutures().forEach(scheduledFuture -> {
+        if (!this.clientHelper.getScheduledFutures().isEmpty()) {
+            log.info("Destroying stompSession for client: {}. Cancelling {} scheduled tasks.", this.clientHelper.getClient().getId(), this.clientHelper.getScheduledFutures().size());
+            this.clientHelper.getClient().setIsDestroying(true);
+            this.clientHelper.getScheduledFutures().forEach(scheduledFuture -> {
                 if (!scheduledFuture.isDone() && !scheduledFuture.isCancelled()) scheduledFuture.cancel(true);
             });
-            this.clientAdapter.getClientHelper().getScheduledFutures().clear();
+            this.clientHelper.getScheduledFutures().clear();
         }
         return this.disconnect(force);
     }
 
     @Override
-    public void setClientAdapter(ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter) {
-        if (isNull(this.clientAdapter)) this.clientAdapter = clientAdapter;
+    public void setClientHelper(ClientHelper<StompSession> clientHelper) {
+        if (isNull(this.clientHelper) && nonNull(clientHelper))
+            this.clientHelper = clientHelper;
     }
 }

@@ -26,7 +26,7 @@ public class StompClientHelper implements ClientHelper<StompSession> {
     private Client client;
     private List<String> subscriptions;
     private StompSession session;
-    private CompletableFuture<ClientHelper<?>> connectionFuture;
+    private CompletableFuture<ClientHelper<StompSession>> connectionFuture;
     private List<ScheduledFuture<?>> scheduledFutures;
 
     @Override

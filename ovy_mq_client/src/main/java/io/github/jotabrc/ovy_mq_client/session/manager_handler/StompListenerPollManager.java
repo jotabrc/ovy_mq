@@ -1,9 +1,13 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
 import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.Manager;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientInitializer;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
 import io.github.jotabrc.ovy_mq_client.session.manager_handler.stomp_handler.StompClientSessionHandler;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
+import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.util.ValueUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +29,7 @@ import static io.github.jotabrc.ovy_mq_core.constants.Mapping.SEND_COMMAND_TO_SE
 @RequiredArgsConstructor
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class StompListenerPollManager extends AbstractManager<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> {
+public class StompListenerPollManager implements Manager<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> {
 
     private final ClientMessageDispatcher clientMessageDispatcher;
     private final ScheduledExecutorService scheduledExecutor;
@@ -36,23 +40,29 @@ public class StompListenerPollManager extends AbstractManager<StompSession, WebS
     private Long fixedDelay;
 
     @Override
-    public ScheduledFuture<?> execute() {
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(() -> {
+    public ScheduledFuture<?> execute(Client client,
+                                      ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientState,
+                                      ClientInitializer<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientInitializer) {
+        return scheduledExecutor.scheduleWithFixedDelay(() -> {
                     if (client.getIsAvailable()) {
-                        log.info("Requesting message: client={} topic={}", this.client.getId(), this.client.getTopic());
-                        OvyAction ovyAction = buildAction();
-                        clientMessageDispatcher.send(this.clientAdapter, SEND_COMMAND_TO_SERVER, ovyAction);
+                        log.info("Requesting message: client={} topic={}", client.getId(), client.getTopic());
+                        OvyAction ovyAction = buildAction(client);
+                        clientMessageDispatcher.send(client, SEND_COMMAND_TO_SERVER, ovyAction);
                     }
-                }, ValueUtil.get(this.client.getPollInitialDelay(), this.initialDelay, this.client.useGlobalValues()),
-                ValueUtil.get(this.client.getPollFixedDelay(), this.fixedDelay, this.client.useGlobalValues()),
+                }, ValueUtil.get(client.getPollInitialDelay(), initialDelay, client.useGlobalValues()),
+                ValueUtil.get(client.getPollFixedDelay(), fixedDelay, client.useGlobalValues()),
                 TimeUnit.MILLISECONDS);
-        return scheduledFuture;
     }
 
-    private OvyAction buildAction() {
+    private OvyAction buildAction(Client client) {
         return OvyAction.builder()
                 .commands(List.of(OvyCommand.REQUEST_MESSAGE_PAYLOAD))
-                .payload(this.client.getBasicClient())
+                .payload(client.getBasicClient())
                 .build();
+    }
+
+    @Override
+    public ManagerFactory factory() {
+        return ManagerFactory.STOMP_LISTENER_POLL;
     }
 }

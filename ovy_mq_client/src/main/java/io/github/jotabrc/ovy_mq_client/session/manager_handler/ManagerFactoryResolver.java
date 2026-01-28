@@ -1,29 +1,36 @@
 package io.github.jotabrc.ovy_mq_client.session.manager_handler;
 
-import io.github.jotabrc.ovy_mq_client.facade.ObjectProviderFacade;
 import io.github.jotabrc.ovy_mq_client.session.interfaces.Manager;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientInitializer;
+import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
-@RequiredArgsConstructor
 @Component
 public class ManagerFactoryResolver {
 
-    private final ObjectProviderFacade objectProviderFacade;
+    private final Map<ManagerFactory, Manager<?, ?, ?>> factories = new HashMap<>();
 
-    public <T, U, V> List<ScheduledFuture<?>> initialize(ClientAdapter<T, U, V> clientAdapter, List<ManagerFactory> factories) {
+    @Autowired
+    public ManagerFactoryResolver(List<Manager<?, ?, ?>> factories) {
+        factories.forEach(manager -> this.factories.putIfAbsent(manager.factory(), manager));
+    }
+
+    public <T, U, V> List<ScheduledFuture<?>> initialize(ClientInitializer<T, U, V> clientInitializer,
+                                                         ClientState<T, U, V> clientState,
+                                                         Client client,
+                                                         List<ManagerFactory> factories) {
         List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
-        Client client = clientAdapter.getClientHelper().getClient();
-
         for (ManagerFactory managerFactory : factories) {
-            Manager manager = managerFactory.getAndThen.create(objectProviderFacade, client, clientAdapter);
-            scheduledFutures.add(manager.execute());
+            Manager<T, U, V> manager = (Manager<T, U, V>) this.factories.get(managerFactory);
+            scheduledFutures.add(manager.execute(client, clientState, clientInitializer));
         }
 
         return scheduledFutures;

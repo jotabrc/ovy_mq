@@ -11,12 +11,12 @@ public interface ClientHelper<T> {
     Client getClient();
     List<String> getSubscriptions();
     T getSession();
-    CompletableFuture<ClientHelper<?>> getConnectionFuture();
+    CompletableFuture<ClientHelper<T>> getConnectionFuture();
     List<ScheduledFuture<?>> getScheduledFutures();
     String getClientId();
     void setClient(Client client);
     void setSubscriptions(List<String> subscriptions);
     void setSession(T t);
-    void setConnectionFuture(CompletableFuture<ClientHelper<?>> connectionFuture);
+    void setConnectionFuture(CompletableFuture<ClientHelper<T>> connectionFuture);
     void setScheduledFutures(List<ScheduledFuture<?>> scheduledFutures);
 }
