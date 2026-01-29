@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq_client.facade.DispatcherFacade;
 import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientHelper;
 import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientSession;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
-import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
+import io.github.jotabrc.ovy_mq_core.domain.client.listener_config.ListenerConfig;
 import io.github.jotabrc.ovy_mq_core.domain.payload.HealthStatus;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;

@@ -4,7 +4,7 @@ import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.ChainResolver;
 import io.github.jotabrc.ovy_mq_core.chain.BaseChain;
 import io.github.jotabrc.ovy_mq.security.filter.interfaces.SecurityFilter;
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import jakarta.servlet.FilterChain;

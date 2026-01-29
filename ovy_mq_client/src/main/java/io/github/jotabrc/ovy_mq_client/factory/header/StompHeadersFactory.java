@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.factory.header;
 
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.security.DefaultSecurityProvider;
 import lombok.RequiredArgsConstructor;

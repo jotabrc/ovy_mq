@@ -18,9 +18,4 @@ public class Mapping {
     public static final String WS_CONFIG = "/config";
 
     public static String SEND_COMMAND_TO_SERVER = WS_REQUEST + WS_CLIENT;
-
-    public static String CONFIRM_PAYLOAD_RECEIVED = WS_REQUEST + WS_MESSAGE + WS_CONFIRM;
-    public static String REQUEST_MESSAGE = WS_REQUEST + WS_MESSAGE;
-    public static String REQUEST_HEALTH_CHECK = WS_REQUEST + WS_HEALTH;
-    public static String SAVE_MESSAGE = WS_REQUEST + WS_SAVE;
 }

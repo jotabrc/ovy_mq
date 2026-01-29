@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.facade;
 
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.components.interfaces;
+package io.github.jotabrc.ovy_mq_core.components.util.interfaces;
 
 import java.io.Serializable;
 import java.util.List;

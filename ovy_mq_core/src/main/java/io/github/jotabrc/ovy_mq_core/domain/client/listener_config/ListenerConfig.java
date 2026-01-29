@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.domain.client;
+package io.github.jotabrc.ovy_mq_core.domain.client.listener_config;
 
 import lombok.*;
 

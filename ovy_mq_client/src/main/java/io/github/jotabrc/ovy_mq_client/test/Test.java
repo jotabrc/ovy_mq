@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.test;
 
-import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
+import io.github.jotabrc.ovy_mq_core.domain.client.annotation.OvyListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

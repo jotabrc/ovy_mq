@@ -218,7 +218,7 @@ To create a consumer, add the `ovy_mq_client` dependency to your application and
 
 **Consumer Example:**
 ```java
-import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
+import io.github.jotabrc.ovy_mq_core.domain.client.annotation.OvyListener;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -503,7 +503,7 @@ Para criar um consumidor, adicione a dependência `ovy_mq_client` à sua aplica�
 
 **Exemplo de Consumidor:**
 ```java
-import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
+import io.github.jotabrc.ovy_mq_core.domain.client.annotation.OvyListener;
 import org.springframework.stereotype.Component;
 
 @Component

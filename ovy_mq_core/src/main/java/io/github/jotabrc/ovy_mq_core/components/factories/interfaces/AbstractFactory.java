@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_core.components.factories.interfaces;
 
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 
 public interface AbstractFactory<R> {
 

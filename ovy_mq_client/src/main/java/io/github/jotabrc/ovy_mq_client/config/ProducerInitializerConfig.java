@@ -9,7 +9,7 @@ import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientAdapter;
 import io.github.jotabrc.ovy_mq_client.session.client.impl.manager_handler.ManagerFactory;
 import io.github.jotabrc.ovy_mq_client.session.client.impl.manager_handler.stomp_handler.StompClientSessionHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;

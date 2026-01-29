@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 
 @Configuration
-public class DefaultBeans {
+public class MappingConfig {
 
     @Bean
     public ObjectMapper objectMapper() {

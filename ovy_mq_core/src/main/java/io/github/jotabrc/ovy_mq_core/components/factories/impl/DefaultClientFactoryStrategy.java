@@ -1,8 +1,10 @@
 package io.github.jotabrc.ovy_mq_core.components.factories.impl;
 
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.*;
+import io.github.jotabrc.ovy_mq_core.domain.client.annotation.OvyListener;
+import io.github.jotabrc.ovy_mq_core.domain.client.listener_config.ListenerConfig;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;

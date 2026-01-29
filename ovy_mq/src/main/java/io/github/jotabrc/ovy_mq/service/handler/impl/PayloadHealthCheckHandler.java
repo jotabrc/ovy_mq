@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.service.handler.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.components.factories.AbstractFactoryResolver;
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.Mapping;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;

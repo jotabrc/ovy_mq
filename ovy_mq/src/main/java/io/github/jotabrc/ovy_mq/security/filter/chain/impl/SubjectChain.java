@@ -3,7 +3,7 @@ package io.github.jotabrc.ovy_mq.security.filter.chain.impl;
 import io.github.jotabrc.ovy_mq.registry.ClientConfigurerContextHolder;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.AbstractChain;
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;
 import io.github.jotabrc.ovy_mq_core.domain.client.ClientType;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;

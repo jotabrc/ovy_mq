@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_core.chain;
 
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 
 import static java.util.Objects.nonNull;
 

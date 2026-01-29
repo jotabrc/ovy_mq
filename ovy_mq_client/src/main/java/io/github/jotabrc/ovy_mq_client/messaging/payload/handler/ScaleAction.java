@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.messaging.payload.handler;
 
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
-import io.github.jotabrc.ovy_mq_core.domain.client.ListenerConfig;
+import io.github.jotabrc.ovy_mq_core.domain.client.listener_config.ListenerConfig;
 
 import java.util.List;
 

@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq_core.domain.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.jotabrc.ovy_mq_core.domain.client.listener_config.ListenerConfig;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
 import io.github.jotabrc.ovy_mq_core.util.TopicUtil;
 import lombok.*;

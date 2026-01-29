@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_core.components.factories;
 
 import io.github.jotabrc.ovy_mq_core.components.factories.interfaces.AbstractFactory;
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

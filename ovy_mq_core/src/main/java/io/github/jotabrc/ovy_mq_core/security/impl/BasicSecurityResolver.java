@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.security;
+package io.github.jotabrc.ovy_mq_core.security.impl;
 
 import io.github.jotabrc.ovy_mq_core.config.CredentialConfig;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;

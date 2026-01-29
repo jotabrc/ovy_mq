@@ -1,6 +1,6 @@
-package io.github.jotabrc.ovy_mq_core.components;
+package io.github.jotabrc.ovy_mq_core.components.util.impl;
 
-import io.github.jotabrc.ovy_mq_core.components.interfaces.DefinitionMap;
+import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

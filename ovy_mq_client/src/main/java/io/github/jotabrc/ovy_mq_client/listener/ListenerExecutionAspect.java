@@ -5,7 +5,7 @@ import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
-import io.github.jotabrc.ovy_mq_core.domain.client.OvyListener;
+import io.github.jotabrc.ovy_mq_core.domain.client.annotation.OvyListener;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
