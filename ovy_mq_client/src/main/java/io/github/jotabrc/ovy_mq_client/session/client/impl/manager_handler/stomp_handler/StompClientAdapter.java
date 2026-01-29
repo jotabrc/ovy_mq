@@ -1,7 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.session.client.impl.manager_handler.stomp_handler;
 
 import io.github.jotabrc.ovy_mq_client.session.client.interfaces.*;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.interfaces.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;

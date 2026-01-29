@@ -27,7 +27,8 @@ public class Client implements Serializable {
     private String topic;
     private ClientType type;
     private ListenerConfig config;
-    private ClientState state;
+    @Builder.Default
+    private ClientState state = ClientState.builder().build();
     @JsonIgnore
     private transient ClientExecution execution;
 

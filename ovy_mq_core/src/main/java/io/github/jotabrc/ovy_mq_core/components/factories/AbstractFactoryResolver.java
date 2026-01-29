@@ -27,10 +27,8 @@ public class AbstractFactoryResolver {
     }
 
     public <R> Optional<R> create(DefinitionMap definition, Class<R> returningType) {
-        AbstractFactory<?> factory = factories.get(returningType);
-
-        return Optional.ofNullable(factory)
-                .map(f -> ((AbstractFactory<R>) f).create(definition))
+        return Optional.ofNullable(factories.get(returningType))
+                .map(factory -> ((AbstractFactory<R>) factory).create(definition))
                 .stream()
                 .findFirst();
     }

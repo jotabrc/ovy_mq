@@ -2,9 +2,9 @@ package io.github.jotabrc.ovy_mq_client.session.client.impl.manager_handler.stom
 
 import io.github.jotabrc.ovy_mq_client.messaging.message.ClientMessageDispatcher;
 import io.github.jotabrc.ovy_mq_client.session.client.impl.manager_handler.ManagerFactory;
-import io.github.jotabrc.ovy_mq_client.session.client.interfaces.Manager;
 import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientInitializer;
 import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientState;
+import io.github.jotabrc.ovy_mq_client.session.client.interfaces.Manager;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
@@ -44,7 +44,7 @@ public class StompListenerPollManager implements Manager<StompSession, WebSocket
                                       ClientState<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientState,
                                       ClientInitializer<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientInitializer) {
         return scheduledExecutor.scheduleWithFixedDelay(() -> {
-                    if (client.getState().getAvailable()) {
+                    if (client.getState().getAvailable().get()) {
                         log.info("Requesting message: client={} topic={}", client.getId(), client.getTopic());
                         OvyAction ovyAction = buildAction(client);
                         clientMessageDispatcher.send(client, SEND_COMMAND_TO_SERVER, ovyAction);

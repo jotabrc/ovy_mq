@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.components.factories.impl;
+package io.github.jotabrc.ovy_mq_core.components.factories.impl.strategy;
 
 import io.github.jotabrc.ovy_mq_core.components.util.interfaces.DefinitionMap;
 import io.github.jotabrc.ovy_mq_core.constants.OvyMqConstants;

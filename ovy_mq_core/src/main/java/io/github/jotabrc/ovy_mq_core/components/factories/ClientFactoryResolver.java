@@ -24,13 +24,8 @@ public class ClientFactoryResolver {
     }
 
     public Client create(DefinitionMap definition) {
-        Optional<ClientFactoryStrategy> strategy = get(definition.extract(OvyMqConstants.CLIENT_TYPE, ClientType.class));
-        return strategy
+        return Optional.ofNullable(strategies.get(definition.extract(OvyMqConstants.CLIENT_TYPE, ClientType.class)))
                 .map(clientFactoryStrategy -> clientFactoryStrategy.create(definition))
                 .orElseThrow(() -> new OvyException.ConfigurationError("Unable to create factory for=%s".formatted(definition.extract(OvyMqConstants.CLIENT_TYPE, ClientType.class))));
-    }
-
-    private Optional<ClientFactoryStrategy> get(ClientType clientType) {
-        return Optional.ofNullable(strategies.get(clientType));
     }
 }
