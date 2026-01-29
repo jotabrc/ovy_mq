@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.repository;
+package io.github.jotabrc.ovy_mq.repository.interfaces;
 
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 

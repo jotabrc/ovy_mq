@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.service.handler;
+package io.github.jotabrc.ovy_mq.service.handler.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jotabrc.ovy_mq.registry.ClientConfigurerContextHolder;

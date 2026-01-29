@@ -1,5 +1,6 @@
-package io.github.jotabrc.ovy_mq.repository;
+package io.github.jotabrc.ovy_mq.repository.impl;
 
+import io.github.jotabrc.ovy_mq.repository.interfaces.MessageRepository;
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq.security.filter;
+package io.github.jotabrc.ovy_mq.security.filter.impl;
 
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
 import io.github.jotabrc.ovy_mq_core.chain.ChainResolver;

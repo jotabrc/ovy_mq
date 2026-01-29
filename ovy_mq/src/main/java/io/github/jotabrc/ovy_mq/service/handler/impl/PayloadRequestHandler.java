@@ -1,7 +1,7 @@
-package io.github.jotabrc.ovy_mq.service.handler;
+package io.github.jotabrc.ovy_mq.service.handler.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.jotabrc.ovy_mq.repository.MessageRepository;
+import io.github.jotabrc.ovy_mq.repository.interfaces.MessageRepository;
 import io.github.jotabrc.ovy_mq.security.handler.AuthHandlerResolver;
 import io.github.jotabrc.ovy_mq.service.handler.interfaces.PayloadHandler;
 import io.github.jotabrc.ovy_mq_core.chain.ChainType;
