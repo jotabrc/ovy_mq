@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -25,24 +24,11 @@ public class Client implements Serializable {
 
     private String id;
     private String topic;
-
-    private String beanName;
-    private Method method;
-
     private ClientType type;
     private ListenerConfig config;
-
-    @Builder.Default
-    private OffsetDateTime lastHealthCheck = OffsetDateTime.now();
-    @Builder.Default
-    private OffsetDateTime lastExecution = OffsetDateTime.now();
-
-    @Builder.Default
-    private Boolean isAvailable = true;
-    @Builder.Default
-    private Boolean isMessageInteractionActive = false;
-    @Builder.Default
-    private Boolean isDestroying = false;
+    private ClientState state;
+    @JsonIgnore
+    private transient ClientExecution execution;
 
     @JsonIgnore
     public String getTopicForAwaitingProcessingQueue() {
@@ -51,21 +37,32 @@ public class Client implements Serializable {
 
     @JsonIgnore
     public void setLastHealthCheck(OffsetDateTime lastHealthCheck) {
-        synchronized (this) {
-            this.lastHealthCheck = lastHealthCheck;
-        }
+        this.state.getLastHealthCheck().set(lastHealthCheck);
+    }
+
+    @JsonIgnore
+    public void setLastExecution(OffsetDateTime lastExecution) {
+        this.state.getLastExecution().set(lastExecution);
     }
 
     @JsonIgnore
     public void setAvailable(Boolean available) {
-        synchronized (this) {
-            isAvailable = available;
-        }
+        this.state.getAvailable().set(available);
+    }
+
+    @JsonIgnore
+    public void setMessageInteractionActive(Boolean messageInteractionActive) {
+        this.state.getMessageInteractionActive().set(messageInteractionActive);
+    }
+
+    @JsonIgnore
+    public void setDestroying(Boolean destroying) {
+        this.state.getDestroying().set(destroying);
     }
 
     @JsonIgnore
     public boolean canDisconnect() {
-        return this.isAvailable && !this.isMessageInteractionActive;
+        return this.state.getAvailable().get() && !this.state.getMessageInteractionActive().get();
     }
 
     @JsonIgnore

@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.config;
 
-import io.github.jotabrc.ovy_mq_client.session.SessionType;
+import io.github.jotabrc.ovy_mq_client.session.client.impl.SessionType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 

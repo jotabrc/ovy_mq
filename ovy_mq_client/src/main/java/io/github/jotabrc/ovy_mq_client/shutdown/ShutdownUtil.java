@@ -1,9 +1,9 @@
 package io.github.jotabrc.ovy_mq_client.shutdown;
 
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientHelper;
+import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientHelper;
 import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientState;
+import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

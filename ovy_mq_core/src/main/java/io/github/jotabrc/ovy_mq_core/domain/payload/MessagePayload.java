@@ -8,6 +8,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Builder
@@ -25,6 +26,7 @@ public class MessagePayload implements Serializable {
 
     private String id;
     private Object payload;
+    private String payloadType;
     private String topic;
     @Builder.Default
     private MessageStatus messageStatus = MessageStatus.AWAITING_PROCESSING;
@@ -79,5 +81,11 @@ public class MessagePayload implements Serializable {
     @JsonIgnore
     public long getMsSinceStartedProcessing() {
         return this.processingStartedAt.toEpochSecond() - OffsetDateTime.now().toEpochSecond();
+    }
+
+    public void setPayload(Object payload) {
+        if (isNull(payload)) throw new IllegalArgumentException("Payload nulo");
+        this.payload = payload;
+        this.payloadType = payload.getClass().getName();
     }
 }

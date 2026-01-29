@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Builder
@@ -21,11 +22,16 @@ public class OvyAction implements Serializable {
     private static final long serialVersionUID = 1L;
     private List<OvyCommand> commands;
     private Object payload;
+    private String payloadType;
+
+    public void setPayload(Object payload) {
+        if (isNull(payload)) throw new IllegalArgumentException("Payload nulo");
+        this.payload = payload;
+        this.payloadType = payload.getClass().getName();
+    }
 
     public <R> R getPayloadAs(Class<R> type, ObjectMapper objectMapper) {
-        return nonNull(this.payload)
-                ? objectMapper.convertValue(this.payload, type)
-                : null;
+        return objectMapper.convertValue(this.payload, type);
     }
 
     public List<OvyCommand> getCommands() {

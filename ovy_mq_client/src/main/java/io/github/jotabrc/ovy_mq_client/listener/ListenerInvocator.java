@@ -8,6 +8,8 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -18,14 +20,15 @@ public class ListenerInvocator {
 
     public void invoke(Client client, Object payload) {
         try {
-            client.setIsAvailable(false);
+            client.setAvailable(false);
             listenerExecutionContextHolder.setThreadLocal(client);
-            Object bean = applicationContext.getBean(client.getBeanName());
-            AopUtils.invokeJoinpointUsingReflection(bean, client.getMethod(), new Object[]{payload});
+            Object bean = applicationContext.getBean(client.getExecution().getBeanName());
+            AopUtils.invokeJoinpointUsingReflection(bean, client.getExecution().getMethod(), new Object[]{payload});
         } catch (Throwable e) {
             throw new OvyException.ListenerExecution("Error while invoking listener: client=%s topic=%s".formatted(client.getId(), client.getTopic()));
         } finally {
-            client.setIsAvailable(true);
+            client.setAvailable(true);
+            client.setLastExecution(OffsetDateTime.now());
             listenerExecutionContextHolder.clear();
         }
     }

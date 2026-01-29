@@ -1,7 +1,7 @@
 package io.github.jotabrc.ovy_mq_client.messaging.message;
 
 import io.github.jotabrc.ovy_mq_client.registry.SessionRegistry;
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientAdapter;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;

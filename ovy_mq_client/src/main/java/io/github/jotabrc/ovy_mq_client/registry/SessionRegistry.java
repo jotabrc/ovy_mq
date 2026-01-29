@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq_client.registry;
 
-import io.github.jotabrc.ovy_mq_client.session.interfaces.client.ClientAdapter;
+import io.github.jotabrc.ovy_mq_client.session.client.interfaces.ClientAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

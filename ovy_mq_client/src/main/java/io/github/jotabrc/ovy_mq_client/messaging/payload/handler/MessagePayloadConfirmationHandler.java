@@ -25,7 +25,7 @@ public class MessagePayloadConfirmationHandler implements PayloadConfirmationHan
                             MessagePayload payload) {
         OvyAction ovyAction = buildAction(payload);
         clientMessageDispatcher.send(client, Mapping.SEND_COMMAND_TO_SERVER, ovyAction);
-        client.setIsMessageInteractionActive(false);
+        client.setMessageInteractionActive(false);
     }
 
     private OvyAction buildAction(MessagePayload payload) {

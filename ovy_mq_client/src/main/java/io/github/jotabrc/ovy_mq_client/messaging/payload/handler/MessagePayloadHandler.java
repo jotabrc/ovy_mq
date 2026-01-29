@@ -59,14 +59,14 @@ public class MessagePayloadHandler implements PayloadHandler<MessagePayload> {
 
     private void execute(MessagePayload messagePayload, Client client) {
         try {
-            client.setIsAvailable(false);
+            client.setAvailable(false);
             listenerExecutionContextHolder.setThreadLocal(client);
-            log.info("Executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getBeanName(), client.getMethod().getName());
+            log.info("Executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getExecution().getBeanName(), client.getExecution().getMethod().getName());
             listenerInvocator.invoke(client, messagePayload.getPayload());
         } catch (Throwable e) {
-            log.warn("Error while executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getBeanName(), client.getMethod().getName(), e);
-            client.setIsAvailable(true);
-            throw new OvyException.ListenerInvocationExecution("Error while executing client=%s: message=%s topic=%s class=%s method=%s".formatted(client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getBeanName(), client.getMethod().getName()));
+            log.warn("Error while executing client={}: message={} topic={} class={} method={}", client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getExecution().getBeanName(), client.getExecution().getMethod().getName(), e);
+            client.setAvailable(true);
+            throw new OvyException.ListenerInvocationExecution("Error while executing client=%s: message=%s topic=%s class=%s method=%s".formatted(client.getId(), messagePayload.getId(), messagePayload.getTopicKey(), client.getExecution().getBeanName(), client.getExecution().getMethod().getName()));
         }
     }
 

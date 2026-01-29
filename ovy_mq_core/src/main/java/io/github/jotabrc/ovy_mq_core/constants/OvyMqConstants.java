@@ -41,8 +41,9 @@ public class OvyMqConstants {
 
     // Roles
     public static final String ROLE_CONSUMER = "ovy-consumer";
-    public static final String ROLE_SERVER = "-NO-TOPIC-ovy-server";
+    public static final String ROLE_SERVER = "ovy-server";
     public static final String ROLE_CONFIGURER = "ovy-configurer";
+    public static final String ROLE_PRODUCER = "ovy-producer";
     public static final String ROLE_OVY = "ovy-ovy";
 
     // ListenerConfigHandler Lock key

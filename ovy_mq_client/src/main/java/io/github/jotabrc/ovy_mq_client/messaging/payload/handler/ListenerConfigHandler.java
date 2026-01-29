@@ -13,11 +13,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class ListenerConfigHandler implements PayloadHandler<ListenerConfig> {
 
-    private final Scale scaleComponent;
+    private final ScaleAction scaleActionComponent;
 
     @Override
     public void handle(Client client, ListenerConfig payload, StompHeaders headers) {
-        scaleComponent.scale(payload);
+        scaleActionComponent.scale(payload);
     }
 
     @Override

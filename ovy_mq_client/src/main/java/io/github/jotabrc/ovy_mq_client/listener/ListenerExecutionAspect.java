@@ -99,9 +99,9 @@ public class ListenerExecutionAspect {
     }
 
     private void executeWhenDone(Client client) {
-        if (nonNull(client)) client.setIsAvailable(true);
-        if (!client.getIsDestroying()) {
-            client.setIsMessageInteractionActive(true);
+        if (nonNull(client)) client.setAvailable(true);
+        if (!client.getState().getDestroying().get()) {
+            client.setMessageInteractionActive(true);
             OvyAction ovyAction = buildAction(client);
             clientMessageDispatcher.send(client, SEND_COMMAND_TO_SERVER, ovyAction);
         }

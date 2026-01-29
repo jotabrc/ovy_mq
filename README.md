@@ -92,7 +92,7 @@ The diagram below represents the simplified general flow of the system, highligh
 *   **Discovery**: Scans and automatically registers methods annotated with `@OvyListener`.
 *   **Lifecycle**: Manages the creation and maintenance of consumers.
 *   **Scaling**: Executes *Scale Up* and *Scale Down* operations in response to configurations received from the server.
-*   **Consumption**: Continuously polls for messages for each active consumer from the server.
+*   **Consumo**: Continuously polls for messages for each active consumer from the server.
 
 ```mermaid
 graph TD
@@ -307,23 +307,24 @@ The application offers a high degree of customization through parameters in the 
 | `ovymq.client.processing.max-retries` | `3` | Maximum number of reprocessing attempts in case of failure. |
 | `ovymq.client.processing.exponential-timer` | `1000` | Base delay (ms) for the progressive backoff between retries. |
 | `ovymq.client.processing.timeout` | `150000` | **Global default:** Message processing timeout (ms). |
-| `ovymq.task.shutdown.wait-delay` | `1000` | Client's wait interval (ms) during graceful shutdown. |
+| `ovymq.task.shutdown.wait-delay` | `10000` | Client's wait interval (ms) during graceful shutdown. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Client's maximum wait time (ms) during graceful shutdown. |
 | `ovymq.session-manager.session-type.stomp-enabled` | `true` | Enables the STOMP session type. |
-| `ovymq.session-manager.connection.timeout` | `150000` | **Global default:** Connection timeout (ms). |
+| `ovymq.session-manager.connection.timeout` | `1000` | **Global default:** Connection timeout (ms). |
 | `ovymq.session-manager.connection.max-retries`| `10` | **Global default:** Maximum reconnection attempts. |
 | `ovymq.task.health-check.initial.delay` | `10000` | **Global default:** Initial delay (ms) for health check. |
 | `ovymq.task.health-check.fixed-delay` | `60000` | **Global default:** Health check interval (ms). |
 | `ovymq.task.health-check.expiration-time` | `120000` | **Global default:** Health check expiration time (ms). |
-| `ovymq.task.listener-poll.initial-delay` | `10000` | **Global default:** Initial delay (ms) for `poll`. |
-| `ovymq.task.listener-poll.fixed-delay` | `35000` | **Global default:** `poll` interval (ms). |
-| `ovymq.executor.client-task.core-pool-size` | `1` | Threads for client's scheduled tasks. |
-| `ovymq.executor.listener.core-pool-size` | `3` | Threads for listener execution (`@OvyListener`). |
-| `ovymq.executor.listener-task.max-pool-size` | `10` | Maximum threads for listeners. |
-| `ovymq.executor.listener-task.queue-capacity`| `25` | Queue size for listener tasks. |
-| `ovymq.executor.producer.core-pool-size` | `1` | Threads for message sending. |
-| `ovymq.executor.producer-task.max-pool-size` | `1` | Maximum threads for message sending. |
-| `ovymq.executor.producer-task.queue-capacity` | `25` | Queue size for message sending tasks. |
+| `ovymq.task.listener-poll.initial-delay` | `5000` | **Global default:** Initial delay (ms) for `poll`. |
+| `ovymq.task.listener-poll.fixed-delay` | `5000` | **Global default:** `poll` interval (ms). |
+| `ovy.executor.client-task.core-pool-size` | `5` | Threads for client's scheduled tasks. |
+| `ovy.executor.client-task.shutdown.core-pool-size` | `3` | Threads for client's shutdown tasks. |
+| `ovy.executor.listener.core-pool-size` | `5` | Threads for listener execution (`@OvyListener`). |
+| `ovy.executor.listener-task.max-pool-size` | `25` | Maximum threads for listeners. |
+| `ovy.executor.listener-task.queue-capacity`| `1000` | Queue size for listener tasks. |
+| `ovy.executor.producer.core-pool-size` | `5` | Threads for message sending. |
+| `ovy.executor.producer-task.max-pool-size` | `25` | Maximum threads for message sending. |
+| `ovy.executor.producer-task.queue-capacity` | `1000` | Queue size for message sending tasks. |
 
 ### Contributing
 
@@ -591,23 +592,24 @@ A aplicação oferece um alto grau de personalização através de parâmetros n
 | `ovymq.client.processing.max-retries` | `3` | Número máximo de tentativas de reprocessamento em caso de falha. |
 | `ovymq.client.processing.exponential-timer` | `1000` | Atraso base (ms) para o backoff progressivo entre as retentativas. |
 | `ovymq.client.processing.timeout` | `150000` | **Padrão global:** Timeout (ms) para processamento de mensagem. |
-| `ovymq.task.shutdown.wait-delay` | `1000` | Intervalo (ms) de espera durante o *graceful shutdown* do cliente. |
+| `ovymq.task.shutdown.wait-delay` | `10000` | Intervalo (ms) de espera durante o *graceful shutdown* do cliente. |
 | `ovymq.task.shutdown.max-wait` | `180000` | Tempo máximo (ms) de espera no *graceful shutdown* do cliente. |
 | `ovymq.session-manager.session-type.stomp-enabled` | `true` | Habilita o tipo de sessão STOMP. |
-| `ovymq.session-manager.connection.timeout` | `150000` | **Padrão global:** Timeout (ms) para conexão. |
+| `ovymq.session-manager.connection.timeout` | `1000` | **Padrão global:** Timeout (ms) para conexão. |
 | `ovymq.session-manager.connection.max-retries`| `10` | **Padrão global:** Máximo de tentativas de reconexão. |
 | `ovymq.task.health-check.initial.delay` | `10000` | **Padrão global:** Atraso inicial (ms) para *health check*. |
 | `ovymq.task.health-check.fixed-delay` | `60000` | **Padrão global:** Intervalo (ms) dos *health checks*. |
 | `ovymq.task.health-check.expiration-time` | `120000` | **Padrão global:** Tempo (ms) de expiração do *health check*. |
-| `ovymq.task.listener-poll.initial-delay` | `10000` | **Padrão global:** Atraso inicial (ms) para `poll`. |
-| `ovymq.task.listener-poll.fixed-delay` | `35000` | **Padrão global:** Intervalo (ms) do `poll`. |
-| `ovymq.executor.client-task.core-pool-size` | `1` | Threads para tarefas agendadas do cliente. |
-| `ovymq.executor.listener.core-pool-size` | `3` | Threads para execução dos listeners (`@OvyListener`). |
-| `ovymq.executor.listener-task.max-pool-size` | `10` | Máximo de threads para os listeners. |
-| `ovymq.executor.listener-task.queue-capacity`| `25` | Tamanho da fila para tarefas dos listeners. |
-| `ovymq.executor.producer.core-pool-size` | `1` | Threads para envio de mensagens. |
-| `ovymq.executor.producer-task.max-pool-size` | `1` | Máximo de threads para envio de mensagens. |
-| `ovymq.executor.producer-task.queue-capacity` | `25` | Tamanho da fila para envio de mensagens. |
+| `ovymq.task.listener-poll.initial-delay` | `5000` | **Padrão global:** Atraso inicial (ms) para `poll`. |
+| `ovymq.task.listener-poll.fixed-delay` | `5000` | **Padrão global:** Intervalo (ms) do `poll`. |
+| `ovy.executor.client-task.core-pool-size` | `5` | Threads para tarefas agendadas do cliente. |
+| `ovy.executor.client-task.shutdown.core-pool-size` | `3` | Threads para tarefas de shutdown do cliente. |
+| `ovy.executor.listener.core-pool-size` | `5` | Threads para execução dos listeners (`@OvyListener`). |
+| `ovy.executor.listener-task.max-pool-size` | `25` | Máximo de threads para os listeners. |
+| `ovy.executor.listener-task.queue-capacity`| `1000` | Tamanho da fila para tarefas dos listeners. |
+| `ovy.executor.producer.core-pool-size` | `5` | Threads para envio de mensagens. |
+| `ovy.executor.producer-task.max-pool-size` | `25` | Máximo de threads para envio de mensagens. |
+| `ovy.executor.producer-task.queue-capacity` | `1000` | Tamanho da fila para envio de mensagens. |
 
 ### Como Contribuir
 
