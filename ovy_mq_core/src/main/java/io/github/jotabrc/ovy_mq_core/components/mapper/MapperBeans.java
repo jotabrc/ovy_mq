@@ -1,4 +1,4 @@
-package io.github.jotabrc.ovy_mq_core.config;
+package io.github.jotabrc.ovy_mq_core.components.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 
 @Configuration
-public class MappingConfig {
+public class MapperBeans {
 
     @Bean
     public ObjectMapper objectMapper() {

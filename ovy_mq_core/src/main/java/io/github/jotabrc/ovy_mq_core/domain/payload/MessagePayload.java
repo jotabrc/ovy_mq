@@ -1,6 +1,10 @@
 package io.github.jotabrc.ovy_mq_core.domain.payload;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.github.jotabrc.ovy_mq_core.components.mapper.PayloadDeserializer;
+import io.github.jotabrc.ovy_mq_core.components.mapper.PayloadSerializer;
 import io.github.jotabrc.ovy_mq_core.util.TopicUtil;
 import lombok.*;
 
@@ -8,27 +12,26 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-@Builder
 @Setter
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class MessagePayload implements Serializable {
-
-    public MessagePayload() {
-        this.messageStatus = MessageStatus.AWAITING_PROCESSING;
-    }
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     private String id;
+
+    @JsonSerialize(using = PayloadSerializer.class)
+    @JsonDeserialize(using = PayloadDeserializer.class)
     private Object payload;
     private String payloadType;
+
     private String topic;
-    @Builder.Default
     private MessageStatus messageStatus = MessageStatus.AWAITING_PROCESSING;
     private OffsetDateTime createdDate;
     @JsonIgnore
@@ -84,8 +87,87 @@ public class MessagePayload implements Serializable {
     }
 
     public void setPayload(Object payload) {
-        if (isNull(payload)) throw new IllegalArgumentException("Payload nulo");
         this.payload = payload;
-        this.payloadType = payload.getClass().getName();
+        if (nonNull(payload)) {
+            this.payloadType = payload.getClass().getName();
+        }
+    }
+
+    private String payloadTypeFrom() {
+        return payload.getClass().getName();
+    }
+
+
+    private MessagePayload(Builder builder) {
+        this.id = builder.id;
+        this.payload = builder.payload;
+        this.topic = builder.topic;
+        this.messageStatus = builder.messageStatus;
+        this.createdDate = builder.createdDate;
+        this.processingStartedAt = builder.processingStartedAt;
+        this.success = builder.success;
+        this.version = builder.version;
+        if (nonNull(builder.payload)) {
+            this.payloadType = builder.payload.getClass().getName();
+        }
+    }
+
+    public static class Builder {
+        private String id;
+        private Object payload;
+        private String topic;
+        private MessageStatus messageStatus = MessageStatus.AWAITING_PROCESSING;
+        private OffsetDateTime createdDate;
+        private OffsetDateTime processingStartedAt;
+        private boolean success;
+        private Long version;
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder payload(Object payload) {
+            this.payload = payload;
+            return this;
+        }
+
+        public Builder topic(String topic) {
+            this.topic = topic;
+            return this;
+        }
+
+        public Builder messageStatus(MessageStatus messageStatus) {
+            this.messageStatus = messageStatus;
+            return this;
+        }
+
+        public Builder createdDate(OffsetDateTime createdDate) {
+            this.createdDate = createdDate;
+            return this;
+        }
+
+        public Builder processingStartedAt(OffsetDateTime processingStartedAt) {
+            this.processingStartedAt = processingStartedAt;
+            return this;
+        }
+
+        public Builder success(boolean success) {
+            this.success = success;
+            return this;
+        }
+
+        public Builder version(Long version) {
+            this.version = version;
+            return this;
+        }
+
+        public MessagePayload build() {
+            return new MessagePayload(this);
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 }
