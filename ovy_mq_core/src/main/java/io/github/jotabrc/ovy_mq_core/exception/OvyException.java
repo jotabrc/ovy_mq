@@ -53,4 +53,60 @@ public class OvyException extends RuntimeException {
             super(message);
         }
     }
+
+    public static class PartitionExtraction extends OvyException {
+
+        public PartitionExtraction(String message) {
+            super(message);
+        }
+    }
+
+    public static class WriteOperation extends OvyException {
+
+        public WriteOperation(String message, String exceptionMessage, String path) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+    }
+
+    public static class ReadOperation extends OvyException {
+
+        public ReadOperation(String message, String exceptionMessage, String path) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+    }
+
+    public static class ReplaceOperation extends OvyException {
+
+        public ReplaceOperation(String message, String exceptionMessage, String path) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+    }
+
+    public static class OffsetOperation extends OvyException {
+
+        public OffsetOperation(String message, String exceptionMessage, String path) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+    }
+
+    public static class FileCreation extends OvyException {
+
+        public FileCreation(String message, String exceptionMessage, String path) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+    }
+
+    public static class DirectoryCreation extends OvyException {
+
+        public DirectoryCreation(String message, String exceptionMessage, String path) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+    }
+
+    public static class FileDeletion extends OvyException {
+
+        public FileDeletion(String message, String exceptionMessage, String path) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+    }
 }

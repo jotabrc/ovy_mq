@@ -1,6 +1,6 @@
 package io.github.jotabrc.ovy_mq.shutdown;
 
-import io.github.jotabrc.ovy_mq.repository.interfaces.MessageRepository;
+import io.github.jotabrc.ovy_mq.queue.repository.interfaces.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,8 +1,10 @@
-package io.github.jotabrc.ovy_mq.repository.impl;
+package io.github.jotabrc.ovy_mq.queue.repository.impl;
 
-import io.github.jotabrc.ovy_mq.repository.interfaces.FileRepository;
-import io.github.jotabrc.ovy_mq.repository.interfaces.FileStorageManager;
-import io.github.jotabrc.ovy_mq.repository.interfaces.MessageRepository;
+import io.github.jotabrc.ovy_mq.queue.impl.PartitionManager;
+import io.github.jotabrc.ovy_mq.queue.interfaces.FileStorageManager;
+import io.github.jotabrc.ovy_mq.queue.repository.interfaces.FileRepository;
+import io.github.jotabrc.ovy_mq.queue.repository.interfaces.MessageRepository;
+import io.github.jotabrc.ovy_mq.queue.util.FilePath;
 import io.github.jotabrc.ovy_mq_core.domain.IndexData;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +24,18 @@ public class InFileRepository implements MessageRepository {
     private final FileStorageManager fileStorageManager;
     private final FileRepository fileRepository;
     private final MessageRepository queueInMemoryRepository;
+    private final PartitionManager partitionManager;
 
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
         log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopicKey());
-        return Optional.ofNullable(fileRepository.writeQueue(messagePayload, PathType.QUEUE_PATH.getPath()))
+        long partitionToUse = partitionManager.getPartitionToUse();
+        String pathWithPartition = FilePath.QUEUE_PATH.withPartition(partitionToUse);
+        return Optional.ofNullable(fileRepository.writeQueue(messagePayload, pathWithPartition))
                 .map(data -> {
-                    data = new IndexData(messagePayload.getId(), data.size(), fileStorageManager.getOffset(PathType.QUEUE_PATH.getPath()) + data.size(), messagePayload.getTopic(), data.storedAt());
-                    data = fileRepository.writeIndex(data, PathType.INDEX_PATH.getPath());
-                    fileStorageManager.updateOffset(data.size().longValue());
+                    data = new IndexData(messagePayload.getId(), data.size(), fileStorageManager.getOffset(partitionToUse) + data.size(), messagePayload.getTopic(), data.storedAt(), data.partitionNumber());
+                    data = fileRepository.writeIndex(data, FilePath.INDEX_PATH.withPartition(data.partitionNumber()));
+                    fileStorageManager.updateOffset(data.size().longValue(), partitionToUse);
                     return queueInMemoryRepository.saveToQueue(messagePayload);
                 })
                 .orElse(null);
@@ -39,8 +44,8 @@ public class InFileRepository implements MessageRepository {
     @Override
     public Optional<MessagePayload> pollFromQueue(String topic) {
         return queueInMemoryRepository.pollFromQueue(topic)
-                .or(() -> Optional.ofNullable(fileRepository.readIndexByTopicAndGetFirst(topic, PathType.INDEX_PATH.getPath()))
-                        .map(data -> fileRepository.readQueueAndGet(data, MessagePayload.class, PathType.QUEUE_PATH.getPath()))
+                .or(() -> Optional.ofNullable(fileRepository.readIndexByTopicAndGetFirst(topic, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
+                        .map(data -> fileRepository.readQueueAndGet(data, MessagePayload.class, FilePath.QUEUE_PATH.withPartition(data.partitionNumber())))
                         .or(Optional::empty));
     }
 
@@ -52,8 +57,8 @@ public class InFileRepository implements MessageRepository {
     @Override
     public void removeFromQueue(String topic, String messageId) {
         queueInMemoryRepository.removeFromQueue(topic, messageId);
-        Optional.ofNullable(fileRepository.readIndexByIdAndGetFirst(messageId, PathType.INDEX_PATH.getPath()))
-                .ifPresent(data -> fileRepository.writeIndex(data, PathType.INDEX_REMOVED_PATH.getPath()));
+        Optional.ofNullable(fileRepository.readIndexByIdAndGetFirst(messageId, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
+                .ifPresent(data -> fileRepository.writeIndex(data, FilePath.INDEX_REMOVED_PATH.getPath()));
     }
 
     @Override
