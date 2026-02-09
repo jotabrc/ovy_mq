@@ -17,6 +17,7 @@ public class FilePathHelper {
     public static final String QUEUE_FILE_EXTENSION = ".bin";
 
     public static final String INDEX_DIRECTORY = "/index";
+    public static final String INDEX_REMOVED_DIRECTORY = "/indexremoved";
     public static final String INDEX_FILE_NAME = "index";
     public static final String INDEX_REMOVED_FILE_NAME = "indexremoved";
     public static final String INDEX_FILE_EXTENSION = ".txt";

@@ -10,7 +10,7 @@ spring:
 ovymq:
   task:
     reaper:
-      active: true
+      active: false
       delay: 60000
 
 logging:

@@ -5,6 +5,7 @@ import io.github.jotabrc.ovy_mq.queue.interfaces.FileStorageManager;
 import io.github.jotabrc.ovy_mq.queue.repository.interfaces.FileRepository;
 import io.github.jotabrc.ovy_mq.queue.repository.interfaces.MessageRepository;
 import io.github.jotabrc.ovy_mq.queue.util.FilePath;
+import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.IndexData;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,20 +28,26 @@ public class InFileRepository implements MessageRepository {
     private final FileRepository fileRepository;
     private final MessageRepository queueInMemoryRepository;
     private final PartitionManager partitionManager;
+    private final LockProcessor lockProcessor;
+
+    // todo poll messages to memory queue when empty
 
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
         log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopicKey());
         long partitionToUse = partitionManager.getPartitionToUse();
-        String pathWithPartition = FilePath.QUEUE_PATH.withPartition(partitionToUse);
-        return Optional.ofNullable(fileRepository.writeQueue(messagePayload, pathWithPartition))
-                .map(data -> {
-                    data = new IndexData(messagePayload.getId(), data.size(), fileStorageManager.getOffset(partitionToUse) + data.size(), messagePayload.getTopic(), data.storedAt(), data.partitionNumber());
-                    data = fileRepository.writeIndex(data, FilePath.INDEX_PATH.withPartition(data.partitionNumber()));
-                    fileStorageManager.updateOffset(data.size().longValue(), partitionToUse);
-                    return queueInMemoryRepository.saveToQueue(messagePayload);
-                })
-                .orElse(null);
+        Callable<MessagePayload> callable = () -> {
+            String pathWithPartition = FilePath.QUEUE_PATH.withPartition(partitionToUse);
+            return Optional.ofNullable(fileRepository.writeQueue(messagePayload, pathWithPartition))
+                    .map(data -> {
+                        data = new IndexData(messagePayload.getId(), data.size(), fileStorageManager.getOffset(partitionToUse) + data.size(), messagePayload.getTopic(), data.storedAt(), data.partitionNumber());
+                        data = fileRepository.writeIndex(data, FilePath.INDEX_PATH.withPartition(data.partitionNumber()));
+                        fileStorageManager.updateOffset(data.size().longValue(), partitionToUse);
+                        return queueInMemoryRepository.saveToQueue(messagePayload);
+                    })
+                    .orElse(null);
+        };
+        return lockProcessor.getReentrantLockAndExecute(callable, partitionToUse);
     }
 
     @Override
@@ -51,19 +60,20 @@ public class InFileRepository implements MessageRepository {
 
     @Override
     public List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms) {
-        return queueInMemoryRepository.getMessagesByLastUsedDateGreaterThen(ms);
+        log.info("In file repository - get messages by last used date greater then -> is disabled");
+        return Collections.emptyList();
     }
 
     @Override
     public void removeFromQueue(String topic, String messageId) {
         queueInMemoryRepository.removeFromQueue(topic, messageId);
         Optional.ofNullable(fileRepository.readIndexByIdAndGetFirst(messageId, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
-                .ifPresent(data -> fileRepository.writeIndex(data, FilePath.INDEX_REMOVED_PATH.getPath()));
+                .ifPresent(data -> lockProcessor.getReentrantLockAndExecute(() -> fileRepository.writeIndex(data, FilePath.INDEX_REMOVED_PATH.withPartition(data.partitionNumber())), data.partitionNumber()));
     }
 
     @Override
     public void removeAndRequeue(MessagePayload messagePayload) {
-        queueInMemoryRepository.removeAndRequeue(messagePayload);
+        log.info("In file repository - remove and requeue -> is disabled");
     }
 
     @Override

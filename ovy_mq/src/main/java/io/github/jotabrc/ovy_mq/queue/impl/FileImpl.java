@@ -118,7 +118,7 @@ public class FileImpl implements FileRepository {
     @Override
     public IndexData writeIndex(IndexData data, String path) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path, true))) {
-            writer.write(data.id() + "," + data.size() + "," + data.offset() + "," + data.topic() + "," + data.storedAt());
+            writer.write(data.id() + "," + data.size() + "," + data.offset() + "," + data.topic() + "," + data.storedAt() + "," + data.partitionNumber());
             writer.newLine();
             return data;
         } catch (IOException e) {
@@ -179,14 +179,15 @@ public class FileImpl implements FileRepository {
         try {
             if (nonNull(line = reader.readLine())) {
                 String[] values = line.split(",");
-                if (Objects.equals(4, values.length)) {
+                if (Objects.equals(5, values.length)) {
                     String id = values[0];
                     if (isRemoved(id, path)) return null;
                     Integer size = Integer.parseInt(values[1]);
                     Long offset = Long.parseLong(values[2]);
                     String topic = values[3];
                     OffsetDateTime storedAt = OffsetDateTime.parse(values[4]);
-                    return new IndexData(id, size, offset, topic, storedAt, filePathHelper.extractPartition(path));
+                    Long partitionNumber = Long.parseLong(values[5]);
+                    return new IndexData(id, size, offset, topic, storedAt, partitionNumber);
                 }
             }
         } catch (IOException e) {

@@ -17,7 +17,7 @@ public class ProducerTest implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Thread.sleep(60000);
+        Thread.sleep(10000);
         execute();
     }
 

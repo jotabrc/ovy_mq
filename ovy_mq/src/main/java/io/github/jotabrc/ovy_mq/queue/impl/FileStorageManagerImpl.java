@@ -32,8 +32,7 @@ public class FileStorageManagerImpl implements FileStorageManager {
     private final FileRepository fileRepository;
     private final FilePathHelper filePathHelper;
     private final PartitionManager partitionManager;
-    private Map<Long, Long> offsets = new HashMap<>();
-    private Long currentOffset;
+    private final Map<Long, Long> offsets = new HashMap<>();
 
     /*
     TODO
@@ -51,13 +50,12 @@ public class FileStorageManagerImpl implements FileStorageManager {
         partitionManager.initialize()
                 .stream()
                 .peek(path -> offsets.put(filePathHelper.extractPartition(path), 0L))
-                .map(fileRepository::filePath)
                 .forEach(this::rebuild);
     }
 
     @Override
-    public void rebuild(Path filePath) {
-        long partition = filePathHelper.extractPartition(filePath.toString());
+    public void rebuild(String filePath) {
+        long partition = filePathHelper.extractPartition(filePath);
 
         String indexPath = filePathHelper.createPath(FilePath.INDEX_PATH, partition);
         String indexTempPath = filePathHelper.createPath(FilePath.INDEX_PATH_TMP, partition);

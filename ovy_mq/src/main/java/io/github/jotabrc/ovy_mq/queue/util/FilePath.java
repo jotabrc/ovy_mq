@@ -31,7 +31,7 @@ public enum FilePath {
             FilePathHelper.INDEX_FILE_EXTENSION),
 
     INDEX_REMOVED_PATH(FilePathHelper.FILE_STORAGE_DIRECTORY +
-            FilePathHelper.INDEX_DIRECTORY +
+            FilePathHelper.INDEX_REMOVED_DIRECTORY +
             "/" +
             FilePathHelper.INDEX_REMOVED_FILE_NAME +
             FilePathHelper.PARTITION_PREFIX_DELIMITER +

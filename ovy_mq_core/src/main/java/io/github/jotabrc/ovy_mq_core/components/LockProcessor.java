@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.Objects.isNull;
 
@@ -16,6 +17,7 @@ import static java.util.Objects.isNull;
 public class LockProcessor {
 
     private final Map<String, ThreadLock> locks = new ConcurrentHashMap<>();
+    private final Map<Long, ReentrantLock> partitionLock = new ConcurrentHashMap<>();
 
     public <T> T getLockAndExecute(Callable<T> callable, String topic, String messageId, String clientId) {
         ThreadLock lock = getLock(topic, messageId, clientId);
@@ -25,6 +27,19 @@ public class LockProcessor {
     public <T> T getLockAndExecute(Callable<T> callable, String key) {
         ThreadLock lock = getLock(key);
         return acquireLockAndExecute(callable, key, lock);
+    }
+
+    public <T> T getReentrantLockAndExecute(Callable<T> callable, Long partition) {
+        Objects.requireNonNull(partition, "Partition number");
+        ReentrantLock lock = partitionLock.computeIfAbsent(partition, k -> new ReentrantLock(true));
+        lock.lock();
+        try {
+            return callable.call();
+        } catch (Exception e) {
+            throw new IllegalStateException("Error executing lock with partition-key=%s: %s".formatted(partition, e.getMessage()), e);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private <T> T acquireLockAndExecute(Callable<T> callable, String key, ThreadLock lock) {

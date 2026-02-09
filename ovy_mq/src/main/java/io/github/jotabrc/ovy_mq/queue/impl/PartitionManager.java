@@ -37,12 +37,10 @@ public class PartitionManager {
     }
 
     public long getPartitionToUse() {
-        long position = partitionToUse.get();
-        if (Objects.equals(partitionsQuantity, position)) partitionToUse.set(0);
-        if (position > partitionsQuantity) {
-            position = 0L;
-            partitionToUse.set(0);
-        }
+        long position = partitionToUse.getAndIncrement();
+        if (Objects.equals(partitionsQuantity, partitionToUse.get())) partitionToUse.set(0);
+        else if (partitionToUse.get() > partitionsQuantity) partitionToUse.set(0);
+        if (position > partitionsQuantity) position = 0L;
         return position;
     }
 }
