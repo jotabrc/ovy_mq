@@ -18,9 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.Objects.isNull;
@@ -47,7 +45,7 @@ public class FileStorageManagerImpl implements FileStorageManager {
 
     @Override
     public void initialize() {
-        partitionManager.initialize()
+        partitionManager.getPartitionsFor(FilePath.INDEX_PATH)
                 .stream()
                 .peek(path -> offsets.put(filePathHelper.extractPartition(path), 0L))
                 .forEach(this::rebuild);
@@ -69,26 +67,35 @@ public class FileStorageManagerImpl implements FileStorageManager {
         Path tempIndex = fileRepository.createFile(indexTempPath);
         Path tempQueue = fileRepository.createFile(queueTempPath);
 
-        // todo:1 evaluate if readNextLine check for removed is sufficient and remove removedIds logic
-//        Set<String> removedIds = fileRepository.readIndexAndGetAllIds(fileRepository.getIndexReader(indexRemovedPath), indexRemovedPath);
-
         AtomicLong newOffset = new AtomicLong(0);
+
+        /*
+        TODO:
+            rebuild performance
+         */
+
+        Set<String> idsToRemove = new HashSet<>();
+        try (BufferedReader reader = fileRepository.getIndexReader(indexRemovedPath)) {
+             idsToRemove.addAll(fileRepository.readIndexAndGetAllIds(reader, indexRemovedPath));
+        } catch (IOException e) {
+            throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), indexPath);
+        }
 
         try (BufferedReader indexReader = fileRepository.getIndexReader(indexPath)) {
             while (true) {
-                IndexData data = fileRepository.readIndexNextLine(indexReader, indexPath);
+                boolean checkMessagesRemoved = false;
+                IndexData data = fileRepository.readIndexNextLine(indexReader, indexPath, checkMessagesRemoved);
                 if (isNull(data)) break;
-
-//                if (removedIds.contains(data.id())) continue;// see todo:1
+                else if (idsToRemove.contains(data.id())) continue;
 
                 MessagePayload payload = fileRepository.readQueueAndGet(data, MessagePayload.class, queuePath);
                 if (isNull(payload)) continue;
 
                 Optional.ofNullable(fileRepository.writeQueue(payload, queueTempPath))
                         .ifPresent(writtenData -> {
-                            newOffset.getAndAdd(writtenData.size());
                             writtenData = new IndexData(payload.getId(), writtenData.size(), newOffset.get(), payload.getTopic(), writtenData.storedAt(), data.partitionNumber());
                             fileRepository.writeIndex(writtenData, indexTempPath);
+                            newOffset.getAndAdd(writtenData.size());
                         });
             }
         } catch (IOException e) {
@@ -121,8 +128,8 @@ public class FileStorageManagerImpl implements FileStorageManager {
     }
 
     @Override
-    public Long updateOffset(Long size, Long partition) {
-        return this.offsets.put(partition, this.offsets.get(partition) + size);
+    public Long updateOffset(Long offset, Long partition) {
+        return this.offsets.put(partition, offset);
     }
 
     @Override

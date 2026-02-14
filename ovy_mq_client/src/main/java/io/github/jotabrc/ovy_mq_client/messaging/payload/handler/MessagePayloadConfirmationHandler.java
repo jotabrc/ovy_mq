@@ -7,6 +7,7 @@ import io.github.jotabrc.ovy_mq_core.domain.action.OvyAction;
 import io.github.jotabrc.ovy_mq_core.domain.action.OvyCommand;
 import io.github.jotabrc.ovy_mq_core.domain.client.Client;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,7 @@ public class MessagePayloadConfirmationHandler implements PayloadConfirmationHan
     private OvyAction buildAction(MessagePayload payload) {
         return OvyAction.builder()
                 .commands(List.of(OvyCommand.REMOVE_MESSAGE_PAYLOAD))
-                .payload(payload.cleanDataAndUpdateSuccessTo(true))
+                .payload(payload.cleanDataAndReturnWithStatus(MessageStatus.PROCESSED))
                 .build();
     }
 

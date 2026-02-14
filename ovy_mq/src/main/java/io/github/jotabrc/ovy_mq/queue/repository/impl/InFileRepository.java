@@ -26,24 +26,28 @@ public class InFileRepository implements MessageRepository {
 
     private final FileStorageManager fileStorageManager;
     private final FileRepository fileRepository;
-    private final MessageRepository queueInMemoryRepository;
     private final PartitionManager partitionManager;
     private final LockProcessor lockProcessor;
 
-    // todo poll messages to memory queue when empty
+    /*
+    TODO:
+        memory queue with file
+        awaiting confirmation calculation
+     */
 
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
         log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopicKey());
         long partitionToUse = partitionManager.getPartitionToUse();
         Callable<MessagePayload> callable = () -> {
+            long currentOffset = fileStorageManager.getOffset(partitionToUse);
             String pathWithPartition = FilePath.QUEUE_PATH.withPartition(partitionToUse);
             return Optional.ofNullable(fileRepository.writeQueue(messagePayload, pathWithPartition))
                     .map(data -> {
-                        data = new IndexData(messagePayload.getId(), data.size(), fileStorageManager.getOffset(partitionToUse) + data.size(), messagePayload.getTopic(), data.storedAt(), data.partitionNumber());
+                        data = new IndexData(messagePayload.getId(), data.size(), currentOffset, messagePayload.getTopic(), data.storedAt(), data.partitionNumber());
                         data = fileRepository.writeIndex(data, FilePath.INDEX_PATH.withPartition(data.partitionNumber()));
-                        fileStorageManager.updateOffset(data.size().longValue(), partitionToUse);
-                        return queueInMemoryRepository.saveToQueue(messagePayload);
+                        fileStorageManager.updateOffset(currentOffset + data.size(), partitionToUse);
+                        return messagePayload;
                     })
                     .orElse(null);
         };
@@ -52,10 +56,9 @@ public class InFileRepository implements MessageRepository {
 
     @Override
     public Optional<MessagePayload> pollFromQueue(String topic) {
-        return queueInMemoryRepository.pollFromQueue(topic)
-                .or(() -> Optional.ofNullable(fileRepository.readIndexByTopicAndGetFirst(topic, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
-                        .map(data -> fileRepository.readQueueAndGet(data, MessagePayload.class, FilePath.QUEUE_PATH.withPartition(data.partitionNumber())))
-                        .or(Optional::empty));
+        return Optional.ofNullable(fileRepository.readIndexByTopicAndGetFirst(topic, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
+                .map(data -> fileRepository.readQueueAndGet(data, MessagePayload.class, FilePath.QUEUE_PATH.withPartition(data.partitionNumber())))
+                .or(Optional::empty);
     }
 
     @Override
@@ -66,7 +69,6 @@ public class InFileRepository implements MessageRepository {
 
     @Override
     public void removeFromQueue(String topic, String messageId) {
-        queueInMemoryRepository.removeFromQueue(topic, messageId);
         Optional.ofNullable(fileRepository.readIndexByIdAndGetFirst(messageId, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
                 .ifPresent(data -> lockProcessor.getReentrantLockAndExecute(() -> fileRepository.writeIndex(data, FilePath.INDEX_REMOVED_PATH.withPartition(data.partitionNumber())), data.partitionNumber()));
     }
@@ -78,6 +80,6 @@ public class InFileRepository implements MessageRepository {
 
     @Override
     public Integer getAwaitingConfirmationQuantity() {
-        return queueInMemoryRepository.getAwaitingConfirmationQuantity();
+        return 0;
     }
 }

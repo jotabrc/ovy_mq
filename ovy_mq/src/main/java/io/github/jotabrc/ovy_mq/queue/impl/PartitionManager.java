@@ -1,6 +1,7 @@
 package io.github.jotabrc.ovy_mq.queue.impl;
 
 import io.github.jotabrc.ovy_mq.queue.util.FilePath;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,12 @@ public class PartitionManager {
     private final AtomicLong partitionToUse = new AtomicLong(0);
     private final Map<FilePath, Set<String>> partitions = new HashMap<>();
 
-    public Set<String> initialize() {
+    @PostConstruct
+    private void init() {
+        initialize();
+    }
+
+    public void initialize() {
         for (int i = 0; i < partitionsQuantity; i++) {
             final int partitionNumber = i;
             for (FilePath path : FilePath.getNonTempFilePath())
@@ -29,18 +35,20 @@ public class PartitionManager {
                     return set;
                 });
         }
-        return this.getPartitionsFor(FilePath.INDEX_PATH);
     }
 
-    public Set<String> getPartitionsFor(FilePath filePath) {
-        return new HashSet<>(partitions.get(filePath));
+    public List<String> getPartitionsFor(FilePath filePath) {
+        List<String> partitionsToShuffle = new ArrayList<>(partitions.get(filePath));
+        Collections.shuffle(partitionsToShuffle);
+        return partitionsToShuffle;
     }
 
     public long getPartitionToUse() {
-        long position = partitionToUse.getAndIncrement();
-        if (Objects.equals(partitionsQuantity, partitionToUse.get())) partitionToUse.set(0);
-        else if (partitionToUse.get() > partitionsQuantity) partitionToUse.set(0);
-        if (position > partitionsQuantity) position = 0L;
-        return position;
+        return partitionToUse.getAndUpdate(value -> {
+            long increment = value + 1;
+            return (increment >= partitionsQuantity)
+                    ? 0L
+                    : increment;
+        });
     }
 }

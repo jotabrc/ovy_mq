@@ -40,12 +40,12 @@ public class MessagePayload implements Serializable {
     private Long version;
 
     @JsonIgnore
-    public MessagePayload cleanDataAndUpdateSuccessTo(boolean success) {
-        return MessagePayload.builder()
-                .id(this.id)
-                .topic(this.topic)
-                .success(success)
-                .build();
+    public MessagePayload cleanDataAndReturnWithStatus(MessageStatus messageStatus) {
+            return MessagePayload.builder()
+                    .id(this.id)
+                    .topic(this.topic)
+                    .messageStatus(messageStatus)
+                    .build();
     }
 
     @JsonIgnore
@@ -61,9 +61,7 @@ public class MessagePayload implements Serializable {
 
     @JsonIgnore
     public String getTopicKey() {
-        return (success)
-                ? TopicUtil.createTopicKeyForSent(this.topic)
-                : TopicUtil.createTopicKey(this.topic, this.messageStatus);
+        return TopicUtil.createTopicKey(this.topic, this.messageStatus);
     }
 
     @JsonIgnore
@@ -105,7 +103,6 @@ public class MessagePayload implements Serializable {
         this.messageStatus = builder.messageStatus;
         this.createdDate = builder.createdDate;
         this.processingStartedAt = builder.processingStartedAt;
-        this.success = builder.success;
         this.version = builder.version;
         if (nonNull(builder.payload)) {
             this.payloadType = builder.payload.getClass().getName();
@@ -119,7 +116,6 @@ public class MessagePayload implements Serializable {
         private MessageStatus messageStatus = MessageStatus.AWAITING_PROCESSING;
         private OffsetDateTime createdDate;
         private OffsetDateTime processingStartedAt;
-        private boolean success;
         private Long version;
 
         public Builder id(String id) {
@@ -149,11 +145,6 @@ public class MessagePayload implements Serializable {
 
         public Builder processingStartedAt(OffsetDateTime processingStartedAt) {
             this.processingStartedAt = processingStartedAt;
-            return this;
-        }
-
-        public Builder success(boolean success) {
-            this.success = success;
             return this;
         }
 

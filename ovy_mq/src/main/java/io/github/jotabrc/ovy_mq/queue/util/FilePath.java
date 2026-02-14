@@ -55,7 +55,7 @@ public enum FilePath {
             FilePathHelper.PARTITION_PREFIX_DELIMITER +
             FilePathHelper.PARTITION_PLACEHOLDER +
             FilePathHelper.PARTITION_SUFIX_DELIMITER +
-            FilePathHelper.INDEX_FILE_EXTENSION),
+            FilePathHelper.TEMP_FILE_EXTENSION),
 
     INDEX_REMOVED_PATH_TMP(FilePathHelper.FILE_STORAGE_DIRECTORY +
             FilePathHelper.INDEX_DIRECTORY +
@@ -64,7 +64,8 @@ public enum FilePath {
             FilePathHelper.PARTITION_PREFIX_DELIMITER +
             FilePathHelper.PARTITION_PLACEHOLDER +
             FilePathHelper.PARTITION_SUFIX_DELIMITER +
-            FilePathHelper.TEMP_FILE_EXTENSION);
+            FilePathHelper.TEMP_FILE_EXTENSION
+    );
 
     private final String path;
 

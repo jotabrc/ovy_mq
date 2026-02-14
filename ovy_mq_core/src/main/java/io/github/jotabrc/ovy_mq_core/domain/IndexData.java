@@ -1,7 +1,13 @@
 package io.github.jotabrc.ovy_mq_core.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
+
 import java.time.OffsetDateTime;
 
+import static java.util.Objects.isNull;
+
+@Builder
 public record IndexData(String id, Integer size, Long offset, String topic, OffsetDateTime storedAt, Long partitionNumber) {
 
     @Override
@@ -15,5 +21,10 @@ public record IndexData(String id, Integer size, Long offset, String topic, Offs
     @Override
     public int hashCode() {
         return id.hashCode() * 31;
+    }
+
+    @JsonIgnore
+    public boolean isRemoved() {
+        return isNull(this.id);
     }
 }

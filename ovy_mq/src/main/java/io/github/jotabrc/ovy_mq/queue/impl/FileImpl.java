@@ -7,6 +7,7 @@ import io.github.jotabrc.ovy_mq.queue.util.FilePathHelper;
 import io.github.jotabrc.ovy_mq_core.domain.IndexData;
 import io.github.jotabrc.ovy_mq_core.exception.OvyException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +21,7 @@ import java.util.*;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+@Slf4j
 @RequiredArgsConstructor
 @Repository
 public class FileImpl implements FileRepository {
@@ -107,12 +109,17 @@ public class FileImpl implements FileRepository {
             reader.seek(data.offset());
             byte[] payload = new byte[data.size()];
             reader.readFully(payload);
-            return objectMapper.convertValue(payload, target);
+            log.info("Convertendo payload={}", new String(payload));
+            return objectMapper.readValue(payload, target);
         } catch (FileNotFoundException e) {
             throw new OvyException.ReadOperation("File not found", e.getMessage(), path);
         } catch (IOException e) {
-            throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
+            if (e instanceof EOFException)
+                log.info("Error while reading file={}: {}", path, e.getMessage(), e);
+            else
+                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path, e.getCause());
         }
+        return null;
     }
 
     @Override
@@ -127,7 +134,7 @@ public class FileImpl implements FileRepository {
     }
 
     @Override
-    public IndexData readIndexByIdAndGetFirst(String id, Set<String> paths) {
+    public IndexData readIndexByIdAndGetFirst(String id, List<String> paths) {
         for (String path : paths) {
             try (BufferedReader reader = getIndexReader(path)) {
                 IndexData data;
@@ -139,14 +146,17 @@ public class FileImpl implements FileRepository {
             } catch (FileNotFoundException e) {
                 throw new OvyException.ReadOperation("File not found", e.getMessage(), path);
             } catch (IOException e) {
-                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
+                if (e instanceof EOFException)
+                    log.info("Error while reading file={}: {}", path, e.getMessage(), e);
+                else
+                    throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
             }
         }
         return null;
     }
 
     @Override
-    public IndexData readIndexByTopicAndGetFirst(String topic, Set<String> paths) {
+    public IndexData readIndexByTopicAndGetFirst(String topic, List<String> paths) {
         for (String path : paths) {
             try (BufferedReader reader = getIndexReader(path)) {
                 IndexData data;
@@ -158,7 +168,10 @@ public class FileImpl implements FileRepository {
             } catch (FileNotFoundException e) {
                 throw new OvyException.ReadOperation("File not found", e.getMessage(), path);
             } catch (IOException e) {
-                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
+                if (e instanceof EOFException)
+                    log.info("Error while reading file={}: {}", path, e.getMessage(), e);
+                else
+                    throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
             }
         }
         return null;
@@ -179,9 +192,9 @@ public class FileImpl implements FileRepository {
         try {
             if (nonNull(line = reader.readLine())) {
                 String[] values = line.split(",");
-                if (Objects.equals(5, values.length)) {
+                if (Objects.equals(6, values.length)) {
                     String id = values[0];
-                    if (isRemoved(id, path)) return null;
+                    if (isRemoved(id, path, true)) return IndexData.builder().build();
                     Integer size = Integer.parseInt(values[1]);
                     Long offset = Long.parseLong(values[2]);
                     String topic = values[3];
@@ -191,7 +204,36 @@ public class FileImpl implements FileRepository {
                 }
             }
         } catch (IOException e) {
-            throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), "");
+            if (e instanceof EOFException)
+                log.info("Error while reading file={}: {}", path, e.getMessage(), e);
+            else
+                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), "");
+        }
+        return null;
+    }
+
+    @Override
+    public IndexData readIndexNextLine(BufferedReader reader, String path, boolean checkRemoved) {
+        String line;
+        try {
+            if (nonNull(line = reader.readLine())) {
+                String[] values = line.split(",");
+                if (Objects.equals(6, values.length)) {
+                    String id = values[0];
+                    if (isRemoved(id, path, checkRemoved)) return IndexData.builder().build();
+                    Integer size = Integer.parseInt(values[1]);
+                    Long offset = Long.parseLong(values[2]);
+                    String topic = values[3];
+                    OffsetDateTime storedAt = OffsetDateTime.parse(values[4]);
+                    Long partitionNumber = Long.parseLong(values[5]);
+                    return new IndexData(id, size, offset, topic, storedAt, partitionNumber);
+                }
+            }
+        } catch (IOException e) {
+            if (e instanceof EOFException)
+                log.info("Error while reading file={}: {}", path, e.getMessage(), e);
+            else
+                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), "");
         }
         return null;
     }
@@ -211,7 +253,7 @@ public class FileImpl implements FileRepository {
     public List<String> readPaths(BufferedReader reader, String path) {
         List<String> paths = new ArrayList<>();
         String line;
-        while(true) {
+        while (true) {
             try {
                 if (!nonNull(line = reader.readLine())) break;
                 paths.add(line);
@@ -233,7 +275,8 @@ public class FileImpl implements FileRepository {
     }
 
     @Override
-    public boolean isRemoved(String id, String indexPath) {
+    public boolean isRemoved(String id, String indexPath, boolean checkRemoved) {
+        if (!checkRemoved) return false;
         long partition = filePathHelper.extractPartition(indexPath);
         String path = FilePath.INDEX_REMOVED_PATH.withPartition(partition);
         if (Objects.equals(indexPath, path)) return false;
@@ -244,11 +287,14 @@ public class FileImpl implements FileRepository {
                     return true;
                 }
             }
-            return false;
         } catch (FileNotFoundException e) {
             throw new OvyException.ReadOperation("File not found", e.getMessage(), path);
         } catch (IOException e) {
-            throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
+            if (e instanceof EOFException)
+                log.info("Error while reading file={}: {}", path, e.getMessage(), e);
+            else
+                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
         }
+        return false;
     }
 }

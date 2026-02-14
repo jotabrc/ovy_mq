@@ -5,6 +5,10 @@ public class OvyException extends RuntimeException {
         super(message);
     }
 
+    public OvyException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     public static class SecurityFilterFailure extends OvyException {
 
         public SecurityFilterFailure(String message) {
@@ -72,6 +76,10 @@ public class OvyException extends RuntimeException {
 
         public ReadOperation(String message, String exceptionMessage, String path) {
             super("%s; path=%s: %s".formatted(message, path, exceptionMessage));
+        }
+
+        public ReadOperation(String message, String exceptionMessage, String path, Throwable cause) {
+            super("%s; path=%s: %s".formatted(message, path, exceptionMessage), cause);
         }
     }
 

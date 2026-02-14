@@ -19,12 +19,13 @@ public interface FileRepository {
     <T> IndexData writeQueue(T data, String path);
     <T> T readQueueAndGet(IndexData data, Class<T> target, String path);
     IndexData writeIndex(IndexData data, String path);
-    IndexData readIndexByIdAndGetFirst(String id, Set<String> paths);
-    IndexData readIndexByTopicAndGetFirst(String topic, Set<String> paths);
+    IndexData readIndexByIdAndGetFirst(String id, List<String> paths);
+    IndexData readIndexByTopicAndGetFirst(String topic, List<String> paths);
     BufferedReader getIndexReader(String path);
     IndexData readIndexNextLine(BufferedReader reader, String path);
+    IndexData readIndexNextLine(BufferedReader reader, String path, boolean checkRemoved);
     Set<String> readIndexAndGetAllIds(BufferedReader reader, String path);
     List<String> readPaths(BufferedReader reader, String path);
     boolean exists(BufferedReader reader, String id, String path);
-    boolean isRemoved(String id, String indexPath);
+    boolean isRemoved(String id, String indexPath, boolean checkRemoved);
 }

@@ -38,7 +38,7 @@ public class PayloadRequestHandler implements PayloadHandler {
         Client client = ovyAction.getPayloadAs(Client.class, objectMapper);
         log.info("Message request: client={}", client.getId());
         if (nonNull(client.getId())) {
-            messageRepository.pollFromQueue(client.getTopicForAwaitingProcessingQueue())
+            messageRepository.pollFromQueue(client.getTopic())
                     .ifPresent(messagePayload -> sendMessageToClient(client, messagePayload));
         }
     }

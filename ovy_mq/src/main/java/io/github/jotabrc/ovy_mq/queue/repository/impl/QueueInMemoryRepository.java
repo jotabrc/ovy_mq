@@ -5,7 +5,6 @@ import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -18,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Objects.nonNull;
 
-@Profile("dev")
 @Slf4j
 @RequiredArgsConstructor
 @Service
