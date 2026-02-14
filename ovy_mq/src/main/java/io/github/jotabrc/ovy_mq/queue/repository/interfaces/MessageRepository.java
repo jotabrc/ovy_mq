@@ -9,6 +9,7 @@ public interface MessageRepository {
 
     MessagePayload saveToQueue(MessagePayload messagePayload);
     Optional<MessagePayload> pollFromQueue(String topic);
+    @Deprecated(forRemoval = true, since = "SNAPTSHOT")
     List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms);
     void removeFromQueue(String topic, String messageId);
     void removeAndRequeue(MessagePayload messagePayload);

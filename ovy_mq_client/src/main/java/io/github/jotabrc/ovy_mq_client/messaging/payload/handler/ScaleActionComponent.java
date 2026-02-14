@@ -59,7 +59,7 @@ public class ScaleActionComponent implements ScaleAction {
             }
             return null;
         };
-        lockProcessor.getLockAndExecute(callable, OvyMqConstants.LOCK_KEY_VALUE.apply(listenerConfig.getTopic()), null, null);
+        lockProcessor.getReentrantLockAndExecute(callable, OvyMqConstants.LOCK_KEY_VALUE.apply(listenerConfig.getTopic()));
     }
 
     private boolean isScaleUp(ListenerConfig listenerConfig, List<Client> clients) {

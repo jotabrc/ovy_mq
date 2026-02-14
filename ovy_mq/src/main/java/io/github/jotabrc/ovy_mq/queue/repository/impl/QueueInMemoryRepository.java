@@ -45,19 +45,17 @@ public class QueueInMemoryRepository implements MessageRepository {
                 return payload;
             } else return Optional.empty();
         };
-        return lockProcessor.getLockAndExecute(callable, topic, null, null);
+        return lockProcessor.getReentrantLockAndExecute(callable, topic);
     }
 
     @Override
     public List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms) {
-        Callable<List<MessagePayload>> callable = () -> {
-            return messages.values()
-                    .stream()
-                    .flatMap(Collection::stream)
-                    .filter(s -> nonNull(s.getProcessingStartedAt()))
-                    .filter(s -> ChronoUnit.MILLIS.between(s.getProcessingStartedAt(), OffsetDateTime.now()) > ms)
-                    .toList();
-        };
+        Callable<List<MessagePayload>> callable = () -> messages.values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(s -> nonNull(s.getProcessingStartedAt()))
+                .filter(s -> ChronoUnit.MILLIS.between(s.getProcessingStartedAt(), OffsetDateTime.now()) > ms)
+                .toList();
         return lockProcessor.getLockAndExecute(callable, null, null, null);
     }
 
@@ -70,7 +68,7 @@ public class QueueInMemoryRepository implements MessageRepository {
             }
             return null;
         };
-        lockProcessor.getLockAndExecute(callable, topic, messageId, null);
+        lockProcessor.getReentrantLockAndExecute(callable, topic);
     }
 
     @Override
@@ -80,7 +78,7 @@ public class QueueInMemoryRepository implements MessageRepository {
             saveToQueue(messagePayload);
             return null;
         };
-        lockProcessor.getLockAndExecute(callable, messagePayload.getTopicKey(), messagePayload.getId(), null);
+        lockProcessor.getReentrantLockAndExecute(callable, messagePayload.getTopic());
     }
 
     @Override

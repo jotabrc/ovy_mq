@@ -42,6 +42,6 @@ public class ClientRegistry {
                 .flatMap(Collection::stream)
                 .filter(client -> Objects.equals(topic, client.getTopic()))
                 .collect(Collectors.toCollection(ArrayList::new));
-        return lockProcessor.getLockAndExecute(callable, topic, null, null);
+        return lockProcessor.getReentrantLockAndExecute(callable, topic);
     }
 }
