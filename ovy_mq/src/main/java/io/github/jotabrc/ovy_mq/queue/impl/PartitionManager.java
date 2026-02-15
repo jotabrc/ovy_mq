@@ -37,10 +37,14 @@ public class PartitionManager {
         }
     }
 
-    public List<String> getPartitionsFor(FilePath filePath) {
+    public List<String> getPartitionsInRandomOrderFor(FilePath filePath) {
         List<String> partitionsToShuffle = new ArrayList<>(partitions.get(filePath));
         Collections.shuffle(partitionsToShuffle);
         return partitionsToShuffle;
+    }
+
+    public List<String> getPartitionsInOrderFor(FilePath filePath) {
+        return new ArrayList<>(partitions.get(filePath));
     }
 
     public long getPartitionToUse() {

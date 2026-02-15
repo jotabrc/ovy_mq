@@ -28,7 +28,7 @@ public class PayloadSaveHandler implements PayloadHandler {
     public void handle(OvyAction ovyAction) {
         MessagePayload messagePayload = ovyAction.getPayloadAs(MessagePayload.class, objectMapper);
         updateMessageMetadata(messagePayload);
-        log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopicKey());
+        log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
         messageRepository.saveToQueue(messagePayload);
     }
 

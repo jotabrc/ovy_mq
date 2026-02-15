@@ -26,7 +26,7 @@ public class PayloadReaperHandler implements PayloadHandler {
                 .forEach(payload -> {
                     payload.updateMessageStatusTo(MessageStatus.AWAITING_PROCESSING);
                     log.info("Saving payload={} topic={} after {}ms without processing success confirmation",
-                            payload.getId(), payload.getTopicKey(), payload.getMsSinceStartedProcessing());
+                            payload.getId(), payload.getTopic(), payload.getMsSinceStartedProcessing());
                     messageRepository.removeAndRequeue(payload);
                 });
 

@@ -3,6 +3,7 @@ package io.github.jotabrc.ovy_mq.queue.repository.impl;
 import io.github.jotabrc.ovy_mq.queue.repository.interfaces.MessageRepository;
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.util.TopicUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class QueueInMemoryRepository implements MessageRepository {
 
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
-        log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopicKey());
+        log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
         messages.computeIfAbsent(messagePayload.getTopicKey(), k -> new ConcurrentLinkedQueue<>()).offer(messagePayload);
         return messagePayload;
     }
@@ -38,7 +39,7 @@ public class QueueInMemoryRepository implements MessageRepository {
     public Optional<MessagePayload> pollFromQueue(String topic) {
         Callable<Optional<MessagePayload>> callable = () -> {
             if (!messages.isEmpty()) {
-                Optional<MessagePayload> payload = Optional.ofNullable(messages.getOrDefault(topic, new ConcurrentLinkedQueue<>()).poll());
+                Optional<MessagePayload> payload = Optional.ofNullable(messages.getOrDefault(TopicUtil.createTopicKeyForSent(topic), new ConcurrentLinkedQueue<>()).poll());
                 if (payload.isPresent()) {
                     awaitingConfirmation.incrementAndGet();
                 }
@@ -56,14 +57,15 @@ public class QueueInMemoryRepository implements MessageRepository {
                 .filter(s -> nonNull(s.getProcessingStartedAt()))
                 .filter(s -> ChronoUnit.MILLIS.between(s.getProcessingStartedAt(), OffsetDateTime.now()) > ms)
                 .toList();
-        return lockProcessor.getLockAndExecute(callable, null, null, null);
+        return lockProcessor.getReentrantLockAndExecute(callable, "{{ALL-TOPICS-WITH:%sms}}".formatted(ms.toString()));
     }
 
     @Override
     public void removeFromQueue(String topic, String messageId) {
         Callable<Void> callable = () -> {
             if (!messages.isEmpty()) {
-                messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+                boolean isRemoved = messages.get(TopicUtil.createTopicKeyForSent(topic)).removeIf(m -> Objects.equals(messageId, m.getId()));
+                if (!isRemoved) messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
                 awaitingConfirmation.decrementAndGet();
             }
             return null;
@@ -74,8 +76,9 @@ public class QueueInMemoryRepository implements MessageRepository {
     @Override
     public void removeAndRequeue(MessagePayload messagePayload) {
         Callable<Void> callable = () -> {
-            removeFromQueue(messagePayload.getTopicKey(), messagePayload.getId());
-            saveToQueue(messagePayload);
+            this.removeFromQueue(TopicUtil.createTopicKeyForSent(messagePayload.getTopic()), messagePayload.getId());
+            messagePayload.setProcessingStartedAt(null);
+            this.saveToQueue(messagePayload);
             return null;
         };
         lockProcessor.getReentrantLockAndExecute(callable, messagePayload.getTopic());

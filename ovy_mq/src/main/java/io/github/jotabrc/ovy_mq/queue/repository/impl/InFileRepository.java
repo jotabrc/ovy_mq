@@ -8,14 +8,16 @@ import io.github.jotabrc.ovy_mq.queue.util.FilePath;
 import io.github.jotabrc.ovy_mq_core.components.LockProcessor;
 import io.github.jotabrc.ovy_mq_core.domain.IndexData;
 import io.github.jotabrc.ovy_mq_core.domain.payload.MessagePayload;
+import io.github.jotabrc.ovy_mq_core.domain.payload.MessageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 @Slf4j
@@ -24,20 +26,18 @@ import java.util.concurrent.Callable;
 @Primary
 public class InFileRepository implements MessageRepository {
 
+    @Value("${ovymq.in-memory-queue.cache-size:50}")
+    private Integer cacheSize;
+
+    private final MessageRepository queueInMemoryRepository;
     private final FileStorageManager fileStorageManager;
     private final FileRepository fileRepository;
     private final PartitionManager partitionManager;
     private final LockProcessor lockProcessor;
 
-    /*
-    TODO:
-        memory queue with file
-        awaiting confirmation calculation
-     */
-
     @Override
     public MessagePayload saveToQueue(MessagePayload messagePayload) {
-        log.info("Saving message={} topic-key={}", messagePayload.getId(), messagePayload.getTopicKey());
+        log.info("Saving message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
         long partitionToUse = partitionManager.getPartitionToUse();
         Callable<MessagePayload> callable = () -> {
             long currentOffset = fileStorageManager.getOffset(partitionToUse);
@@ -56,30 +56,53 @@ public class InFileRepository implements MessageRepository {
 
     @Override
     public Optional<MessagePayload> pollFromQueue(String topic) {
-        return Optional.ofNullable(fileRepository.readIndexByTopicAndGetFirst(topic, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
+        Optional<MessagePayload> messagePayload = queueInMemoryRepository.pollFromQueue(topic);
+        if (messagePayload.isPresent()) {
+            return messagePayload
+                    .map(payload -> {
+                        payload.setMessageStatus(MessageStatus.SENT);
+                        return queueInMemoryRepository.saveToQueue(payload);
+                    });
+        }
+
+        // todo: fix required, always caching
+        log.info("Caching new messages for topic={}", topic);
+        var messages = Optional.ofNullable(
+                        fileRepository.readIndexByTopicAndGetAsMany(topic, partitionManager.getPartitionsInRandomOrderFor(FilePath.INDEX_PATH), cacheSize))
+                .stream().flatMap(Set::stream)
                 .map(data -> fileRepository.readQueueAndGet(data, MessagePayload.class, FilePath.QUEUE_PATH.withPartition(data.partitionNumber())))
-                .or(Optional::empty);
+                .toList();
+
+        for (int i = 1; i < messages.size(); i++) {
+            queueInMemoryRepository.saveToQueue(messages.get(i));
+        }
+
+        return Optional.ofNullable(messages.getFirst())
+                .map(toSend -> {
+                    toSend.setMessageStatus(MessageStatus.SENT);
+                    return queueInMemoryRepository.saveToQueue(toSend);
+                });
     }
 
     @Override
     public List<MessagePayload> getMessagesByLastUsedDateGreaterThen(Long ms) {
-        log.info("In file repository - get messages by last used date greater then -> is disabled");
-        return Collections.emptyList();
+        return queueInMemoryRepository.getMessagesByLastUsedDateGreaterThen(ms);
     }
 
     @Override
     public void removeFromQueue(String topic, String messageId) {
-        Optional.ofNullable(fileRepository.readIndexByIdAndGetFirst(messageId, partitionManager.getPartitionsFor(FilePath.INDEX_PATH)))
+        Optional.ofNullable(fileRepository.readIndexByIdAndGetFirst(messageId, partitionManager.getPartitionsInRandomOrderFor(FilePath.INDEX_PATH)))
                 .ifPresent(data -> lockProcessor.getReentrantLockAndExecute(() -> fileRepository.writeIndex(data, FilePath.INDEX_REMOVED_PATH.withPartition(data.partitionNumber())), data.partitionNumber()));
+        queueInMemoryRepository.removeFromQueue(topic, messageId);
     }
 
     @Override
     public void removeAndRequeue(MessagePayload messagePayload) {
-        log.info("In file repository - remove and requeue -> is disabled");
+        queueInMemoryRepository.removeAndRequeue(messagePayload);
     }
 
     @Override
     public Integer getAwaitingConfirmationQuantity() {
-        return 0;
+        return queueInMemoryRepository.getAwaitingConfirmationQuantity();
     }
 }

@@ -49,7 +49,7 @@ public class PayloadRequestHandler implements PayloadHandler {
             sendMessageToConsumer(messagePayload, client);
             messagePayload.updateMessageStatusTo(MessageStatus.SENT);
         } catch (Exception e) {
-            log.warn("Error while sending message: requeue message={} client={} topic={}:{}. Error-message: {}", messagePayload.getId(), client.getId(), messagePayload.getTopicKey(), messagePayload.getMessageStatus(), e.getMessage(), e);
+            log.warn("Error while sending message: requeue message={} client={} topic={}:{}. Error-message: {}", messagePayload.getId(), client.getId(), messagePayload.getTopic(), messagePayload.getMessageStatus(), e.getMessage(), e);
         }
     }
 

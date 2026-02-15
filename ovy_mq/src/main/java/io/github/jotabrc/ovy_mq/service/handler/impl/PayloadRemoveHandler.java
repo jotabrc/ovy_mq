@@ -24,8 +24,8 @@ public class PayloadRemoveHandler implements PayloadHandler {
     public void handle(OvyAction ovyAction) {
         MessagePayload messagePayload = ovyAction.getPayloadAs(MessagePayload.class, objectMapper);
         if (nonNull(messagePayload) && messagePayload.hasIdentifiers()) {
-            log.info("Removing message={} topic={}", messagePayload.getId(), messagePayload.getTopicKey());
-            messageRepository.removeFromQueue(messagePayload.getTopicKey(), messagePayload.getId());
+            log.info("Removing message={} topic={}", messagePayload.getId(), messagePayload.getTopic());
+            messageRepository.removeFromQueue(messagePayload.getTopic(), messagePayload.getId());
         }
     }
 

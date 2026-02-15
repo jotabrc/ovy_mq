@@ -109,7 +109,6 @@ public class FileImpl implements FileRepository {
             reader.seek(data.offset());
             byte[] payload = new byte[data.size()];
             reader.readFully(payload);
-            log.info("Convertendo payload={}", new String(payload));
             return objectMapper.readValue(payload, target);
         } catch (FileNotFoundException e) {
             throw new OvyException.ReadOperation("File not found", e.getMessage(), path);
@@ -139,7 +138,7 @@ public class FileImpl implements FileRepository {
             try (BufferedReader reader = getIndexReader(path)) {
                 IndexData data;
                 while (nonNull(data = readIndexNextLine(reader, path))) {
-                    if (Objects.equals(id, data.id())) {
+                    if (Objects.equals(id, data.id()) && !data.isRemoved()) {
                         return data;
                     }
                 }
@@ -161,7 +160,7 @@ public class FileImpl implements FileRepository {
             try (BufferedReader reader = getIndexReader(path)) {
                 IndexData data;
                 while (nonNull(data = readIndexNextLine(reader, path))) {
-                    if (Objects.equals(topic, data.topic())) {
+                    if (Objects.equals(topic, data.topic()) && !data.isRemoved()) {
                         return data;
                     }
                 }
@@ -175,6 +174,29 @@ public class FileImpl implements FileRepository {
             }
         }
         return null;
+    }
+
+    @Override
+    public Set<IndexData> readIndexByTopicAndGetAsMany(String topic, List<String> paths, int quantityToGet) {
+        Set<IndexData> content = new HashSet<>();
+        for (String path : paths) {
+            try (BufferedReader reader = getIndexReader(path)) {
+                IndexData data;
+                while (nonNull(data = readIndexNextLine(reader, path)) && content.size() < quantityToGet) {
+                    if (Objects.equals(topic, data.topic()) && !data.isRemoved()) {
+                        content.add(data);
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                throw new OvyException.ReadOperation("File not found", e.getMessage(), path);
+            } catch (IOException e) {
+                if (e instanceof EOFException)
+                    log.info("Error while reading file={}: {}", path, e.getMessage(), e);
+                else
+                    throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
+            }
+        }
+        return content;
     }
 
     @Override

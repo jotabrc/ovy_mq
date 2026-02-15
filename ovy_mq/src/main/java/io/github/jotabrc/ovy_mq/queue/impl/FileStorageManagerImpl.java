@@ -45,7 +45,7 @@ public class FileStorageManagerImpl implements FileStorageManager {
 
     @Override
     public void initialize() {
-        partitionManager.getPartitionsFor(FilePath.INDEX_PATH)
+        partitionManager.getPartitionsInRandomOrderFor(FilePath.INDEX_PATH)
                 .stream()
                 .peek(path -> offsets.put(filePathHelper.extractPartition(path), 0L))
                 .forEach(this::rebuild);
@@ -69,14 +69,9 @@ public class FileStorageManagerImpl implements FileStorageManager {
 
         AtomicLong newOffset = new AtomicLong(0);
 
-        /*
-        TODO:
-            rebuild performance
-         */
-
         Set<String> idsToRemove = new HashSet<>();
         try (BufferedReader reader = fileRepository.getIndexReader(indexRemovedPath)) {
-             idsToRemove.addAll(fileRepository.readIndexAndGetAllIds(reader, indexRemovedPath));
+            idsToRemove.addAll(fileRepository.readIndexAndGetAllIds(reader, indexRemovedPath));
         } catch (IOException e) {
             throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), indexPath);
         }
@@ -102,6 +97,12 @@ public class FileStorageManagerImpl implements FileStorageManager {
             throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), indexPath);
         }
 
+        replaceFileWithUpdatedData(tempIndex, indexPath, tempQueue, queuePath);
+        this.offsets.put(partition, newOffset.get());
+        cleanRemovedIndex(indexRemovedPath);
+    }
+
+    private void replaceFileWithUpdatedData(Path tempIndex, String indexPath, Path filePath, String toBeReplaced) {
         try {
             Files.move(tempIndex, fileRepository.filePath(indexPath), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
@@ -109,17 +110,13 @@ public class FileStorageManagerImpl implements FileStorageManager {
         }
 
         try {
-            Files.move(tempQueue, fileRepository.filePath(queuePath), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(filePath, fileRepository.filePath(toBeReplaced), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
-            throw new OvyException.ReplaceOperation("Error while replacing file in rebuild operation", e.getMessage(), tempQueue.toString());
+            throw new OvyException.ReplaceOperation("Error while replacing file in rebuild operation", e.getMessage(), filePath.toString());
         }
-
-        this.offsets.put(partition, newOffset.get());
-
-        cleanRemovedIndex(indexRemovedPath);
     }
 
-    private static void cleanRemovedIndex(String indexRemovedPathName) {
+    private void cleanRemovedIndex(String indexRemovedPathName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(indexRemovedPathName, false))) {
             writer.write("");
         } catch (IOException e) {

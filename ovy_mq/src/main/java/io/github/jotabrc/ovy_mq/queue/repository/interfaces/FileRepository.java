@@ -21,6 +21,7 @@ public interface FileRepository {
     IndexData writeIndex(IndexData data, String path);
     IndexData readIndexByIdAndGetFirst(String id, List<String> paths);
     IndexData readIndexByTopicAndGetFirst(String topic, List<String> paths);
+    Set<IndexData> readIndexByTopicAndGetAsMany(String topic, List<String> paths, int quantityToGet);
     BufferedReader getIndexReader(String path);
     IndexData readIndexNextLine(BufferedReader reader, String path);
     IndexData readIndexNextLine(BufferedReader reader, String path, boolean checkRemoved);
