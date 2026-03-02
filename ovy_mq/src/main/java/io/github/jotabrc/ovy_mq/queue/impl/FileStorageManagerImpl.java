@@ -32,12 +32,6 @@ public class FileStorageManagerImpl implements FileStorageManager {
     private final PartitionManager partitionManager;
     private final Map<Long, Long> offsets = new HashMap<>();
 
-    /*
-    TODO
-        1: File partitions
-        2: ReentrantLock
-     */
-
     @PostConstruct
     private void init() {
         initialize();

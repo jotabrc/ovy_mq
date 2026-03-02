@@ -59,13 +59,13 @@ public class InFileRepository implements MessageRepository {
         Optional<MessagePayload> messagePayload = queueInMemoryRepository.pollFromQueue(topic);
         if (messagePayload.isPresent()) {
             return messagePayload
-                    .map(payload -> {
-                        payload.setMessageStatus(MessageStatus.SENT);
-                        return queueInMemoryRepository.saveToQueue(payload);
+                    .map(toSend -> {
+                        toSend.setMessageStatus(MessageStatus.SENT);
+                        queueInMemoryRepository.removeAndRequeue(toSend);
+                        return toSend;
                     });
         }
 
-        // todo: fix required, always caching
         log.info("Caching new messages for topic={}", topic);
         var messages = Optional.ofNullable(
                         fileRepository.readIndexByTopicAndGetAsMany(topic, partitionManager.getPartitionsInRandomOrderFor(FilePath.INDEX_PATH), cacheSize))
@@ -80,7 +80,8 @@ public class InFileRepository implements MessageRepository {
         return Optional.ofNullable(messages.getFirst())
                 .map(toSend -> {
                     toSend.setMessageStatus(MessageStatus.SENT);
-                    return queueInMemoryRepository.saveToQueue(toSend);
+                    queueInMemoryRepository.removeAndRequeue(toSend);
+                    return toSend;
                 });
     }
 

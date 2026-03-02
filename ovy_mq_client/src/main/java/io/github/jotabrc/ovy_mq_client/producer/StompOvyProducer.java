@@ -20,7 +20,6 @@ public class StompOvyProducer implements OvyProducer<StompSession, WebSocketHttp
 
     private final ClientAdapter<StompSession, WebSocketHttpHeaders, StompClientSessionHandler> clientAdapter;
 
-    //    @Async(ThreadPoolConfig.PRODUCER_EXECUTOR) todo
     @Override
     public void send(String topic, Object payload) {
         if (isNull(payload))

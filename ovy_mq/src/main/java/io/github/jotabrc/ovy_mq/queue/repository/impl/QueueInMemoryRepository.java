@@ -39,7 +39,7 @@ public class QueueInMemoryRepository implements MessageRepository {
     public Optional<MessagePayload> pollFromQueue(String topic) {
         Callable<Optional<MessagePayload>> callable = () -> {
             if (!messages.isEmpty()) {
-                Optional<MessagePayload> payload = Optional.ofNullable(messages.getOrDefault(TopicUtil.createTopicKeyForSent(topic), new ConcurrentLinkedQueue<>()).poll());
+                Optional<MessagePayload> payload = Optional.ofNullable(messages.getOrDefault(TopicUtil.createTopicKeyForAwaitProcessing(topic), new ConcurrentLinkedQueue<>()).poll());
                 if (payload.isPresent()) {
                     awaitingConfirmation.incrementAndGet();
                 }
@@ -64,8 +64,10 @@ public class QueueInMemoryRepository implements MessageRepository {
     public void removeFromQueue(String topic, String messageId) {
         Callable<Void> callable = () -> {
             if (!messages.isEmpty()) {
-                boolean isRemoved = messages.get(TopicUtil.createTopicKeyForSent(topic)).removeIf(m -> Objects.equals(messageId, m.getId()));
-                if (!isRemoved) messages.get(topic).removeIf(m -> Objects.equals(messageId, m.getId()));
+                boolean isRemoved = messages.getOrDefault(TopicUtil.createTopicKeyForSent(topic), new ConcurrentLinkedQueue<>())
+                        .removeIf(m -> Objects.equals(messageId, m.getId()));
+                if (!isRemoved) messages.getOrDefault(topic, new ConcurrentLinkedQueue<>())
+                        .removeIf(m -> Objects.equals(messageId, m.getId()));
                 awaitingConfirmation.decrementAndGet();
             }
             return null;
