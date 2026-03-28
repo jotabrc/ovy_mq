@@ -77,6 +77,8 @@ public class InFileRepository implements MessageRepository {
             queueInMemoryRepository.saveToQueue(messages.get(i));
         }
 
+        if (messages.isEmpty()) return Optional.empty();
+
         return Optional.ofNullable(messages.getFirst())
                 .map(toSend -> {
                     toSend.setMessageStatus(MessageStatus.SENT);

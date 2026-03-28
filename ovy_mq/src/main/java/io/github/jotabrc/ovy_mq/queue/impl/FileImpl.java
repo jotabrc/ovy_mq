@@ -135,9 +135,11 @@ public class FileImpl implements FileRepository {
     @Override
     public IndexData readIndexByIdAndGetFirst(String id, List<String> paths) {
         for (String path : paths) {
+            long partition = filePathHelper.extractPartition(path);
+            Set<String> removedIds = readAllRemovedIds(partition);
             try (BufferedReader reader = getIndexReader(path)) {
                 IndexData data;
-                while (nonNull(data = readIndexNextLine(reader, path))) {
+                while (nonNull(data = readIndexNextLine(reader, path, removedIds))) {
                     if (Objects.equals(id, data.id()) && !data.isRemoved()) {
                         return data;
                     }
@@ -157,9 +159,11 @@ public class FileImpl implements FileRepository {
     @Override
     public IndexData readIndexByTopicAndGetFirst(String topic, List<String> paths) {
         for (String path : paths) {
+            long partition = filePathHelper.extractPartition(path);
+            Set<String> removedIds = readAllRemovedIds(partition);
             try (BufferedReader reader = getIndexReader(path)) {
                 IndexData data;
-                while (nonNull(data = readIndexNextLine(reader, path))) {
+                while (nonNull(data = readIndexNextLine(reader, path, removedIds))) {
                     if (Objects.equals(topic, data.topic()) && !data.isRemoved()) {
                         return data;
                     }
@@ -180,9 +184,11 @@ public class FileImpl implements FileRepository {
     public Set<IndexData> readIndexByTopicAndGetAsMany(String topic, List<String> paths, int quantityToGet) {
         Set<IndexData> content = new HashSet<>();
         for (String path : paths) {
+            long partition = filePathHelper.extractPartition(path);
+            Set<String> removedIds = readAllRemovedIds(partition);
             try (BufferedReader reader = getIndexReader(path)) {
                 IndexData data;
-                while (nonNull(data = readIndexNextLine(reader, path)) && content.size() < quantityToGet) {
+                while (nonNull(data = readIndexNextLine(reader, path, removedIds)) && content.size() < quantityToGet) {
                     if (Objects.equals(topic, data.topic()) && !data.isRemoved()) {
                         content.add(data);
                     }
@@ -210,39 +216,18 @@ public class FileImpl implements FileRepository {
 
     @Override
     public IndexData readIndexNextLine(BufferedReader reader, String path) {
-        String line;
-        try {
-            if (nonNull(line = reader.readLine())) {
-                String[] values = line.split(",");
-                if (Objects.equals(6, values.length)) {
-                    String id = values[0];
-                    if (isRemoved(id, path, true)) return IndexData.builder().build();
-                    Integer size = Integer.parseInt(values[1]);
-                    Long offset = Long.parseLong(values[2]);
-                    String topic = values[3];
-                    OffsetDateTime storedAt = OffsetDateTime.parse(values[4]);
-                    Long partitionNumber = Long.parseLong(values[5]);
-                    return new IndexData(id, size, offset, topic, storedAt, partitionNumber);
-                }
-            }
-        } catch (IOException e) {
-            if (e instanceof EOFException)
-                log.info("Error while reading file={}: {}", path, e.getMessage(), e);
-            else
-                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), "");
-        }
-        return null;
+        return readIndexNextLine(reader, path, (Set<String>) null);
     }
 
     @Override
-    public IndexData readIndexNextLine(BufferedReader reader, String path, boolean checkRemoved) {
+    public IndexData readIndexNextLine(BufferedReader reader, String path, Set<String> removedIds) {
         String line;
         try {
             if (nonNull(line = reader.readLine())) {
                 String[] values = line.split(",");
                 if (Objects.equals(6, values.length)) {
                     String id = values[0];
-                    if (isRemoved(id, path, checkRemoved)) return IndexData.builder().build();
+                    if (nonNull(removedIds) && removedIds.contains(id)) return IndexData.builder().build();
                     Integer size = Integer.parseInt(values[1]);
                     Long offset = Long.parseLong(values[2]);
                     String topic = values[3];
@@ -266,7 +251,7 @@ public class FileImpl implements FileRepository {
         while (true) {
             IndexData data = readIndexNextLine(reader, path);
             if (isNull(data)) break;
-            ids.add(data.id());
+            if (nonNull(data.id())) ids.add(data.id());
         }
         return ids;
     }
@@ -300,23 +285,20 @@ public class FileImpl implements FileRepository {
     public boolean isRemoved(String id, String indexPath, boolean checkRemoved) {
         if (!checkRemoved) return false;
         long partition = filePathHelper.extractPartition(indexPath);
+        return readAllRemovedIds(partition).contains(id);
+    }
+
+    @Override
+    public Set<String> readAllRemovedIds(long partition) {
         String path = FilePath.INDEX_REMOVED_PATH.withPartition(partition);
-        if (Objects.equals(indexPath, path)) return false;
+        File file = new File(path);
+        if (!file.exists()) return Collections.emptySet();
+
         try (BufferedReader reader = getIndexReader(path)) {
-            IndexData data;
-            while (nonNull(data = readIndexNextLine(reader, path))) {
-                if (Objects.equals(id, data.id())) {
-                    return true;
-                }
-            }
-        } catch (FileNotFoundException e) {
-            throw new OvyException.ReadOperation("File not found", e.getMessage(), path);
+            return readIndexAndGetAllIds(reader, path);
         } catch (IOException e) {
-            if (e instanceof EOFException)
-                log.info("Error while reading file={}: {}", path, e.getMessage(), e);
-            else
-                throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), path);
+            log.error("Error while reading all removed ids for partition={}", partition, e);
+            return Collections.emptySet();
         }
-        return false;
     }
 }

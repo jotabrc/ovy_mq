@@ -63,19 +63,13 @@ public class FileStorageManagerImpl implements FileStorageManager {
 
         AtomicLong newOffset = new AtomicLong(0);
 
-        Set<String> idsToRemove = new HashSet<>();
-        try (BufferedReader reader = fileRepository.getIndexReader(indexRemovedPath)) {
-            idsToRemove.addAll(fileRepository.readIndexAndGetAllIds(reader, indexRemovedPath));
-        } catch (IOException e) {
-            throw new OvyException.ReadOperation("Error while reading file", e.getMessage(), indexPath);
-        }
+        Set<String> idsToRemove = fileRepository.readAllRemovedIds(partition);
 
         try (BufferedReader indexReader = fileRepository.getIndexReader(indexPath)) {
             while (true) {
-                boolean checkMessagesRemoved = false;
-                IndexData data = fileRepository.readIndexNextLine(indexReader, indexPath, checkMessagesRemoved);
+                IndexData data = fileRepository.readIndexNextLine(indexReader, indexPath, idsToRemove);
                 if (isNull(data)) break;
-                else if (idsToRemove.contains(data.id())) continue;
+                else if (isNull(data.id()) || idsToRemove.contains(data.id())) continue;
 
                 MessagePayload payload = fileRepository.readQueueAndGet(data, MessagePayload.class, queuePath);
                 if (isNull(payload)) continue;

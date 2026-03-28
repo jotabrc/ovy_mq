@@ -24,9 +24,10 @@ public interface FileRepository {
     Set<IndexData> readIndexByTopicAndGetAsMany(String topic, List<String> paths, int quantityToGet);
     BufferedReader getIndexReader(String path);
     IndexData readIndexNextLine(BufferedReader reader, String path);
-    IndexData readIndexNextLine(BufferedReader reader, String path, boolean checkRemoved);
+    IndexData readIndexNextLine(BufferedReader reader, String path, Set<String> removedIds);
     Set<String> readIndexAndGetAllIds(BufferedReader reader, String path);
     List<String> readPaths(BufferedReader reader, String path);
     boolean exists(BufferedReader reader, String id, String path);
     boolean isRemoved(String id, String indexPath, boolean checkRemoved);
+    Set<String> readAllRemovedIds(long partition);
 }

@@ -117,6 +117,7 @@ public class MessagePayload implements Serializable {
         private OffsetDateTime createdDate;
         private OffsetDateTime processingStartedAt;
         private Long version;
+        private Long partitionNumber;
 
         public Builder id(String id) {
             this.id = id;
